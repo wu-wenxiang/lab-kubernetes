@@ -126,7 +126,13 @@ Ubuntu 的策略比较简单，保持循 LTS 升级即可。
 - CentOS Linux 是 Red Hat Enterprise Linux (RHEL) 的 rebuild，是 RHEL 的 Downstream。CentOS Linux 的版本号是 RHEL 的发布日期，比如 CentOS 8.2105 就是 RHEL 8.3（发布于 2021/05） 的 rebuild
 - CentOS Stream 是 RHEL 的 upstream, RHEL 的 public development 分支。简单说，就是：**不稳定**。
 
-综上，CentOS 8 已经停止支持，CentOS 8 Stream 不稳定，两者都不要用于生产了。
+综上，**CentOS 8 已经停止支持，CentOS 8 Stream 不稳定，两者都不要用于生产了**。
+
+参考：<https://www.ispsystem.com/news/what-would-be-the-alternative-to-centos>
+
+![](/image/CentOS-alternative-survey.png)
+
+注：Oracle Linux 以 RHEL 为起始，与 RHEL 完全兼容，移除了 Red Hat 商标，加入了 Linux 错误修正。其可取之处是 7*24 服务…… 像另一个 RHEL。
 
 ### 1.4 Rocky
 
@@ -145,13 +151,13 @@ Rocky Linux is an open-source enterprise operating system designed to be 100% bu
 
 参考：<https://rockylinux.org/download/>，Planned EOL: 2029/05/31
 
-综上，Rocky 是另起炉灶的 CentOS Linux。当下进展不错。参考 <https://github.com/rocky-linux/rocky>，2021/06，Rocky Linux 已经生产环境 ready。建议在生产环境中使用（CentOS 7 结束支持前半年，也就是 2023 年应该转向 Rocky Linux）。
+综上，**Rocky 是另起炉灶的 CentOS Linux**。当下进展不错。参考 <https://github.com/rocky-linux/rocky>，2021/06，Rocky Linux 已经生产环境 ready。建议在生产环境中使用（CentOS 7 结束支持前半年，也就是 2023 年应该转向 Rocky Linux）。
 
 ### 1.5 AlmaLinux
 
 AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家提供服务器托管和 Linux 软件的公司。这是一家在 RHEL 分支方面经验丰富的公司，十多年来一直构建和维护其内部发行版 CloudLinux OS，它本身就是一个分支。
 
-你应该选 Alma 还是 Rocky？它俩都致力于提供社区版的 RHEL，这有点难回答：
+你**应该选 Alma 还是 Rocky**？它俩都致力于提供社区版的 RHEL，这有点难回答：
 
 从所有权来说（AlmaLinux 开放，Rocky 独裁）：
 
@@ -173,7 +179,9 @@ AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家�
 - AlmaLinux 更早推出（2021/03/30）稳定版本，Rocky 是 2021/06
 - AlmaLinux 更快响应社区问题
 
-### 1.5 Openeuler
+综上：**目前 Rocky 的呼声更高，但 AlmaLinux 也不差，可以再看看**。
+
+### 1.6 Openeuler
 
 [返回目录](#课程目录)
 
@@ -181,9 +189,9 @@ AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家�
 
 OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才开源的，开源在那之前），相较 CentOS 对核内关键功能如进程调度、内存管理、IO 读写进行了深度优化；同时在核外构筑了容器 iSula、虚拟化 StraitVirt、机密计算 SecGear、毕昇 JDK（Huawei JDK 的开源版本）。
 
-优势是国产、信创，能较好地适配国产 ARM 服务器（特别是华为鲲鹏、泰山等）。缺点是兼容性和稳定性验证稍显不足。
+综上，**OpenEuler 的优势是国产、信创，能较好地适配国产 ARM 服务器（特别是华为鲲鹏、泰山等）。缺点是兼容性和稳定性验证稍显不足**。
 
-### 1.6 龙蜥
+### 1.7 龙蜥
 
 [返回目录](#课程目录)
 
@@ -193,7 +201,7 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 
 参考：<https://www.zhihu.com/question/502615238/answer/2408765289>，一言难尽。
 
-### 1.7 麒麟
+### 1.8 麒麟
 
 这个就说来话长了，我也查了半天，诸君姑且听之。
 
@@ -210,6 +218,12 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 - 2022/05/16，科创板上市委公告，湖南麒麟信安科技股份有限公司首发获通过
 
 emmmmm，得承认，麒麟在信创方面有一定优势。
+
+### 1.9 结论
+
+1. 2023/06/30 之前，CentOS 7 没问题，稳定支持；但之后要选择 AlmaLinux 或者 Rocky Linux，二选一。生产环境中不要用 CentOS Stream。
+1. Ubuntu LTS（或者 Debian）也可以，持续升级就行
+1. 如果考虑信创，OpenEuler 对国产 ARM 服务器兼容性良好；如果政策有倾向性，那么麒麟系列、龙蜥看着选
 
 ## 2. 容器运行时
 
