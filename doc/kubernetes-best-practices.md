@@ -147,6 +147,32 @@ Rocky Linux is an open-source enterprise operating system designed to be 100% bu
 
 综上，Rocky 是另起炉灶的 CentOS Linux。当下进展不错。参考 <https://github.com/rocky-linux/rocky>，2021/06，Rocky Linux 已经生产环境 ready。建议在生产环境中使用（CentOS 7 结束支持前半年，也就是 2023 年应该转向 Rocky Linux）。
 
+### 1.5 AlmaLinux
+
+AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家提供服务器托管和 Linux 软件的公司。这是一家在 RHEL 分支方面经验丰富的公司，十多年来一直构建和维护其内部发行版 CloudLinux OS，它本身就是一个分支。
+
+你应该选 Alma 还是 Rocky？它俩都致力于提供社区版的 RHEL，这有点难回答：
+
+从所有权来说（AlmaLinux 开放，Rocky 独裁）：
+
+- Rocky Linux 由 Kurtzer 创立的 Rocky Enterprise Software Foundation (RESF) 控制和管理。同时，他还是为 Rocky Linux 提供保护伞的 Public Benefit Corporation (PBC) 所有者。所以，Kurtzer 基本上拥有 Rocky。是的，RESF 有一个管理委员会，但无论你怎么看，Kurtzer 都是公司持有人，并且可能是 Rocky Linux 的决策者。“独裁”可能是好事，也可能是坏事。理论上讲，他可能像卖 CentOS 一样，再卖一次 Rocky。我们只需要相信他，他会阻止之前发生的事情再次发生。
+- AlmaLinux OS 基金会是一个真正的非营利组织，拥有独立的董事会和公共所有权，贡献者在项目治理中拥有直接投票权和直接发言权。
+
+从贡献者来说（AlmaLinux 集中，Rocky 分散）：
+
+- AlmaLinux 的贡献者相对集中（CloudLinux 雇员居多）
+- Rocky 则分散得多
+
+从经验来说（两者差不多）：
+
+- Rocky 是 CentOS 创始人的一个倡议，这意味着在这方面有很多经验。
+- AlmaLinux 主要由 CloudLinux 团队开发，他们对 CentOS 也有丰富的经验，所以实际上核心开发团队有超过十年的重建 RHEL 的经验。
+
+从响应速度来说（AlmaLinux 更快）：
+
+- AlmaLinux 更早推出（2021/03/30）稳定版本，Rocky 是 2021/06
+- AlmaLinux 更快响应社区问题
+
 ### 1.5 Openeuler
 
 [返回目录](#课程目录)
@@ -161,9 +187,11 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 
 [返回目录](#课程目录)
 
-龙蜥由阿里巴巴在 2021/10/20 孵化出来，诞生背景是 CentOS 8 结束支持（CentOS 8 结束支持这事，堪称“一鲸落，万物生”）。
+龙蜥由阿里巴巴在 2021/10/20 孵化出来，诞生背景是 CentOS 8 结束支持（CentOS 8 结束支持这事，堪称“一鲸落，万物生”，可惜 Alma 和 Rocky Linux 起得太快）。
 
 参考：<https://openanolis.cn/anolisos>，100% 兼容 CentOS 8 软件生态。
+
+参考：<https://www.zhihu.com/question/502615238/answer/2408765289>，一言难尽。
 
 ### 1.7 麒麟
 
@@ -174,7 +202,14 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 - **优麒麟** UbuntuKylin 是 Ubuntu 社区中面向中文用户的 Ubuntu 衍生版本，中文名称优麒麟，与麒麟系统没有关系。优麒麟有两个身份，首先它是 Ubuntu 的一个官方 Flavor 版本。其次，它背后也有国防科大和天津麒麟的支持，可以看做银河麒麟的社区版。优麒麟最初的目标是像 Ubuntu 一样占领中国市场，可是很多人直接选择了 Ubuntu，一些选择了更接地气的 Deepin，所以优麒麟并不算非常成功。
 - **湖南麒麟**，湖南麒麟信息工程技术有限公司（简称湖南麒麟）是 2007 年成立的一家民营企业，公司成立之初依托国防科技大学计算机学院，长期致力于信息安全的研发，在集中管控和机要密码等领域有一定的影响力。2014 年天津麒麟成立时，国防科大将“麒麟”、“银河麒麟”等无形资产注入了天津麒麟，湖南麒麟原有的操作系统研发团队整体转入天津麒麟。现在的湖南麒麟，只是一家单纯的民营企业了，可以视为一个新的系统。
 
-emmmmm，信创上有一定优势。
+综上：
+
+- 中标麒麟像 CentOS，原来兼容性很好，2021 版本改了很多 rpm 依赖
+- 银河麒麟像 Ubuntu
+- 优麒麟基本不会在生产环境中用到
+- 2022/05/16，科创板上市委公告，湖南麒麟信安科技股份有限公司首发获通过
+
+emmmmm，得承认，麒麟在信创方面有一定优势。
 
 ## 2. 容器运行时
 
