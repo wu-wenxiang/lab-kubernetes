@@ -569,14 +569,173 @@ Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标�
 [Containerd 的优势](https://icloudnative.io/posts/getting-started-with-containerd/)：
 
 1. 兼容 Docker
-    - Docker 直接带 Containerd，Containerd 可以单独装，也可以装 Docker，再用 Docker 中的 Containerd 对接 K8S。这在某些必须使用到 docker 的场景中比较受欢迎，比如超融合场景，需要依赖 docker 部署 ceph 等
-    - crictl 命令和 docker 命令用法基本一样，同一家开发的东西
 
-        ![](/image/k8s-cri-tools.png)
+    Docker 直接带 Containerd，Containerd 可以单独装，也可以装 Docker，再用 Docker 中的 Containerd 对接 K8S。这在某些必须使用到 docker 的场景中比较受欢迎，比如超融合场景，需要依赖 docker 部署 ceph 等
 
 1. 直接兼容 K8S CRI
     - 不再需要 docker-shim 适配器
     - 可直接对接 K8S CRI 接口
+
+1. 性能优良
+
+    使用 bucketbench 对 Docker、crio 和 Containerd 的性能测试结果，包括启动、停止和删除容器，以比较它们所耗的时间：
+
+    ![](/image/cri-stress-testing.png)
+
+    可以看到 Containerd 在各个方面都表现良好，总体性能优于 Docker 和 crio
+
+#### 2.2.2 命令行对比
+
+![](/image/k8s-cri-tools.png)
+
+![](/image/k8s-containerd-tools.png)
+
+从以上两张图，可以大致了解 crictl / ctr / nerdctl / podman 的关系。
+
+##### 2.2.2.1 crictl
+
+参考：<https://kubernetes.io/docs/reference/tools/map-crictl-dockercli/>
+
+crictl 命令和 docker 命令用法基本一样，是同一家开发的东西。
+
+相同的命令包括：
+
+- attach
+- exec
+- images
+- info
+- inspect
+- logs
+- ps
+- stats
+- version
+- create
+- kill
+- pull
+- rm
+- rmi
+- run
+- start
+- stop
+- update
+
+以下命令只有 crictl 有
+
+| crictl | Description |
+| - | - |
+| imagefsinfo | Return image filesystem info |
+| inspectp | Display the status of one or more pods |
+| port-forward | Forward local port to a pod |
+| pods | List pods |
+| runp | Run a new pod |
+| rmp | Remove one or more pods |
+| stopp | Stop one or more running pods |
+
+参考：<https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/>
+
+可以看到 crictl 对 pod / container / image 的操作
+
+参考：<https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md>，安装 crictl
+
+```bash
+VERSION="v1.24.1"
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
+```
+
+```console
+[root@lab-kubernetes tmp]# crictl --version
+crictl version v1.24.1
+
+[root@lab-kubernetes tmp]# crictl images
+WARN[0000] image connect using default endpoints: [unix:///var/run/dockershim.sock unix:///run/containerd/containerd.sock unix:///run/crio/crio.sock]. As the default settings are now deprecated, you should set the endpoint instead.
+ERRO[0002] connect endpoint 'unix:///var/run/dockershim.sock', make sure you are running as root and the endpoint has been started: context deadline exceeded
+ERRO[0004] connect endpoint 'unix:///run/containerd/containerd.sock', make sure you are running as root and the endpoint has been started: context deadline exceeded
+FATA[0006] connect: connect endpoint 'unix:///run/crio/crio.sock', make sure you are running as root and the endpoint has been started: context deadline exceeded
+```
+
+这里 crictl 不可用是因为没有为 crictl 命令配置 endpoint。在 centos 7 上部署的 docker 版本是 1.13，版本太低了，使用的不是 containerd 而是 libcontainerd，略有不同。可以卸载原有的 docker，重新安装高版本 docker。
+
+参考：<https://docs.docker.com/engine/install/centos/>
+
+```bash
+yum remove -y docker \
+            docker-client \
+            docker-client-latest \
+            docker-common \
+            docker-latest \
+            docker-latest-logrotate \
+            docker-logrotate \
+            docker-engine
+
+yum install -y yum-utils
+yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+
+yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+yum list docker-ce --showduplicates | sort -r
+
+yum install docker-ce-20.10.16 docker-ce-cli-20.10.16 containerd.io docker-compose-plugin
+
+systemctl enable docker --now
+
+docker version
+```
+
+然后可以检查 systemctl 的配置文件：
+
+```ini
+[root@lab-kubernetes ~]# cat /usr/lib/systemd/system/docker.service
+
+[Unit]
+...
+Requires=docker.socket containerd.service
+
+[Service]
+...
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+
+```
+
+启动时使用了 `/run/containerd/containerd.sock`
+
+此时 crictl 应该可以对接 containerd 了，我们再测试一下：
+
+```console
+[root@lab-kubernetes ~]# cat /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+
+[root@lab-kubernetes ~]# crictl images
+FATA[0000] listing images: rpc error: code = Unimplemented desc = unknown service runtime.v1alpha2.ImageService
+```
+
+这个报错是因为 containerd 的配置文件中，默认关闭了 cri plugin，所以无法进行 cri 对接。
+
+修改配置文件，启用 cri plugin：
+
+```console
+[root@lab-kubernetes ~]# vi /etc/containerd/config.toml
+
+[root@lab-kubernetes ~]# cat /etc/containerd/config.toml | grep cri
+# disabled_plugins = ["cri"]
+
+[root@lab-kubernetes ~]# systemctl restart containerd
+
+[root@lab-kubernetes ~]# crictl images
+IMAGE               TAG                 IMAGE ID            SIZE
+
+[root@lab-kubernetes ~]# crictl ps -a
+CONTAINER           IMAGE               CREATED             STATE               NAME                ATTEMPT             POD ID
+```
+
+##### 2.2.2.1 ctr
+
+ctr 命令会随着 containerd 服务一起安装。
+
+#### 2.2.3 Containerd 手动部署
 
 ### 2.3 CRI-O
 
