@@ -276,6 +276,10 @@ Docker QuickStart，参考：<https://docs.docker.com/get-started>
 
 K8S 和 Docker 有什么关系？参考：[Container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
 
+Docker 和 Rocket 之争
+
+![](/image/k8s-cri-rocket.png)
+
 - Orchestration API -> Container API (cri-runtime) -> Kernel API(oci-runtime)
 
 **OCI 标准是什么**？：runC / Kata（ 及其前身 runV 和 Clear Containers ），gVisor，Rust railcar
@@ -527,6 +531,30 @@ exit
 ### 2.2 Containerd
 
 [返回目录](#课程目录)
+
+#### 2.2.1 Containerd 和 Docker
+
+Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标准的容器运行时，它强调简单性、健壮性和可移植性。
+
+![](/image/k8s-cri-docker.png)
+
+![](/image/k8s-cri-containerd.png)
+
+生产环境中 Containerd 作为容器运行时应用最为广泛
+
+![](/image/containerd-eco-system.jpeg)
+
+[Containerd 的优势](https://icloudnative.io/posts/getting-started-with-containerd/)：
+
+1. 兼容 Docker
+    - Docker 直接带 Containerd，Containerd 可以单独装，也可以装 Docker，再用 Docker 中的 Containerd 对接 K8S。这在某些必须使用到 docker 的场景中比较受欢迎，比如超融合场景，需要依赖 docker 部署 ceph 等
+    - crictl 命令和 docker 命令用法基本一样，同一家开发的东西
+
+        ![](/image/k8s-cri-tools.png)
+
+1. 直接兼容 K8S CRI
+    - 不再需要 docker-shim 适配器
+    - 可直接对接 K8S CRI 接口
 
 ### 2.3 CRI-O
 
