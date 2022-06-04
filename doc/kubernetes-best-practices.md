@@ -5,6 +5,13 @@
 - *斜体表示引用*
 - **未经允许，禁止转载**
 
+## 学习本课程前，你应该具备如下知识：
+
+- Linux 系统的基本配置和命令
+- Docker 命令
+- K8S 基本配置和 kubectl 命令
+- 对存储和网络有基本了解更佳
+
 ## 课程目录
 
 ## 1. 操作系统
@@ -232,6 +239,290 @@ emmmmm，得承认，麒麟在信创方面有一定优势。
 ### 2.1 Docker
 
 [返回目录](#课程目录)
+
+#### 2.1.1 Linux 容器和 Docker
+
+Docker 的历史
+
+- 2013 年 Docker 诞生，因对容器采用开创性方法而备受关注。虽然 Docker 并未发明容器，但它让开发人员极容易使用容器，因而在云行业掀起了一股延续至今的浪潮
+- 2016 年，Docker 拒绝了微软斥资 40 亿美元的收购要约
+- 2018 年估值达到最高峰：13.2 亿美元
+- Kubernetes 的横空出世给这家初创公司施加了巨大的压力，Docker 未找到清晰的商业模式，Docker-Compose 和 Docker-Swarm 等编排工具被废弃。
+- 2019 年，Docker 拆分公司，将企业业务出售给了 Mirantis。剩余的家底筹集了 3500 万美元的 A 轮融资，实际上重组为一家全新的初创公司
+- 如今（2022年），Docker 致力于为开发人员提供自动化工具，最近宣布年度经常性收入（ARR）已超过 5000 万美元
+
+我们需要知道的：
+
+- Google 最早开始大规模使用容器技术（Borg 系统，后来简化重构，以 K8S 开源）
+
+    ![](/image/borg-arch.png)
+
+- Linux 容器（LXC）技术主要两个内核特性组成：namespace & cgroup。namespace 最早是 2002 年在 2.4.19 内核中引入（mount 单元），用于实现**资源隔离**。cgroup 2000 年以前就在 google 使用，2006 年以后贡献到 Linux Kernel，用于实现**资源限制**，2008 年 LXC 技术基本完成
+- Docker 在 2013 年成立之后，对 LXC 进行封装，提供了极简的容器使用方案，几乎成为容器的代名词
+
+Docker Overview，参考：<https://docs.docker.com/engine/docker-overview>
+
+![](/image/docker-arch.png)
+
+![](/image/docker-undertech.png)
+
+Docker QuickStart，参考：<https://docs.docker.com/get-started>
+
+#### 2.1.2 Docker 和 K8S
+
+**K8S 1.24 开始放弃对 Docker 的支持，放弃的是什么？**
+
+![](/image/k8s-CRI-OCI-docker.png)
+
+K8S 和 Docker 有什么关系？参考：[Container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
+
+- Orchestration API -> Container API (cri-runtime) -> Kernel API(oci-runtime)
+
+**OCI 标准是什么**？：runC / Kata（ 及其前身 runV 和 Clear Containers ），gVisor，Rust railcar
+
+- 容器镜像的制作标准，即 ImageSpec。大致规定：容器镜像这个压缩了的文件夹里以 xxx 结构放 xxx 文件
+- 容器要需要能接收哪些指令，以及这些指令的行为，即 RuntimeSpec。这里面的大致内容就是“容器”要能够执行 "create"，"start"，"stop"，"delete" 这些命令，并且行为要规范。
+- Docker 则把 libcontainer 封装了一下，变成 runC 捐献出来作为 OCI 的参考实现。
+
+**CRI 标准是什么**？：Docker（ 借助 dockershim ），containerd（ 借助 CRI-containerd ），CRI-O，Frakti。是一组 gRPC 接口，[cri-api/pkg/apis/services.go](https://github.com/kubernetes/cri-api/blob/master/pkg/apis/services.go)：
+
+- 一套针对容器操作的接口，包括创建，启停容器等等
+- 一套针对镜像操作的接口，包括拉取镜像删除镜像等
+- 一套针对 PodSandbox（容器沙箱环境）的操作接口
+
+containerd-1.0，对 CRI 的适配通过一个单独的进程 CRI-containerd 来完成
+
+![](/image/k8s-containerd-1-0.png)
+
+containerd-1.1，把适配逻辑作为插件放进了 containerd 主进程中
+
+![](/image/k8s-containerd-1-1.png)
+
+CRI-O，更为专注的 cri-runtime，非常纯粹，兼容 CRI 和 OCI，做一个 Kubernetes 专用的运行时
+
+![](/image/k8s-cri-o-flow.png)
+
+![](/image/k8s-cri-o-arch-2.jpg)
+
+#### 2.1.3 Docker 部署和基本使用
+
+Docker shim 接口虽然在 K8S 1.24 中被弃用，但我们可以通过 docker 来理解 Linux 容器的一般操作和使用方法。这部分知识在 K8S 的其它 CRI 中是通用的。
+
+在 Ubuntu 18.04 / Ubuntu 20.04 / CentOS 7 上配置 Docker
+
+```bash
+# 更新依赖仓库
+apt-get update -y || yum update -y
+
+# 安装 Docker
+apt-get install docker.io -y || yum install docker -y
+systemctl enable docker --now
+
+# 检查 docker 服务状态
+systemctl status docker
+
+# ubuntu 中需要把 docker 的 cgroup driver 改成 systemd
+# !! centos 默认就是 systemd，不要修改这个文件，改了 docker 会起不来，保持 {} 就好
+vi /etc/docker/daemon.json
+
+{
+  "exec-opts": ["native.cgroupdriver=systemd"]
+}
+
+systemctl restart docker
+
+# run hello-world
+docker run hello-world
+```
+
+>Note：2021 年 7 月之后，ubuntu 环境 kubeadmin 默认都是 1.22+ 版本，因此需要将 docker 的 cgroup driver 改成 systemd（原来是 cgroup）。如果不改，后续 kubeadm init 时，会报错：`[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get "http://localhost:10248/healthz": dial tcp [::1]:10248: connect: connection refused.`
+>
+>检查 journalctl -x -u kubelet，可以看到：`Aug 07 15:10:45 ckalab2 kubelet[11394]: E0807 15:10:45.179485   11394 server.go:294] "Failed to run kubelet" err="failed to run Kubelet: misconfiguration: kubelet cgroup driver: \"systemd\" is different from docker cgroup driver: \"cgroupfs\""`
+>
+>看官方文档：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/>：`In v1.22, if the user is not setting the cgroupDriver field under KubeletConfiguration, kubeadm will default it to systemd.`
+>
+> 所以我们需要把 docker 的 cgroup driver 改成 systemd
+>
+> 修改步骤参考：<https://stackoverflow.com/questions/43794169/docker-change-cgroup-driver-to-systemd>
+>
+> 修改完成后，检查一下 docker cgroup，确保 docker cgroup 是 systemd 了：`sudo docker info | grep -i cgroup`
+
+如何创建一个镜像？如何启动和调试容器？[Github](https://github.com/99cloud/lab-openstack/tree/master/src/docker-quickstart) 或 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/tree/master/src/docker-quickstart)
+
+```bash
+mkdir ~/test
+cd ~/test
+
+wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstart/app.py
+wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstart/requirements.txt
+wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstart/Dockerfile
+
+# 如果是 CentOS 7.x 需要安装下 python3
+yum install python3 python3-pip
+
+# pip3 install -r requirements.txt
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+
+python3 app.py
+# * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
+# 此时可以从浏览器访问 http://<ip>/
+
+docker build --tag=friendlyhello .
+
+# 可以看一下本地镜像列表
+docker images
+
+docker rm testFlask
+docker run --rm -p 4000:80 --name=testFlask 99cloud/friendlyhello:3.9.6
+# * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
+# 此时可以从浏览器访问 http://<ip>:4000
+
+# 如果要跑在后台，可以加 -d 参数
+docker run -d --rm -p 4000:80 --name=testNew 99cloud/friendlyhello:3.9.6
+```
+
+```console
+# 进入容器调试
+$ docker exec -it testFlask /bin/bash
+root@4224b69e7ee3:/app# env
+HOSTNAME=4224b69e7ee3
+PWD=/app
+HOME=/root
+NAME=World
+...
+
+root@4224b69e7ee3:/app# ps -ef
+```
+
+```bash
+# 查看容器日志
+docker logs -f testFlask
+
+# 结束容器
+docker stop testFlask
+
+# 启动容器
+docker start testFlask
+
+# 从容器生成新的镜像
+docker stop testFlask
+docker commit testFlask test-new
+
+# 删除容器
+docker rm testFlask
+
+# 删除镜像
+docker rmi maodouzi/get-started:part2
+```
+
+#### 2.1.4 Docker 网络模型和 network namespace
+
+参考：<https://docs.docker.com/network/#network-drivers>，Docker 网络模型分为若干种，在生产环境中会被用到的主要是 bridge 和 host 模式。
+
+host 模式是容器和宿主机共享同一个 TCP/IP 协议栈（network namespace），容器的网络和宿主机网络不做隔离（只是网络不隔离，PID / IPC / MNT / UTS 还是 namespace 隔离的）
+
+bridge 模式下，容器网络和宿主机网络是通过 network namespace 隔离开的，然后再通过类似 NAT 或者 port-mapping 技术完成转发。
+
+因此，我们通过 bridge 模式来研究 network namespace 的底层逻辑。
+
+![](/image/bridge_network.jpeg)
+
+docker 容器实现没有把 network namespaces 放到标准路径 `/var/run/netns` 下，所以 `ip netns list` 命令看不到。但是可以看 `ll /proc/<pid>/ns`，两个进程的 namespaces id 相同说明在同一个 namespaces
+
+```console
+[root@cloud025 ns]# ll /proc/2179/ns/
+total 0
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 ipc -> ipc:[4026531839]
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 mnt -> mnt:[4026531840]
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 net -> net:[4026531956]
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 pid -> pid:[4026531836]
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 user -> user:[4026531837]
+lrwxrwxrwx 1 root root 0 Aug 10 11:58 uts -> uts:[4026531838]
+```
+
+做个软链接，就可以看到 netns 了
+
+```console
+[root@cloud025 ns]# docker ps
+CONTAINER ID        IMAGE                         COMMAND                  CREATED             STATUS              PORTS                  NAMES
+07297a3ac7ea        nginx:latest                  "/docker-entrypoin..."   29 minutes ago      Up 29 minutes       80/tcp                 devtest
+0935b08509a4        test-new                      "python app.py"          35 minutes ago      Up 35 minutes       0.0.0.0:5000->80/tcp   testNew
+c23c76dd779c        99cloud/friendlyhello:3.9.6   "python app.py"          37 minutes ago      Up 36 minutes       0.0.0.0:4000->80/tcp   testFlask
+
+[root@cloud025 ns]# docker inspect testFlask | grep -i pid
+            "Pid": 1159,
+            "PidMode": "",
+            "PidsLimit": 0,
+
+[root@cloud025 ns]# mkdir -p /var/run/netns
+
+[root@cloud025 ns]# ln -s /proc/1159/ns/net /var/run/netns/testFlask
+
+[root@cloud025 ns]# ip netns list
+testFlask (id: 0)
+devtest (id: 2)
+testNew (id: 1)
+```
+
+进入对应的 namespaces，看 ip，pod namespace 里虚拟网卡的 `link-netnsid` 始终等于 0
+
+```console
+[root@cloud025 ns]# ip netns exec testNew ip a
+...
+44: eth0@if45: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:ac:11:00:03 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 172.17.0.3/16 scope global eth0
+      valid_lft forever preferred_lft forever
+    inet6 fe80::42:acff:fe11:3/64 scope link
+      valid_lft forever preferred_lft forever
+```
+
+在 root namespaces 中 `ip a`，可以看到 `link-netnsid = 1`，1 是前面 `ip netns list` 里的 namespaces id
+
+```console
+[root@cloud025 ns]# ip a
+45: vethb6d08be@if44: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+    link/ether 0e:d9:14:d1:86:98 brd ff:ff:ff:ff:ff:ff link-netnsid 1
+    inet6 fe80::cd9:14ff:fed1:8698/64 scope link
+      valid_lft forever preferred_lft forever
+```
+
+这是一对 veth pair，看他们的序号和 if 可以发现
+
+看网桥，可以看到这个 root namespaces 的虚拟网卡绑在 docker0 网桥上。在 CentOS 上，需要安装一下：`yum install bridge-utils`
+
+```console
+[root@cloud025 ~]# brctl show
+bridge name	bridge id		STP enabled	interfaces
+docker0		8000.02428c25c112	no		vethb6d08be
+virbr0		8000.525400d583b9	yes		virbr0-nic
+```
+
+#### 2.1.5 尝试对虚拟网卡抓包，看进出容器的流量
+
+怎么对 pod 的网口抓包？
+
+```bash
+# 查看指定 pod 运行在那个 node 上
+kubectl describe pod <pod> -n <namespace>
+
+# 获得容器的 pid
+docker inspect -f {{.State.Pid}} <container>
+
+# 进入该容器的 network namespace
+nsenter --target <PID> -n
+
+# 使用 tcpdump 抓包，指定 eth0 网卡
+tcpdump -i eth0 tcp and port 80 -vvv
+
+# 或者抓包并导出到文件
+tcpdump -i eth0 -w ./out.cap
+
+# 退出 nsenter，要记得退出！！
+exit
+```
+
+然后用 wireshark 或者 netmon 打开，即可查看。
 
 ### 2.2 Containerd
 
