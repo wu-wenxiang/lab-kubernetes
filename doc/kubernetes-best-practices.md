@@ -50,9 +50,24 @@ grub2-set-default 0
 reboot
 ```
 
+重启之后，可以看到内核已经升级完成
+
+```console
+[root@lab-kubernetes ~]# uname -a
+Linux lab-kubernetes 5.4.196-1.el7.elrepo.x86_64 #1 SMP Tue May 24 12:49:20 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+```
+
 #### 1.1.2 Python 3.8
 
 Python 2 于 2020.01.01 结束支持，Python 3.6 于 2021.12 结束支持。
+
+如果已经安装了 python 3.6，先移除
+
+```bash
+yum remove python3
+```
+
+然后安装 python 3.8
 
 ```bash
 yum update -y
@@ -100,6 +115,13 @@ echo "export PATH=$PATH:/usr/local/git/bin" >> /etc/profile && source /etc/profi
 
 python3 -m pip install git-review
 echo "export PATH=$PATH:/opt/rh/rh-python38/root/usr/local/bin" >> /etc/profile && source /etc/profile
+```
+
+完成后，可以确认 git 升级到 2.x 版本
+
+```console
+[root@lab-kubernetes git-2.32.0]# git --version
+git version 2.32.0
 ```
 
 ### 1.2 Ubuntu LTS
@@ -362,7 +384,7 @@ wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstar
 wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstart/Dockerfile
 
 # 如果是 CentOS 7.x 需要安装下 python3
-yum install python3 python3-pip
+# yum install python3 python3-pip
 
 # pip3 install -r requirements.txt
 pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
