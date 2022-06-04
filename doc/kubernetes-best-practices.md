@@ -731,6 +731,11 @@ IMAGE               TAG                 IMAGE ID            SIZE
 CONTAINER           IMAGE               CREATED             STATE               NAME                ATTEMPT             POD ID
 ```
 
+综上：
+
+1. docker 构建在 containerd 之上，所以在生产环境中，我们可以同时拥有 containerd 和 docker，不干扰。
+1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（build / load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
+
 ##### 2.2.2.1 ctr
 
 ctr 命令会随着 containerd 服务一起安装。
