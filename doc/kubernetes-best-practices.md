@@ -1407,13 +1407,38 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 1. docker ps / ctr / nerdctl 看不到 crio 创建的容器
 1. crictl / podman / runc 可以看到 pause 容器和主容器
 
-### 2.4 Kata
+### 2.4 Kata 和它的朋友们
 
 [返回目录](#课程目录)
+
+容器毕竟还是共享内核的，安全性和隔离型对于想要实现多租户是不够。所以又出现了许多基于虚拟机隔离的方案出来。
+
+除 Kata 以外，还有 Frakti / gVisor 等
+
+- Frakti 提供了 hypervisor 级别的隔离性，提供的是内核级别的而非 Linux 命名空间级别的隔离：
+
+    *Frakti lefts Kubernetes run pods and containers directly inside hypervisors via runV. It is light weighted and portable, but can provide much stronger isolation with independent kernel than linux-namespace-based container runtimes.*
+- gVisor 是拦截了系统调用，用自己实现用户态的进程而非内核来处理系统调用
 
 ### 2.5 GPU
 
 [返回目录](#课程目录)
+
+参考：<https://developer.nvidia.com/blog/announcing-containerd-support-for-the-nvidia-gpu-operator/>
+
+Nvidia 官方提供的 containerd 支持步骤如下：
+
+1. 安装 NVIDIA 容器运行时（需要先安装 Nvidia 和 CUDA 驱动）
+2. 更新 containerd 配置文件.
+3. 让 containerd 配置文件生效（发送 SIGHUP）
+4. 跑 helm chart
+
+也可以参考这里的步骤：<https://icloudnative.io/posts/add-nvidia-gpu-support-to-k8s-with-containerd/>
+
+关于 GPU 的虚拟化：
+
+1. Nvidia 官方推荐 MIG：<https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html>
+1. 第四范式有一种基于 CUDA 的切分 GPU 方案，比 MIG 灵活，但不被 Nvidia 官方支持。
 
 ### 2.6 最佳实践
 
@@ -1423,6 +1448,9 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 1. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
 1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctr
 1. 和基础工具/服务（python/git）不一样，runc/containerd/docker 建议二进制部署，这样方便升级（和 bug 修复）。
+1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
+1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
+1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（遇到过性能问题） Nvidia 会说不支持。
 
 ## 3. K8S 生命周期管理
 
@@ -1431,6 +1459,16 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 ### 3.1 生命周期管理
 
 [返回目录](#课程目录)
+
+#### 3.1.1 KubeAdmin
+
+#### 3.1.2 Sealos
+
+#### 3.1.3 KubeKey
+
+#### 3.1.4 K0S
+
+#### 3.1.5 K3S & AutoK3S
 
 ### 3.2 版本升级
 
@@ -1443,6 +1481,12 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 ### 3.4 统一认证和鉴权
 
 [返回目录](#课程目录)
+
+#### 3.4.1 AutoK3S
+
+#### 3.4.2 Rancher
+
+#### 3.4.3 KubeSphere
 
 ### 3.5 监控、计量和告警
 
