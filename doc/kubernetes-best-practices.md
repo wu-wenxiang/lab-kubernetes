@@ -248,11 +248,11 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 
 emmmmm，得承认，麒麟在信创方面有一定优势。
 
-### 1.9 结论
+### 1.9 最佳实践
 
-1. 2023/06/30 之前，CentOS 7 没问题，稳定支持；但之后要选择 AlmaLinux 或者 Rocky Linux，二选一。生产环境中不要用 CentOS Stream。
-1. Ubuntu LTS（或者 Debian）也可以，持续升级就行
-1. 如果考虑信创，OpenEuler 对国产 ARM 服务器兼容性良好；如果政策有倾向性，那么麒麟系列、龙蜥看着选
+1. 如选用 CentOS 系列，**2023/06/30 之前 CentOS 7 没问题**（需要升级 linux kernel 和工具库，比如 python 3.8，git v2）；但之后要选择 AlmaLinux 或者 Rocky Linux，二选一，**2024/06/30 之前要完成生产环境 OS 升级**。不要使用 CentOS Stream。
+1. 如选用 Ubuntu 系列，Ubuntu LTS（或者 Debian）都可以，持续升级就行
+1. 如考虑信创，OpenEuler 对国产 ARM 服务器兼容性良好；如果政策有倾向性，那么麒麟系列、龙蜥对应考虑
 
 ## 2. 容器运行时
 
@@ -561,6 +561,8 @@ Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标�
 ![](/image/k8s-cri-docker.png)
 
 ![](/image/k8s-cri-containerd.png)
+
+![](/image/docker-and-kubernetes-use-containerd-2000-opt.png)
 
 生产环境中 Containerd 作为容器运行时应用最为广泛
 
