@@ -769,7 +769,7 @@ CONTAINER           IMAGE               CREATED             STATE               
 综上：
 
 1. docker 构建在 containerd 之上，所以在生产环境中，我们可以同时拥有 containerd 和 docker，不干扰。
-1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（build / load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
+1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
 1. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时**。
 
 ##### 2.2.2.2 ctr
@@ -1007,9 +1007,11 @@ ctr -n default i ls
 
 综上：
 
+1. containerd 可以有多个 namespaces，default/k8s.io/moby。这里的 namespace 不是 k8s 层面的，而是 containerd 用来隔离不同的 plugin 的。
+1. 通过 kubelet/crictl 启动的容器，ns 就是 k8s.io，通过 docker 启动的就是 moby。docker ps 是看不到 k8s.io 下的容器的。对于 containerd 而言， docker 和 kubelet 是两个不同的客户端。
 1. nerdctl 和 ctr 默认都是 default namespaces
-2. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces
-3. crictl 是 k8s.io namespace
+1. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces。
+1. podman 不和 containerd 打交道，拉取的镜像和启动的容器都与 containerd namespace 无关。
 
 ##### 2.2.2.4 podman
 
@@ -1341,6 +1343,69 @@ CRI 接口是：`unix:///var/run/crio/crio.sock`
 ![](/image/k8s-cri-o-arch-2.jpg)
 
 在同一个集群中，混用不同的 CRI 实验，参考：<https://gobomb.github.io/post/container-runtime-note/>
+
+安装 cri-o
+
+```bash
+yum install yum-utils
+yum-config-manager --add-repo=https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/
+yum install --nogpgcheck cri-o
+```
+
+修改 kubelet 启动参数（也可以写在 EnvironmentFile 指定的文件里）：
+
+```ini
+vim /lib/systemd/system/kubelet.service
+
+[Unit]
+......
+[Service]
+......
+ExecStart=/k8s/kubernetes/bin/kubelet $KUBELET_OPTS --container-runtime=remote --container-runtime-endpoint=/var/run/crio/crio.sock --cgroup-driver=systemd
+......
+
+[Install]
+.......
+```
+
+启动 crio：
+
+```bash
+systemctl start crio
+
+# 使用 crictl 查看版本
+crictl version
+
+# 重启 kubelet
+systemctl restart kubelet
+```
+
+测试：
+
+```console
+$ crictl -r /var/run/crio/crio.sock version
+Version:  0.1.0
+RuntimeName:  cri-o
+RuntimeVersion:  1.11.11-1.rhaos3.11.git474f73d.el7
+RuntimeApiVersion:  v1alpha1
+
+$ crictl -r /var/run/crio/crio.sock ps
+CONTAINER           IMAGE                                                                                               CREATED             STATE               NAME                ATTEMPT             POD ID
+fbe5b37ad3c47       docker.io/library/busybox@sha256:895ab622e92e18d6b461d671081757af7dbaa3b00e3e28e12505af7817f73649   About an hour ago   Running             busybox             0                   f9f42b5ae54c7
+
+$ docker ps
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+
+[root@node02 runc]# runc list
+ID                                                                 PID         STATUS      BUNDLE                                                                                                                 CREATED                          OWNER
+f9f42b5ae54c71180ab7eb1706205bba79597d019f1c3e22f5f68e0b0ae055a8   31252       running     /run/containers/storage/overlay-containers/f9f42b5ae54c71180ab7eb1706205bba79597d019f1c3e22f5f68e0b0ae055a8/userdata   2019-07-30T07:31:54.768990081Z   root
+fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       running     /run/containers/storage/overlay-containers/fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c/userdata   2019-07-30T07:34:15.524324699Z   root
+```
+
+综上：
+
+1. docker ps / ctr / nerdctl 看不到 crio 创建的容器
+1. crictl / podman / runc 可以看到 pause 容器和主容器
 
 ### 2.4 Kata
 
