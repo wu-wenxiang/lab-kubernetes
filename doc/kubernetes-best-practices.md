@@ -279,7 +279,7 @@ Docker 的历史
 
     ![](/image/borg-arch.png)
 
-- Linux 容器（LXC）技术主要两个内核特性组成：namespace & cgroup。namespace 最早是 2002 年在 2.4.19 内核中引入（mount 单元），用于实现**资源隔离**。cgroup 2000 年以前就在 google 使用，2006 年以后贡献到 Linux Kernel，用于实现**资源限制**，2008 年 LXC 技术基本完成
+- Linux 容器（LXC）技术主要两个内核特性组成：namespace & cgroup。namespace 最早是 2002 年在 2.4.19 内核中引入（mount 单元），用于实现**资源隔离**。cgroup 2000 年以前就在 google 使用，2006 年以后贡献到 Linux Kernel，用于实现**资源限制**，2008 年 LXC 技术基本完成。
 - Docker 在 2013 年成立之后，对 LXC 进行封装，提供了极简的容器使用方案，几乎成为容器的代名词
 
 Docker Overview，参考：<https://docs.docker.com/engine/docker-overview>
@@ -288,6 +288,8 @@ Docker Overview，参考：<https://docs.docker.com/engine/docker-overview>
 
 ![](/image/docker-undertech.png)
 
+UFS（union file system）用来支持对文件系统的修改分层
+
 Docker QuickStart，参考：<https://docs.docker.com/get-started>
 
 #### 2.1.2 Docker 和 K8S
@@ -295,6 +297,37 @@ Docker QuickStart，参考：<https://docs.docker.com/get-started>
 **K8S 1.24 开始放弃对 Docker 的支持，放弃的是什么？**
 
 ![](/image/k8s-CRI-OCI-docker.png)
+
+接口解释：
+
+1. `unix:///var/run/dockershim.sock`
+2. `unix:///var/run/docker.sock`
+3. `unix:///run/containerd/containerd.sock`
+
+Docker 18.x 以后的版本，会有 3 个组件：runC、containerd、dockerd。
+
+- Dockerd 是个守护进程，直接面向用户，用户使用的命令 docker 直接调用的后端就是 dockerd
+- Dockerd 不会直接使用 runc，而是去调用 containerd
+- containerd 会 fork 出一个单独子进程的 containerd-shim，使用 runc 将目标容器跑起来。
+- Kubelet 则是通过内置的 docker-shim 去调用 dockerd，或者直接通过 CRI 接口调用 containerd
+
+通过 ps -ef 可以看到几个进程之间的关系：
+
+```console
+[root@lab-kubernetes ~]# docker run -d nginx
+614b35ef3e2842cdc57bcb08c89df93533802d443065f8887c3951a601b738c2
+
+[root@lab-kubernetes ~]# docker run -d nginx
+62970cd2a51798b07c4f8ad6b42a19e72410aba7a2e6841c1c1606a35feedbee
+
+[root@lab-kubernetes ~]# ps -ef
+root     18442     1  0 00:44 ?        00:00:27 /usr/bin/containerd
+root     18452     1  0 00:44 ?        00:00:02 /usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
+root     20595     1  0 11:18 ?        00:00:00 /usr/bin/containerd-shim-runc-v2 -namespace moby -id 614b35ef3e2842cdc57bcb08c89df93533802d443065f8887c3951a601b738c2 -address /run/containerd/containerd.sock
+root     20615 20595  0 11:18 ?        00:00:00 nginx: master process nginx -g daemon off;
+root     20708     1  0 11:22 ?        00:00:00 /usr/bin/containerd-shim-runc-v2 -namespace moby -id 62970cd2a51798b07c4f8ad6b42a19e72410aba7a2e6841c1c1606a35feedbee -address /run/containerd/containerd.sock
+root     20728 20708  0 11:22 ?        00:00:00 nginx: master process nginx -g daemon off;
+```
 
 K8S 和 Docker 有什么关系？参考：[Container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
 
@@ -324,11 +357,11 @@ containerd-1.1，把适配逻辑作为插件放进了 containerd 主进程中
 
 ![](/image/k8s-containerd-1-1.png)
 
-CRI-O，更为专注的 cri-runtime，非常纯粹，兼容 CRI 和 OCI，做一个 Kubernetes 专用的运行时
+综上：
 
-![](/image/k8s-cri-o-flow.png)
-
-![](/image/k8s-cri-o-arch-2.jpg)
+1. 容器运行时是管理容器和容器镜像的程序。有两个标准，一个是 CRI，抽象了 kubelet 如何启动和管理容器；另一个是 OCI，抽象了怎么调用内核 API 来管理容器。标准实际上是定义了一系列接口，让上层应用与底层实现接耦。
+1. 实现 CRI 的 runtime 有 CRI-O、CRI-containred 等，CRI 的命令行客户端是 crictl。containerd 的客户端是 ctr。dockerd 的客户端是 docker。它们通过 unix sock 与对应的 daemon 交互。
+1. OCI 的默认实现是 runc。runc 是一个命令行工具，而不是一个 daemon。通过 runc 我们可以手动启动一个容器，也可以查看其他进程启动的容器。
 
 #### 2.1.3 Docker 部署和基本使用
 
@@ -737,16 +770,185 @@ CONTAINER           IMAGE               CREATED             STATE               
 
 1. docker 构建在 containerd 之上，所以在生产环境中，我们可以同时拥有 containerd 和 docker，不干扰。
 1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（build / load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
+1. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时**。
 
-##### 2.2.2.1 ctr
+##### 2.2.2.2 ctr
 
 ctr 命令会随着 containerd 服务一起安装。
+
+```bash
+ctr version
+
+# pull 镜像
+# 注意 ⚠️，这里要按 registry/orgnization/image:tag 写全，没有默认了
+ctr images pull docker.io/library/redis:alpine3.13
+
+# 查看镜像
+ctr i ls
+
+# 启动镜像
+ctr run -d docker.io/library/redis:alpine3.13 redis
+```
+
+查看容器，注意 ⚠️：
+
+- ctr 概念空间中，container 和 task 分离
+- container 是容器分配和附加资源的元数据对象，是静态内容
+- task 是系统上一个活动的、正在运行的进程
+- task 在每次运行后删除，而 container 可以被多次使用、更新和查询
+
+这和 docker 中 container 定义是不一样
+
+```console
+ctr container ls
+CONTAINER    IMAGE                                 RUNTIME
+redis        docker.io/library/redis:alpine3.13    io.containerd.runc.v2
+
+ctr task ls
+TASK     PID      STATUS
+redis    20808    RUNNING
+```
+
+进入到容器中执行 redis 命令
+
+```console
+ctr task exec -t --exec-id redis-sh redis sh
+/data # redis-cli
+127.0.0.1:6379> set k1 v1
+OK
+127.0.0.1:6379> get k1
+"v1"
+```
+
+注意 ⚠️：containerd 中存在 namespace 概念，这样可以将不同业务和应用进行隔离。例如 k8s 使用 containerd 和直接使用 ctr 创建的容器可以隔离开。
+
+```console
+$ ps -ef | grep runc | grep redis
+/usr/local/containerd/bin/containerd-shim-runc-v2 -namespace default -id redis -address /run/containerd/containerd.sock
+```
+
+查看一下当前的 namespace:
+
+```console
+$ ctr ns ls
+NAME    LABELS
+default
+k8s.io
+```
+
+不同 namespace 下 pull 的镜像也是隔离显示的，可以使用 -n 指定具体的 namespace：
+
+```bash
+ctr -n default i ls
+ctr -n k8s.io i ls
+```
+
+`crictl pull` 的镜像是在 `k8s.io` namespace 下，`docker pull` 的镜像归 docker 管，不归 containerd 管。
+
+```console
+$ crictl pull docker.io/library/redis:alpine3.13
+
+$ crictl images
+IMAGE                                       TAG                 IMAGE ID            SIZE
+docker.io/library/redis                     alpine3.13          554d20f203657       10.9MB
+```
+
+crictl 不能像 ctr 那样通过参数给定用户名和密码的方式从开启认证的私有仓库中 pull 镜像。需要对 containerd 进行配置。 containerd 提供的各种功能在其内部都是通过插件实现的，可以使用 `ctr plugins ls` 查看 containerd 的插件。
+
+```console
+[root@lab-kubernetes ~]# ctr plugin ls
+TYPE                                  ID                       PLATFORMS      STATUS
+io.containerd.content.v1              content                  -              ok
+io.containerd.snapshotter.v1          aufs                     linux/amd64    skip
+io.containerd.snapshotter.v1          btrfs                    linux/amd64    skip
+io.containerd.snapshotter.v1          devmapper                linux/amd64    error
+io.containerd.snapshotter.v1          native                   linux/amd64    ok
+io.containerd.snapshotter.v1          overlayfs                linux/amd64    ok
+io.containerd.snapshotter.v1          zfs                      linux/amd64    skip
+io.containerd.metadata.v1             bolt                     -              ok
+io.containerd.differ.v1               walking                  linux/amd64    ok
+io.containerd.event.v1                exchange                 -              ok
+io.containerd.gc.v1                   scheduler                -              ok
+io.containerd.service.v1              introspection-service    -              ok
+io.containerd.service.v1              containers-service       -              ok
+io.containerd.service.v1              content-service          -              ok
+io.containerd.service.v1              diff-service             -              ok
+io.containerd.service.v1              images-service           -              ok
+io.containerd.service.v1              leases-service           -              ok
+io.containerd.service.v1              namespaces-service       -              ok
+io.containerd.service.v1              snapshots-service        -              ok
+io.containerd.runtime.v1              linux                    linux/amd64    ok
+io.containerd.runtime.v2              task                     linux/amd64    ok
+io.containerd.monitor.v1              cgroups                  linux/amd64    ok
+io.containerd.service.v1              tasks-service            -              ok
+io.containerd.grpc.v1                 introspection            -              ok
+io.containerd.internal.v1             restart                  -              ok
+io.containerd.grpc.v1                 containers               -              ok
+io.containerd.grpc.v1                 content                  -              ok
+io.containerd.grpc.v1                 diff                     -              ok
+io.containerd.grpc.v1                 events                   -              ok
+io.containerd.grpc.v1                 healthcheck              -              ok
+io.containerd.grpc.v1                 images                   -              ok
+io.containerd.grpc.v1                 leases                   -              ok
+io.containerd.grpc.v1                 namespaces               -              ok
+io.containerd.internal.v1             opt                      -              ok
+io.containerd.grpc.v1                 snapshots                -              ok
+io.containerd.grpc.v1                 tasks                    -              ok
+io.containerd.grpc.v1                 version                  -              ok
+io.containerd.tracing.processor.v1    otlp                     -              skip
+io.containerd.internal.v1             tracing                  -              ok
+io.containerd.grpc.v1                 cri                      linux/amd64    ok
+```
+
+私有镜像仓库相关的配置在 cri 插件中，文档Configure Image Registry中包含了镜像仓库的配置。 关于私有仓库和认证信息配置示例如下，修改/etc/containerd/config.toml：
+
+```ini
+...
+[plugins]
+...
+  [plugins."io.containerd.grpc.v1.cri"]
+  ...
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
+          endpoint = ["https://registry-1.docker.io"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."harbor.my.org"]
+          endpoint = ["https://harbor.my.org"]
+      [plugins."io.containerd.grpc.v1.cri".registry.configs]
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.my.org".tls]
+          insecure_skip_verify = true
+        [plugins."io.containerd.grpc.v1.cri".registry.configs."harbor.my.org".auth]
+          username = "username"
+          password = "passwd"
+          # auth = "base64(username:password)"
+...
+```
+
+配置完成后重启 containerd，就可以使用 crictl pull 配置的私有仓库的镜像了：
+
+```bash
+crictl pull harbor.my.org/library/nginx:1.1
+```
+
+##### 2.2.2.3 nerdctr
+
+##### 2.2.2.4 podman
 
 #### 2.2.3 Containerd 手动部署
 
 ### 2.3 CRI-O
 
 [返回目录](#课程目录)
+
+CRI-O 是 RedHat 发布的容器运行时，旨在同时满足 CRI 标准和 OCI 标准。kubelet 通过 CRI 与 CRI-O 交互，CRI-O 通过 OCI 与 runC 交互，追求简单明了。
+
+![](/image/k8s-cri-o-flow.png)
+
+CRI 接口是：`unix:///var/run/crio/crio.sock`
+
+![](/image/k8s-cri-o-arch-2.jpg)
+
+在同一个集群中，混用不同的 CRI 实验，参考：<https://gobomb.github.io/post/container-runtime-note/>
 
 ### 2.4 Kata
 
@@ -755,6 +957,14 @@ ctr 命令会随着 containerd 服务一起安装。
 ### 2.5 GPU
 
 [返回目录](#课程目录)
+
+### 2.6 最佳实践
+
+1. 生产环境建议用 Containerd，稳定性、性能和生态支持都有明显优势
+1. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
+1. Docker CLI 可以用 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
+1. Image 相关的操作，可以用 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）
+1. 和基础工具/服务（python/git）不一样，runc/containerd/docker 建议二进制部署，这样方便升级（和 bug 修复）。
 
 ## 3. K8S 生命周期管理
 
