@@ -1008,10 +1008,47 @@ ctr -n default i ls
 综上：
 
 1. nerdctl 和 ctr 默认都是 default namespaces
-2. docker 是 moby namespace
+2. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces
 3. crictl 是 k8s.io namespace
 
 ##### 2.2.2.4 podman
+
+podman 是 CRI-O 项目分裂出来的，由 redhat 发起。
+
+参考：<https://github.com/containers/podman>，podman 致力于创造一个用户体验类似 docker，但没有 dockerd daemon 服务的工具。
+
+参考：<https://podman.io/getting-started/>
+
+```bash
+yum install podman
+
+podman pull docker.io/library/httpd
+podman images
+
+podman run -dt -p 8080:80/tcp docker.io/library/httpd
+```
+
+```console
+[root@lab-kubernetes ~]# podman run -dt -p 8080:80/tcp docker.io/library/httpd
+Trying to pull docker.io/library/httpd...
+439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04
+
+[root@lab-kubernetes ~]# ps -ef | grep httpd
+root     22267 22256  0 17:01 pts/0    00:00:00 httpd -DFOREGROUND
+33       22278 22267  0 17:01 pts/0    00:00:00 httpd -DFOREGROUND
+33       22279 22267  0 17:01 pts/0    00:00:00 httpd -DFOREGROUND
+33       22280 22267  0 17:01 pts/0    00:00:00 httpd -DFOREGROUND
+root     22256     1  0 17:01 ?        00:00:00 /usr/bin/conmon --api-version 1 -s -c 439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04 -u 439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04 -r /usr/bin/runc -b /var/lib/containers/storage/overlay-containers/439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04/userdata -p /var/run/containers/storage/overlay-containers/439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04/userdata/pidfile -l k8s-file:/var/lib/containers/storage/overlay-containers/439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04/userdata/ctr.log --exit-dir /var/run/libpod/exits --socket-dir-path /var/run/libpod/socket --log-level error --runtime-arg --log-format=json --runtime-arg --log --runtime-arg=/var/run/containers/storage/overlay-containers/439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04/userdata/oci-log -t --conmon-pidfile /var/run/containers/storage/overlay-containers/439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04/userdata/conmon.pid --exit-command /usr/bin/podman --exit-command-arg --root --exit-command-arg /var/lib/containers/storage --exit-command-arg --runroot --exit-command-arg /var/run/containers/storage --exit-command-arg --log-level --exit-command-arg error --exit-command-arg --cgroup-manager --exit-command-arg systemd --exit-command-arg --tmpdir --exit-command-arg /var/run/libpod --exit-command-arg --runtime --exit-command-arg runc --exit-command-arg --storage-driver --exit-command-arg overlay --exit-command-arg --events-backend --exit-command-arg journald --exit-command-arg container --exit-command-arg cleanup --exit-command-arg 439e9d1532d0578af0d3d80e9b06f728ed06389a6d878430b8bee71aa74f5d04
+```
+
+可以看到：
+
+- podman 有个称之为 conmon 的守护进程，它是各个容器进程的父进程，每个容器各有一个，conmon 的父进程是 1 号进程。podman 中的 conmon 相当于 docker/containerd 中的 containerd-shim。
+
+podman 相比较 docker 的优势：
+
+- docker 在实现 CRI 时，需要一个守护进程（dockerd daemon），该进程需要以 root 运行（有安全隐患）。而 podman 不需要守护程序，因此也不需要 root 用户运行。
+- 在 docker 的运行体系中，需要多个 daemon 才能调用到 OCI 的实现 RunC（dockerd 调用 containerd，containerd 调用containerd-shim，然后才能调用 runC）podman 直接调用 OCI,runtime（runC），通过 conmon 作为容器进程的管理工具，不需要dockerd 这种以 root 身份运行的守护进程。
 
 #### 2.2.3 Containerd 手动部署
 
@@ -1041,8 +1078,9 @@ CRI 接口是：`unix:///var/run/crio/crio.sock`
 
 1. 生产环境建议用 Containerd，稳定性、性能和生态支持都有明显优势
 1. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
-1. Docker CLI 可以用 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
-1. Image 相关的操作，可以用 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）
+1. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
+1. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
+1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctr
 1. 和基础工具/服务（python/git）不一样，runc/containerd/docker 建议二进制部署，这样方便升级（和 bug 修复）。
 
 ## 3. K8S 生命周期管理
