@@ -843,7 +843,7 @@ ctr -n default i ls
 ctr -n k8s.io i ls
 ```
 
-`crictl pull` 的镜像是在 `k8s.io` namespace 下，`docker pull` 的镜像归 docker 管，不归 containerd 管。
+`crictl pull` 的镜像是在 `k8s.io` namespace 下，`docker pull` 的镜像不在 moby namespaces（容器在）。
 
 ```console
 $ crictl pull docker.io/library/redis:alpine3.13
@@ -931,6 +931,85 @@ crictl pull harbor.my.org/library/nginx:1.1
 ```
 
 ##### 2.2.2.3 nerdctr
+
+参考：<https://github.com/containerd/nerdctl>
+
+nerdctr 是一个非常棒的客户端：
+
+- 保持了和 Docker 一致的使用习惯
+- 甚至兼容 Docker-Compose
+- 与 docker / ctr / crictl 相比，它又有独到之处
+
+参考：<https://github.com/containerd/nerdctl#features-present-in-nerdctl-but-not-present-in-docker>
+
+- [Lazy-pulling is a technique to running containers before completion of pulling the images.](https://github.com/containerd/nerdctl/blob/master/docs/stargz.md)
+- [Image encryption and decryption](https://github.com/containerd/nerdctl/blob/master/docs/ocicrypt.md)：This command only encrypts image layers, but does NOT encrypt container configuration such as Env and Cmd
+- [Distribute Container Images on IPFS](https://github.com/containerd/nerdctl/blob/master/docs/ipfs.md)
+
+安装使用：
+
+```bash
+wget https://github.com/containerd/nerdctl/releases/download/v0.20.0/nerdctl-0.20.0-linux-amd64.tar.gz
+
+tar zxvf nerdctl-0.20.0-linux-amd64.tar.gz -C /usr/bin/
+nerdctl run -d --name nginx -p 80:80 nginx:alpine
+ctr -n default i ls
+```
+
+可以看到：
+
+1. 启动容器带 -p 需要 CNI 支持
+
+    ```console
+    [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+    docker.io/library/nginx:alpine:
+    FATA[0013] needs CNI plugin &{"bridge" "nerdctl0" %!q(bool=true) %!q(bool=false) %!q(bool=false) %!q(bool=true) '\x00' %!q(bool=true) %!q(bool=false) '\x00' map["ranges":[[map["gateway":"10.4.0.1" "subnet":"10.4.0.0/24"]]] "routes":[map["dst":"0.0.0.0/0"]] "type":"host-local"]} to be installed in CNI_PATH ("/opt/cni/bin"), see https://github.com/containernetworking/plugins/releases: exec: "/opt/cni/bin/bridge": stat /opt/cni/bin/bridge: no such file or directory
+    ```
+
+    安装一下 cni 就好
+
+    ```bash
+    mkdir -p /opt/cni/bin/
+    cd /opt/cni/bin/
+    wget https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
+    tar zxvf cni-plugins-linux-amd64-v1.1.1.tgz
+    ```
+
+    然后再加 -p 运行命令就不会报错了
+
+    ```console
+    [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+    5bc1f7fcae4e4891c7e57626286fbed1465739f2b28270ec90c88a82e1106a64
+
+    [root@lab-kubernetes tmp]# docker ps
+    CONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS       PORTS     NAMES
+    62970cd2a517   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    admiring_yalow
+    614b35ef3e28   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    fervent_ardinghelli
+
+    [root@lab-kubernetes tmp]# docker rm -f 62970cd2a517 614b35ef3e28
+    62970cd2a517
+    614b35ef3e28
+
+    [root@lab-kubernetes tmp]# docker ps
+    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+
+    [root@lab-kubernetes tmp]# nerdctl ps -a
+    CONTAINER ID    IMAGE                             COMMAND                   CREATED           STATUS    PORTS                 NAMES
+    5bc1f7fcae4e    docker.io/library/nginx:alpine    "/docker-entrypoint.…"    38 seconds ago    Up        0.0.0.0:80->80/tcp    nginx
+    ```
+
+1. nerdctl pull 的镜像在 default namespace 下
+
+    ```
+    [root@lab-kubernetes tmp]# ctr -n default i ls | grep nginx
+    docker.io/library/nginx:alpine       application/vnd.docker.distribution.manifest.list.v2+json sha256:a74534e76ee1121d418fa7394ca930eb67440deda413848bc67c68138535b989 9.7 MiB  linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
+    ```
+
+综上：
+
+1. nerdctl 和 ctr 默认都是 default namespaces
+2. docker 是 moby namespace
+3. crictl 是 k8s.io namespace
 
 ##### 2.2.2.4 podman
 
