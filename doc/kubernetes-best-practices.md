@@ -1080,7 +1080,7 @@ user.max_user_namespaces=28633
 EOF
 sysctl -p /etc/sysctl.d/99-kubernetes-cri.conf
 
-# 高内核版本 nf_conntrack_ipv4 / 低内核版本 nf_conntrack
+# 低内核版本 nf_conntrack_ipv4 / 高内核版本（4.x+） nf_conntrack
 cat > /etc/sysconfig/modules/ipvs.modules <<EOF
 #!/bin/bash
 modprobe -- ip_vs
