@@ -1052,6 +1052,282 @@ podman 相比较 docker 的优势：
 
 #### 2.2.3 Containerd 手动部署
 
+先移除之前安装的 containerd / runc / docker
+
+```bash
+yum remove runc -y
+```
+
+部署 Containerd
+
+```bash
+# 配置 containerd 所需 kernel module
+cat << EOF > /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+# 加载 kernel module
+modprobe overlay
+modprobe br_netfilter
+
+# 修改内核参数
+cat << EOF > /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+user.max_user_namespaces=28633
+EOF
+sysctl -p /etc/sysctl.d/99-kubernetes-cri.conf
+
+# 高内核版本 nf_conntrack_ipv4 / 低内核版本 nf_conntrack
+cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack
+EOF
+chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep -e ip_vs -e nf_conntrack
+
+yum install -y ipset ipvsadm
+
+# 下载和安装 containerd
+wget https://github.com/containerd/containerd/releases/download/v1.6.5/cri-containerd-cni-1.6.5-linux-amd64.tar.gz
+tar -zxvf cri-containerd-cni-1.6.5-linux-amd64.tar.gz -C /
+```
+
+containerd 压缩包中包含了 crictl/ctr 命令行，cni，runc 和 containerd 自身服务。
+
+```console
+[root@lab-kubernetes tmp]# tar -zxvf cri-containerd-cni-1.6.5-linux-amd64.tar.gz -C /
+etc/
+etc/cni/
+etc/cni/net.d/
+etc/cni/net.d/10-containerd-net.conflist
+etc/crictl.yaml
+etc/systemd/
+etc/systemd/system/
+etc/systemd/system/containerd.service
+usr/
+usr/local/
+usr/local/sbin/
+usr/local/sbin/runc
+usr/local/bin/
+usr/local/bin/containerd-shim
+usr/local/bin/containerd
+usr/local/bin/critest
+usr/local/bin/crictl
+usr/local/bin/containerd-shim-runc-v1
+usr/local/bin/containerd-stress
+usr/local/bin/containerd-shim-runc-v2
+usr/local/bin/ctd-decoder
+usr/local/bin/ctr
+opt/
+opt/cni/
+opt/cni/bin/
+opt/cni/bin/static
+opt/cni/bin/vlan
+opt/cni/bin/bandwidth
+opt/cni/bin/portmap
+opt/cni/bin/ipvlan
+opt/cni/bin/firewall
+opt/cni/bin/macvlan
+opt/cni/bin/dhcp
+opt/cni/bin/ptp
+opt/cni/bin/sbr
+opt/cni/bin/vrf
+opt/cni/bin/loopback
+opt/cni/bin/host-device
+opt/cni/bin/tuning
+opt/cni/bin/bridge
+opt/cni/bin/host-local
+opt/containerd/
+opt/containerd/cluster/
+opt/containerd/cluster/gce/
+opt/containerd/cluster/gce/cloud-init/
+opt/containerd/cluster/gce/cloud-init/node.yaml
+opt/containerd/cluster/gce/cloud-init/master.yaml
+opt/containerd/cluster/gce/configure.sh
+opt/containerd/cluster/gce/cni.template
+opt/containerd/cluster/gce/env
+opt/containerd/cluster/version
+```
+
+```bash
+# cri-containerd-cni-1.6.5-linux-amd64.tar.gz 包含的 runc 动态链接库有一些 bug，要替换 containerd 中 runc 来修复
+wget https://github.com/opencontainers/runc/releases/download/v1.1.0-rc.1/runc.amd64
+chmod +x runc.amd64
+cp runc.amd64 /usr/local/sbin/runc
+
+# 生成 containerd 配置文件
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+```
+
+修改 /etc/containerd/config.toml
+
+```ini
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+   ...
+  [plugins."io.containerd.grpc.v1.cri"]
+    sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.6"
+   ...
+```
+
+```bash
+# 然后启动 containerd
+systemctl enable containerd --now
+
+# 检查 containerd 是否运行正常
+ctr version
+ctr plugin ls
+crictl version
+```
+
+然后按需部署 docker
+
+```bash
+wget https://download.docker.com/linux/static/stable/x86_64/docker-20.10.9.tgz
+
+tar -xvf docker-20.10.9.tgz
+```
+
+docker 包括如下二进制文件
+
+```console
+[root@lab-kubernetes tmp]# tar -xvf docker-20.10.9.tgz
+docker/
+docker/containerd-shim-runc-v2
+docker/dockerd
+docker/docker-proxy
+docker/ctr
+docker/docker
+docker/runc
+docker/containerd-shim
+docker/docker-init
+docker/containerd
+```
+
+安装和部署 docker
+
+```bash
+mv docker/docker* /usr/bin
+
+cat <<EOF > /usr/lib/systemd/system/docker.service
+[Unit]
+Description=Docker Application Container Engine
+Documentation=https://docs.docker.com
+After=network-online.target firewalld.service containerd.service
+Wants=network-online.target
+Requires=containerd.service
+
+[Service]
+Type=notify
+# the default is not to use systemd for cgroups because the delegate issues still
+# exists and systemd currently does not support the cgroup feature set required
+# for containers run by docker
+ExecStart=/usr/bin/dockerd --containerd /run/containerd/containerd.sock --cri-containerd
+ExecReload=/bin/kill -s HUP $MAINPID
+TimeoutSec=0
+RestartSec=2
+Restart=always
+
+# Note that StartLimit* options were moved from "Service" to "Unit" in systemd 229.
+# Both the old, and new location are accepted by systemd 229 and up, so using the old location
+# to make them work for either version of systemd.
+StartLimitBurst=3
+
+# Note that StartLimitInterval was renamed to StartLimitIntervalSec in systemd 230.
+# Both the old, and new name are accepted by systemd 230 and up, so using the old name to make
+# this option work for either version of systemd.
+StartLimitInterval=60s
+
+# Having non-zero Limit*s causes performance problems due to accounting overhead
+# in the kernel. We recommend using cgroups to do container-local accounting.
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+
+# Comment TasksMax if your systemd version does not support it.
+# Only systemd 226 and above support this option.
+TasksMax=infinity
+
+# set delegate yes so that systemd does not reset the cgroups of docker containers
+Delegate=yes
+
+# kill only the docker process, not all processes in the cgroup
+KillMode=process
+OOMScoreAdjust=-500
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload && systemctl start docker
+```
+
+检查安装情况
+
+```console
+[root@lab-kubernetes tmp]# docker run hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+
+[root@lab-kubernetes tmp]# docker version
+Client:
+ Version:           20.10.9
+ API version:       1.41
+ Go version:        go1.16.8
+ Git commit:        c2ea9bc
+ Built:             Mon Oct  4 16:03:22 2021
+ OS/Arch:           linux/amd64
+ Context:           default
+ Experimental:      true
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          20.10.9
+  API version:      1.41 (minimum version 1.12)
+  Go version:       go1.16.8
+  Git commit:       79ea9d3
+  Built:            Mon Oct  4 16:07:30 2021
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v1.6.5
+  GitCommit:        96df0994faabc1944fc614e52b0b3c6feb609a57
+ runc:
+  Version:          1.1.0-rc.1
+  GitCommit:        v1.1.0-rc.1-0-g55df1fc4
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+```
+
 ### 2.3 CRI-O
 
 [返回目录](#课程目录)
