@@ -1430,6 +1430,29 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
     *Frakti lefts Kubernetes run pods and containers directly inside hypervisors via runV. It is light weighted and portable, but can provide much stronger isolation with independent kernel than linux-namespace-based container runtimes.*
 - gVisor 是拦截了系统调用，用自己实现用户态的进程而非内核来处理系统调用
 
+    运行沙箱容器时，给出了支持安全沙箱容器运行时 handler runsc，我们需要创建一个 RuntimeClass 并在 pod spec 里指定是用该 RuntimeClass
+
+    ```yaml
+    apiVersion: node.k8s.io/v1beta1
+    kind: RuntimeClass
+    metadata:
+    name: untrusted
+    handler: runsc
+    ```
+
+    这里 runsc 时 gvisor 的 "runc"
+
+    还需要修改 deployment 的 pod template
+
+    ```yaml
+        spec:
+        runtimeClassName: untrusted
+        containers:
+        - image: vicuu/nginx:host
+            imagePullPolicy: IfNotPresent
+            name: nginx-host
+    ```
+
 ### 2.5 GPU
 
 [返回目录](#课程目录)
@@ -1461,6 +1484,8 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
 1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
 1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者 Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
+1. ECI 解决方案中，Kata 相对成熟，可以应用于 OpenStack Zun 或者 K8S。
+1. GPU 容器方案，建议选 Nvidia 的 MIG 方法，要注意区分不同的 GPU 类型，推理或者训练。
 
 ## 3. K8S 生命周期管理
 
@@ -2131,6 +2156,14 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 ### 3.6 日志管理
 
 [返回目录](#课程目录)
+
+### 3.7 最佳实践
+
+1. 生产环境中：推荐 kubeadm，K8S + Kubeadm + Calico + KubeSphere
+1. 边缘环境：推荐 K3S + AutoK3S + Rancher
+1. KubeKey / Kubeasz / K0S 各有优势，但需要学习和深入理解（Debug）不同的工具和技术栈
+1. Kubeadm 有良好稳定可靠的升级方案、集群的备份恢复方案、以及 Master 0 节点的备份恢复方案
+1. KubeSphere 能良好地纳管（统一管理、认证健全、监控计量、跨集群调度）K8S；而 Rancher 可以对 K3S 较好地统一管理。
 
 ## 4. 存储管理
 
@@ -2852,6 +2885,12 @@ VolumeSnapshotContent 是 cluster 级别
 
 1. create Snapshot（会自动生成 SnapshotContent 和 volumeHandle）
 2. create new SnapshotContent（根据 volumeHandle）
+
+    注意，创建时需要带两条注解，参考：<https://github.com/kubernetes-csi/external-snapshotter/issues/251>，否则删除新创建的 pvc 时，会 hang 住
+
+    - `snapshot.storage.kubernetes.io/deletion-secret-namespace: default`
+    - `snapshot.storage.kubernetes.io/deletion-secret-name: csi-rbd-secret`
+
 3. create Snapshot in other namespace（根据新的 SnapshotContent）
 4. create pvc by snapshot（根据新的 snapshot）
 
@@ -2860,6 +2899,15 @@ VolumeSnapshotContent 是 cluster 级别
 ### 4.5 Local 和动态分配
 
 [返回目录](#课程目录)
+
+### 4.6 最佳实践
+
+1. K8S 上的存储一般用商用 NAS（协议用 NFS）或者 CephRBD，相对成熟可靠。尽量不要用 CephFS（生产环境中存在丢数据风险）。
+1. NFS 对接时，要考虑版本，v3 或 v4，Netapps 对接错版本会存在访问权限的问题
+1. CephRBD 需要选用 N 以上版本，才支持 CSI 的快照等高级特性
+1. PVC 复制可以借用 Snapshot，方便且快
+1. Local 存在丢数据风险，需要在应用层做数据可靠性保重
+1. DynamicLocal 在 K3S 环境生产级可用
 
 ## 5. 网络管理
 
@@ -2884,6 +2932,14 @@ VolumeSnapshotContent 是 cluster 级别
 ### 5.5 物理网卡加速
 
 [返回目录](#课程目录)
+
+### 5.6 最佳实践
+
+1. 推荐 Calico，需要追求性能可以用 BGP 模式
+1. 如果是 IPIP/vxlan 模式，需要考虑 MTU
+1. 只有网元虚拟化，或者 ECS 场景，才推荐用 Multus 和 KubeOVN
+1. DPDK 取决于 CNI 支持，比如 ovs-dpdk
+1. 物理网卡加速取决于网卡硬件和驱动支持
 
 ## 6. 安全相关
 
@@ -2912,3 +2968,5 @@ VolumeSnapshotContent 是 cluster 级别
 ### 6.6 镜像准入检查
 
 [返回目录](#课程目录)
+
+### 6.7 最佳实践
