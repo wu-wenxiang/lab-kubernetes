@@ -1974,6 +1974,8 @@ KillMode=process
 WantedBy=multi-user.target
 ```
 
+#### 3.1.6 AutoK3S
+
 ### 3.2 版本升级
 
 [返回目录](#课程目录)
@@ -2116,11 +2118,11 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 
 [返回目录](#课程目录)
 
-#### 3.4.1 AutoK3S
+#### 3.4.1 KubeSphere
 
-#### 3.4.2 Rancher
+参考 <https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/>
 
-#### 3.4.3 KubeSphere
+准备检查：<https://kubesphere.io/docs/installing-on-kubernetes/introduction/prerequisites/>
 
 ### 3.5 监控、计量和告警
 
@@ -2852,23 +2854,19 @@ rbd0 251:0    0    1G  0 disk /var/lib/www/html
 
 [返回目录](#课程目录)
 
-### 5.2 对接 Flannel
+### 5.2 对接 Calico
 
 [返回目录](#课程目录)
 
-### 5.3 对接 Calico
+### 5.3 对接 OVN
 
 [返回目录](#课程目录)
 
-### 5.4 对接 OVN
+### 5.4 多网络平面
 
 [返回目录](#课程目录)
 
-### 5.5 多网络平面
-
-[返回目录](#课程目录)
-
-### 5.6 物理网卡加速
+### 5.5 物理网卡加速
 
 [返回目录](#课程目录)
 
