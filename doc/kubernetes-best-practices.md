@@ -1636,6 +1636,12 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示 Kubelet 对接不同 CRI 时的情况。
 
+##### 3.1.1.3 删除 K8S
+
+参考：<https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-reset/>
+
+`kubectl reset -f`
+
 #### 3.1.2 Sealos
 
 #### 3.1.3 KubeKey
@@ -1972,6 +1978,91 @@ WantedBy=multi-user.target
 
 [返回目录](#课程目录)
 
+参考：<https://v1-23.docs.kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/>
+
+#### 3.2.1 Ubuntu 案例
+
+```bash
+alias k=kubectl
+
+k drain cluster3-master1 --ignore-daemonsets
+apt-mark unhold kubeadm
+apt-mark hold kubectl kubelet
+apt install kubeadm=1.23.1-00
+apt-mark hold kubeadm
+
+kubeadm upgrade plan
+kubeadm upgrade apply v1.23.1
+
+apt update
+apt-mark unhold kubelet kubectl
+apt install kubelet=1.23.1-00 kubectl=1.23.1-00
+apt-mark hold kubelet kubectl
+service kubelet restart
+service kubelet status
+kubectl get node
+
+k uncordon cluster3-master1
+
+k drain cluster3-worker1 --ignore-daemonsets
+
+apt update
+apt-mark unhold kubeadm
+apt-mark hold kubectl kubelet
+apt install kubeadm=1.23.1-00
+apt-mark hold kubeadm
+kubeadm upgrade node
+
+apt-mark unhold kubectl kubelet
+apt install kubelet=1.23.1-00 kubectl=1.23.1-00
+service kubelet restart
+service kubelet status
+k get node
+k uncordon cluster3-worker1
+```
+
+#### 3.2.2 CentOS 案例
+
+先升级 Master 节点
+
+```bash
+yum list --showduplicates kubeadm --disableexcludes=kubernetes
+# find the latest 1.23 version in the list
+# it should look like 1.23.x-0, where x is the latest patch
+
+# replace x in 1.23.x-0 with the latest patch version
+yum install -y kubeadm-1.23.x-0 --disableexcludes=kubernetes
+
+# Verify that the download works and has the expected version:
+kubeadm version
+
+# Verify the upgrade plan:
+kubeadm upgrade plan
+
+# replace x with the patch version you picked for this upgrade
+sudo kubeadm upgrade apply v1.23.x
+
+# Same as the first control plane node but use:
+sudo kubeadm upgrade node
+# instead of: sudo kubeadm upgrade apply
+# Also calling "kubeadm upgrade plan" and upgrading the CNI provider plugin is no longer needed.
+
+# replace <node-to-drain> with the name of your node you are draining
+kubectl drain <node-to-drain> --ignore-daemonsets
+
+# replace x in 1.23.x-0 with the latest patch version
+yum install -y kubelet-1.23.x-0 kubectl-1.23.x-0 --disableexcludes=kubernetes
+
+# Restart the kubelet:
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+
+# replace <node-to-drain> with the name of your node
+kubectl uncordon <node-to-drain>
+```
+
+再升级 Worker 节点，参考 <https://v1-23.docs.kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#upgrade-worker-nodes>
+
 ### 3.3 迁移和纳管
 
 [返回目录](#课程目录)
@@ -2269,7 +2360,7 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
     kubectl patch storageclass nfs -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
     ```
 
-### 4.2.3 测试
+#### 4.2.3 测试
 
 1. 创建 pvc.yaml 文件
 
