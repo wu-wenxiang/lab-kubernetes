@@ -2842,6 +2842,21 @@ rbd0 251:0    0    1G  0 disk /var/lib/www/html
 
 [返回目录](#课程目录)
 
+PVC 是不可以跨 namespace 复制的。参考：<https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/>
+
+*You can only clone a PVC when it exists in the same namespace as the destination PVC (source and destination must be in the same namespace).*
+
+可以借用 snapshot 来完成跨 namespace 复制 PVC，参考：<https://v1-20.docs.kubernetes.io/docs/concepts/storage/volume-snapshots/>
+
+VolumeSnapshotContent 是 cluster 级别
+
+1. create Snapshot（会自动生成 SnapshotContent 和 volumeHandle）
+2. create new SnapshotContent（根据 volumeHandle）
+3. create Snapshot in other namespace（根据新的 SnapshotContent）
+4. create pvc by snapshot（根据新的 snapshot）
+
+底层基于快照，在 Ceph 上飞快（copy on write）
+
 ### 4.5 Local 和动态分配
 
 [返回目录](#课程目录)
