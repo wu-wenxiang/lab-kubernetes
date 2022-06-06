@@ -1157,8 +1157,11 @@ opt/containerd/cluster/gce/env
 opt/containerd/cluster/version
 ```
 
+`cri-containerd-cni-1.6.5-linux-amd64.tar.gz` 包含的 runc 动态链接库与 CentOS 7 有兼容性问题。运行 runc 的时候，会遇到报错：`runc: undefined symbol: seccomp_notify_respond`
+
+类似这样的 bug 我们可以用 hotfix 来修复（直接下载更新版本的 runc，或者自己编译 hotfix 的 runc）。
+
 ```bash
-# cri-containerd-cni-1.6.5-linux-amd64.tar.gz 包含的 runc 动态链接库有一些 bug，要替换 containerd 中 runc 来修复
 wget https://github.com/opencontainers/runc/releases/download/v1.1.0-rc.1/runc.amd64
 chmod +x runc.amd64
 cp runc.amd64 /usr/local/sbin/runc
@@ -1411,7 +1414,14 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 
 [返回目录](#课程目录)
 
-容器毕竟还是共享内核的，安全性和隔离型对于想要实现多租户是不够。所以又出现了许多基于虚拟机隔离的方案出来。
+容器毕竟还是共享内核的（容器的天然不安全与天然安全），安全性和隔离型对于想要实现多租户是不够。所以又出现了许多基于虚拟机隔离的方案出来。
+
+- [Kata Container](https://katacontainers.io/learn/)
+- [Kata PDF](https://katacontainers.io/collateral/kata-containers-1pager.pdf)
+
+![](/image/katacontainers-traditionalvskata-diagram.jpg)
+
+![](/image/katacontainers-architecture-diagram.jpg)
 
 除 Kata 以外，还有 Frakti / gVisor 等
 
@@ -1438,7 +1448,7 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 关于 GPU 的虚拟化：
 
 1. Nvidia 官方推荐 MIG：<https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html>
-1. 第四范式有一种基于 CUDA 的切分 GPU 方案，比 MIG 灵活，但不被 Nvidia 官方支持。
+1. 第四范式有一种基于 CUDA 的切分 GPU 方案，比 MIG 灵活，但不被 Nvidia 官方支持。参考：<https://github.com/4paradigm/k8s-device-plugin>
 
 ### 2.6 最佳实践
 
@@ -1450,7 +1460,7 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 1. 和基础工具/服务（python/git）不一样，runc/containerd/docker 建议二进制部署，这样方便升级（和 bug 修复）。
 1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
 1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
-1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（遇到过性能问题） Nvidia 会说不支持。
+1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者 Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
 
 ## 3. K8S 生命周期管理
 
