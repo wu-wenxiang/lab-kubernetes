@@ -1682,9 +1682,699 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 [返回目录](#课程目录)
 
+#### 4.2.1 搭建 NFS Server
+
+1. 准备好 NFS server 机器（另开一台 CentOS 7.9，单独配一块数据盘），机器规格按需指定。最好挂载一块单独的磁盘。
+1. 保证需要使用 NFS 存储的客户端机器与 NFS server 机器的网络互通性
+1. 部署步骤
+    1. 下载相关包，并启动相关服务
+
+        ```bash
+        apt-get install nfs-common -y || yum install nfs-utils -y
+        ```
+
+    1. 创建 NFS 数据路径
+
+        ```bash
+        mkdir -p /nfs/data
+        chmod -R 777 /nfs/data
+        ```
+
+    1. 如果有额外挂单独的数据盘给 NFS 用，需要格式化这块磁盘并挂载，比如 vdb。如果没有额外挂盘请忽略这一步
+
+        ```bash
+        mkfs.xfs /dev/vdb
+        mount /dev/vdb /nfs/data
+        echo "/dev/vdb /nfs/data xfs defaults 0 0" >> /etc/fstab
+        ```
+
+    1. 编辑 NFS 配置文件
+
+        ```bash
+        # echo "/nfs/data *(rw,no_root_squash,sync)" > /etc/exports
+        echo "/nfs/data *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)" > /etc/exports
+        # 首次登入Internal error occurred: account is not active 的问题，https://kubesphere.com.cn/forum/d/2058-kk-internal-error-occurred-account-is-not-active
+        exportfs -r
+        ```
+
+    1. 启动 rpcbind、nfs 服务
+
+        ```bash
+        systemctl restart rpcbind && systemctl enable rpcbind
+        systemctl restart nfs && systemctl enable nfs
+        ```
+
+    1. 查看 RPC 服务的注册状况
+
+        ```bash
+        rpcinfo -p localhost
+        program vers proto   port  service
+            ...
+            100003    3   tcp   2049  nfs
+            100003    4   tcp   2049  nfs
+            100227    3   tcp   2049  nfs_acl
+            100003    3   udp   2049  nfs
+            100003    4   udp   2049  nfs
+            100227    3   udp   2049  nfs_acl
+            ...
+        ```
+
+#### 4.2.2 使用动态 PersistentVolume
+
+1. 创建 RBAC.yaml 文件，内容如下。
+
+    ```yaml
+    apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: nfs-client-provisioner
+      # replace with namespace where provisioner is deployed
+      namespace: default
+    ---
+    kind: ClusterRole
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: nfs-client-provisioner-runner
+    rules:
+      - apiGroups: [""]
+        resources: ["persistentvolumes"]
+        verbs: ["get", "list", "watch", "create", "delete"]
+      - apiGroups: [""]
+        resources: ["persistentvolumeclaims"]
+        verbs: ["get", "list", "watch", "update"]
+      - apiGroups: ["storage.k8s.io"]
+        resources: ["storageclasses"]
+        verbs: ["get", "list", "watch"]
+      - apiGroups: [""]
+        resources: ["events"]
+        verbs: ["create", "update", "patch"]
+    ---
+    kind: ClusterRoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: run-nfs-client-provisioner
+    subjects:
+      - kind: ServiceAccount
+        name: nfs-client-provisioner
+        # replace with namespace where provisioner is deployed
+        namespace: default
+    roleRef:
+      kind: ClusterRole
+      name: nfs-client-provisioner-runner
+      apiGroup: rbac.authorization.k8s.io
+    ---
+    kind: Role
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: leader-locking-nfs-client-provisioner
+      # replace with namespace where provisioner is deployed
+      namespace: default
+    rules:
+      - apiGroups: [""]
+        resources: ["endpoints"]
+        verbs: ["get", "list", "watch", "create", "update",     "patch"]
+    ---
+    kind: RoleBinding
+    apiVersion: rbac.authorization.k8s.io/v1
+    metadata:
+      name: leader-locking-nfs-client-provisioner
+      # replace with namespace where provisioner is deployed
+      namespace: default
+    subjects:
+      - kind: ServiceAccount
+        name: nfs-client-provisioner
+        # replace with namespace where provisioner is deployed
+        namespace: default
+    roleRef:
+      kind: Role
+      name: leader-locking-nfs-client-provisioner
+      apiGroup: rbac.authorization.k8s.io
+    ```
+
+1. 执行命令创建 RBAC
+
+    ```bash
+    kubectl create -f RBAC.yaml
+    ```
+
+1. 创建 deployment.yaml 文件，内容如下:
+
+    ```yaml
+    apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: nfs-client-provisioner
+      labels:
+        app: nfs-client-provisioner
+      namespace: default
+    spec:
+      replicas: 1
+      selector:
+        matchLabels:
+          app: nfs-client-provisioner
+      strategy:
+        type: Recreate
+      selector:
+        matchLabels:
+          app: nfs-client-provisioner
+      template:
+        metadata:
+          labels:
+            app: nfs-client-provisioner
+        spec:
+          serviceAccountName: nfs-client-provisioner
+          containers:
+            - name: nfs-client-provisioner
+              image: 99cloud/nfs-subdir-external-provisioner:v4.0.0
+              volumeMounts:
+                - name: nfs-client-root
+                  mountPath: /persistentvolumes
+              env:
+                - name: PROVISIONER_NAME
+                  value: fuseim.pri/ifs
+                - name: NFS_SERVER
+                  value: localhost
+                - name: NFS_PATH
+                  value: /nfs/data
+          volumes:
+            - name: nfs-client-root
+              nfs:
+                server: localhost
+                path: /nfs/data
+    ```
+
+    > 其中 localhost 请替换成 NFS Server 的地址
+
+    如果 driver 起不来，多半是 client 端没有安装 nfs-common(ubuntu) 或者 nfs-utils(centos)
+
+1. 部署deploy
+
+    ```bash
+    kubectl create -f deployment.yaml
+    ```
+
+1. 创建 storageclass.yaml 文件
+
+    ```yaml
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: nfs
+    provisioner: fuseim.pri/ifs
+    parameters:
+      archiveOnDelete: "false"
+    reclaimPolicy: Delete
+    ```
+
+    > provisioner 要对应 驱动所传入的环境变量 PROVISIONER_NAME 的值。
+
+1. 创建 storage class
+
+    ```bash
+    kubectl apply -f storageclass.yaml
+    ```
+
+1. 如果要把 nfs 设置成默认 StorageClass：(option)
+
+    ```
+    kubectl patch storageclass nfs -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
+    ```
+
+### 4.2.3 测试
+
+1. 创建 pvc.yaml 文件
+
+    ```yaml
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: test-pvc
+      annotations:
+        volume.beta.kubernetes.io/storage-class: "nfs"
+    spec:
+      accessModes:
+        - ReadWriteMany
+      resources:
+        requests:
+          storage: 1Gi
+    ```
+
+1. 创建 pvc
+
+    ```bash
+    kubectl apply -f pvc.yaml
+    ```
+
+    此时可以看一下 pvc 状态，应该是 Bound，如果是 pending，看一下 nfs driver pod 的 log。K8S 1.20 以后，会有这个报错：`unexpected error getting claim reference: selfLink was empty, can't make reference`，有两个办法，参考：<https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/issues/25>，在 api-server 的 static pod 里添加启动参数：`--feature-gates=RemoveSelfLink=false`，或者更新 NFS 驱动镜像：`gcr.io/k8s-staging-sig-storage/nfs-subdir-external-provisioner:v4.0.0`
+
+2. 测试
+
+    ```yaml
+    kind: Pod
+    apiVersion: v1
+    metadata:
+      name: test-pod
+    spec:
+      containers:
+      - name: test-pod
+        image: 99cloud/busybox:1.24
+        command:
+          - "/bin/sh"
+        args:
+          - "-c"
+          - "touch /mnt/SUCCESS && exit 0 || exit 1"
+        volumeMounts:
+          - name: nfs-pvc
+            mountPath: "/mnt"
+      restartPolicy: "Never"
+      volumes:
+        - name: nfs-pvc
+          persistentVolumeClaim:
+            claimName: test-pvc
+    ```
+
+    > 其中 `99cloud/busybox:1.24` 是 `gcr.io/google_containers/busybox:1.24`，可以换成任意的镜像。
+
 ### 4.3 对接 Ceph RBD
 
 [返回目录](#课程目录)
+
+#### 4.3.1 基本环境
+
+- OS: CentOS 7.9
+- Kernel: 升级到 5.4
+- 单网卡，系统盘 20G + 数据盘 20G
+
+#### 4.3.2 部署 AIO O 版本
+
+参考：<https://masantu.com/blog/2020-03-22/cephadm-install-Ceph-Octopus-on-CentOS7/>
+
+```console
+[root@lab-c2009-ceph-aio ~]# uname -r
+5.4.182-1.el7.elrepo.x86_64
+[root@lab-c2009-ceph-aio ~]# cat /etc/system-release
+CentOS Linux release 7.9.2009 (Core)
+
+[root@lab-c2009-ceph-aio ~]# yum install python3
+[root@lab-c2009-ceph-aio ~]# python3 -V
+Python 3.6.8
+
+[root@lab-c2009-ceph-aio ~]# ls /dev/vd*
+/dev/vda  /dev/vda1  /dev/vda2  /dev/vdb
+
+[root@lab-c2009-ceph-aio ~]# yum install docker -y
+[root@lab-c2009-ceph-aio ~]# systemctl enable docker --now
+[root@lab-c2009-ceph-aio ~]# docker --version
+Docker version 1.13.1, build 7d71120/1.13.1
+```
+
+安装 Cephadm
+
+```bash
+curl -k --remote-name --location https://github.com/ceph/ceph/raw/octopus/src/cephadm/cephadm
+chmod +x cephadm
+
+# ./cephadm add-repo --release octopus
+# 报错：repomd.xml: [Errno 14] curl#60 - "The certificate issuer‘s certificate has expired"
+# 参考：https://blog.csdn.net/sulia1234567890/article/details/121956448
+# 加入 vi /etc/yum.conf，增加：sslverify=0
+vi /etc/yum.conf # sslverify=0
+yum upgrade ca-certificates
+./cephadm add-repo --release octopus
+./cephadm install
+
+which cephadm
+# /usr/sbin/cephadm
+```
+
+引导新集群
+
+```console
+[root@lab-c2009-ceph-aio ~]# mkdir -p /etc/ceph
+[root@lab-c2009-ceph-aio ~]# ip a
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 52:54:00:cd:72:83 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.122.229/24 brd 192.168.122.255 scope global noprefixroute dynamic eth0
+       valid_lft 2736sec preferred_lft 2736sec
+    inet6 fe80::5390:413f:f60f:6034/64 scope link noprefixroute
+       valid_lft forever preferred_lft forever
+```
+
+如果要从开始就设置 osd pool 为 1
+
+```bash
+cat <<EOF > initial-ceph.conf
+[global]
+osd pool default size = 1
+osd pool default min size = 1
+EOF
+
+cephadm bootstrap --config initial-ceph.conf --mon-ip 192.168.122.229
+
+# Ceph Dashboard is now available at:
+
+# 	     URL: https://lab-c2009-ceph-aio:8443/
+# 	    User: admin
+# 	Password: itgwv8r3xy
+
+# You can access the Ceph CLI with:
+
+# 	sudo /usr/sbin/cephadm shell --fsid 090a76ec-9bb4-11ec-91af-525400cd7283 -c /etc/ceph/ceph.conf -k /etc/ceph/ceph.client.admin.keyring
+```
+
+以上命令会操作：
+
+- 在本地主机上为集群创建 mon 和 mgr 守护程序。
+- 为 Ceph 集群生成一个新的 SSH 密钥，并将其添加到 root 用户的 `/root/.ssh/authorized_keys` 文件中。
+- 将与新集群通信所需的最小配置文件写入 `/etc/ceph/ceph.conf`。
+- 将 `client.admin` 管理（特权！）秘密密钥的副本写入 `/etc/ceph/ceph.client.admin.keyring`。
+- 将公共密钥的副本写入 `/etc/ceph/ceph.pub`。
+
+使用 Ceph CLI
+
+```console
+[root@lab-c2009-ceph-aio ~]# cephadm add-repo --release octopus
+[root@lab-c2009-ceph-aio ~]# yum install ceph-common
+[root@lab-c2009-ceph-aio ~]# ceph -s
+  cluster:
+    id:     090a76ec-9bb4-11ec-91af-525400cd7283
+    health: HEALTH_WARN
+            OSD count 0 < osd_pool_default_size 1
+
+  services:
+    mon: 1 daemons, quorum lab-c2009-ceph-aio (age 58m)
+    mgr: lab-c2009-ceph-aio.nuvwkm(active, since 57m)
+    osd: 0 osds: 0 up, 0 in
+
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   0 B used, 0 B / 0 B avail
+    pgs:
+
+[root@lab-c2009-ceph-aio ~]# ceph health
+HEALTH_WARN OSD count 0 < osd_pool_default_size 1
+```
+
+接下来，**添加 OSD**，参考 <https://docs.ceph.com/en/latest/cephadm/services/osd/#cephadm-deploy-osds>
+
+```console
+[root@lab-c2009-ceph-aio ~]# ceph orch device ls
+Hostname            Path      Type  Serial  Size   Health   Ident  Fault  Available
+lab-c2009-ceph-aio  /dev/vdb  hdd           21.4G  Unknown  N/A    N/A    Yes
+
+[root@lab-c2009-ceph-aio ~]# ceph orch apply osd --all-available-devices
+Scheduled osd.all-available-devices update...
+```
+
+从命令行添加会卡住，然后失败（当副本数为 1 的时候，也显示如下，但可以成功，不必走界面添加）
+
+```console
+[root@lab-c2009-ceph-aio ~]# ceph orch daemon add osd lab-c2009-ceph-aio:/dev/vdb
+Created no osd(s) on host lab-c2009-ceph-aio; already created?
+```
+
+从 ceph dashboard 可以添加 osd，先筛选，然后 add 即可。
+
+```console
+[root@lab-c2009-ceph-aio ~]# ceph -s
+  cluster:
+    id:     090a76ec-9bb4-11ec-91af-525400cd7283
+    health: HEALTH_WARN
+            1 pool(s) have no replicas configured
+
+  services:
+    mon: 1 daemons, quorum lab-c2009-ceph-aio (age 13m)
+    mgr: lab-c2009-ceph-aio.fgkrqf(active, since 12m)
+    osd: 1 osds: 1 up (since 2m), 1 in (since 2m)
+
+  data:
+    pools:   1 pools, 1 pgs
+    objects: 0 objects, 0 B
+    usage:   1.0 GiB used, 19 GiB / 20 GiB avail
+    pgs:     1 active+clean
+```
+
+#### 4.3.3 对接到 K8S
+
+参考：<https://cloud.tencent.com/developer/article/1700941?from=article.detail.1927694>
+
+CEPH 侧创建 Pool 和新用户
+
+```console
+[root@lab-c2009-ceph-aio ~]# ceph osd pool create kubernetes
+pool 'kubernetes' created
+
+[root@lab-c2009-ceph-aio ~]# ceph osd lspools
+1 device_health_metrics
+2 kubernetes
+
+[root@lab-c2009-ceph-aio ~]# ceph auth get-or-create client.kubernetes mon 'profile rbd' osd 'profile rbd pool=kubernetes' mgr 'profile rbd pool=kubernetes'
+[client.kubernetes]
+	key = AQBaByJiJbL8KRAAW77WOh1hu6Pz9if9EPj9mA==
+
+[root@lab-c2009-ceph-aio ~]# ceph auth get client.kubernetes
+exported keyring for client.kubernetes
+[client.kubernetes]
+	key = AQBaByJiJbL8KRAAW77WOh1hu6Pz9if9EPj9mA==
+	caps mgr = "profile rbd pool=kubernetes"
+	caps mon = "profile rbd"
+	caps osd = "profile rbd pool=kubernetes"
+```
+
+K8S 侧对接
+
+参考：<https://github.com/ceph/ceph-csi>
+
+| Ceph CSI Version | Container Orchestrator Name | Version Tested |
+| - | - | - |
+| v3.6.1 | Kubernetes | v1.21, v1.22, v1.23 |
+| v3.6.0 | Kubernetes | v1.21, v1.22, v1.23 |
+| v3.5.1 | Kubernetes | v1.21, v1.22, v1.23 |
+| v3.5.0 | Kubernetes | v1.21, v1.22, v1.23 |
+
+下载 `ceph-csi-3.6.1.tar.gz`，解压
+
+```bash
+yum install wget -y
+wget --no-check-certificate https://github.com/ceph/ceph-csi/archive/refs/tags/v3.6.1.tar.gz
+tar zxvf v3.6.1.tar.gz
+```
+
+```console
+[root@lab-c2009-ceph-aio ~]# ceph mon dump
+dumped monmap epoch 1
+epoch 1
+fsid 090a76ec-9bb4-11ec-91af-525400cd7283
+last_changed 2022-03-04T12:12:10.455157+0000
+created 2022-03-04T12:12:10.455157+0000
+min_mon_release 15 (octopus)
+0: [v2:192.168.122.229:3300/0,v1:192.168.122.229:6789/0] mon.lab-c2009-ceph-aio
+```
+
+- fsid：这个是 Ceph 的集群 ID。
+- 监控节点信息。**目前 ceph-csi 只支持 v1 版本的协议？**所以监控节点那里我们只能用 v1 的那个 IP 和端口号（例如，192.168.122.229:6789）。
+
+进入 ceph-csi 的 `deploy/rbd/kubernetes` 目录：
+
+config-map
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "ceph-csi-config"
+data:
+  config.json: |-
+    [
+      {
+        "clusterID": "090a76ec-9bb4-11ec-91af-525400cd7283",
+        "monitors": [
+          "192.168.122.229:6789"
+        ]
+      }
+    ]
+```
+
+```bash
+cd /root/ceph-csi-3.6.1/deploy/rbd/kubernetes
+
+kubectl apply -f csi-config-map.yaml
+
+cat <<EOF > csi-rbd-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-rbd-secret
+stringData:
+  userID: kubernetes
+  userKey: AQBaByJiJbL8KRAAW77WOh1hu6Pz9if9EPj9mA==
+EOF
+
+kubectl apply -f csi-rbd-secret.yaml
+```
+
+如果希望将所有 ceph-csi 相关的配置和服务启动在单独的命名空间中，参考 [deprecated.md](deprecated.md)
+
+创建必须的 ServiceAccount 和 RBAC ClusterRole/ClusterRoleBinding 资源对象：
+
+```bash
+kubectl create -f csi-provisioner-rbac.yaml
+kubectl create -f csi-nodeplugin-rbac.yaml
+```
+
+创建 PodSecurityPolicy：
+
+```
+kubectl create -f csi-provisioner-psp.yaml
+kubectl create -f csi-nodeplugin-psp.yaml
+```
+
+删除 kms 配置
+
+```diff
+diff kubernetes-bak/csi-rbdplugin-provisioner.yaml kubernetes/csi-rbdplugin-provisioner.yaml
+160,161c160,161
+<             - name: ceph-csi-encryption-kms-config
+<               mountPath: /etc/ceph-csi-encryption-kms-config/
+---
+>             # - name: ceph-csi-encryption-kms-config
+>             #   mountPath: /etc/ceph-csi-encryption-kms-config/
+230,232c230,232
+<         - name: ceph-csi-encryption-kms-config
+<           configMap:
+<             name: ceph-csi-encryption-kms-config
+---
+>         # - name: ceph-csi-encryption-kms-config
+>         #   configMap:
+>         #     name: ceph-csi-encryption-kms-config
+
+diff kubernetes-bak/csi-rbdplugin.yaml kubernetes/csi-rbdplugin.yaml
+107,108c107,108
+<             - name: ceph-csi-encryption-kms-config
+<               mountPath: /etc/ceph-csi-encryption-kms-config/
+---
+>             # - name: ceph-csi-encryption-kms-config
+>             #   mountPath: /etc/ceph-csi-encryption-kms-config/
+188,190c188,190
+<         - name: ceph-csi-encryption-kms-config
+<           configMap:
+<             name: ceph-csi-encryption-kms-config
+---
+>         # - name: ceph-csi-encryption-kms-config
+>         #   configMap:
+>         #     name: ceph-csi-encryption-kms-config
+```
+
+```console
+[root@lab-c2009-k8s-aio-ceph kubernetes]# kubectl apply -f ../../../examples/ceph-conf.yaml
+
+[root@lab-c2009-k8s-aio-ceph kubernetes]# kubectl get cm -A
+NAMESPACE         NAME                                 DATA   AGE
+ceph-csi          ceph-config                          2      27s
+```
+
+部署 csi-rbdplugin-provisioner 和 RBD CSI driver
+
+```bash
+kubectl create -f csi-rbdplugin-provisioner.yaml
+kubectl create -f csi-rbdplugin.yaml
+```
+
+然后看一下是否所有的 pod 都起来了，master 节点上可能需要 untaint，镜像可能下载失败，deployment 可能要限制 replicas
+
+```bash
+kubectl scale deploy csi-rbdplugin-provisioner --replicas=1
+kubectl taint nodes $(hostname) node-role.kubernetes.io/master:NoSchedule-
+```
+
+```bash
+cat <<EOF > storageclass.yaml
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: csi-rbd-sc
+provisioner: rbd.csi.ceph.com
+parameters:
+   clusterID: 090a76ec-9bb4-11ec-91af-525400cd7283
+   pool: kubernetes
+   imageFeatures: layering
+   csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/provisioner-secret-namespace: default
+   csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/controller-expand-secret-namespace: default
+   csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret
+   csi.storage.k8s.io/node-stage-secret-namespace: default
+   csi.storage.k8s.io/fstype: ext4
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+mountOptions:
+   - discard
+EOF
+
+kubectl apply -f storageclass.yaml
+```
+
+这里的 clusterID 对应之前步骤中的 fsid。
+imageFeatures 用来确定创建的 image 特征，如果不指定，就会使用 RBD 内核中的特征列表，但 Linux 不一定支持所有特征，所以这里需要限制一下。
+
+进入 `ceph-csi` 项目的 `example/rbd` 目录，然后直接创建 PVC
+
+```console
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl apply -f pvc.yaml
+persistentvolumeclaim/rbd-pvc created
+
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl get pvc
+NAMESPACE   NAME      STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+default     rbd-pvc   Pending                                      csi-rbd-sc     7s
+
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl get pvc
+NAME      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+rbd-pvc   Bound    pvc-d45b457f-9c67-4b82-b28b-329a1eb1747d   1Gi        RWO            csi-rbd-sc     4m30s
+
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM             STORAGECLASS   REASON   AGE
+pvc-d45b457f-9c67-4b82-b28b-329a1eb1747d   1Gi        RWO            Delete           Bound    default/rbd-pvc   csi-rbd-sc              1s
+```
+
+在 ceph 侧，可以看到：
+
+```console
+[root@lab-c2009-ceph-aio ~]# rbd ls -p kubernetes
+csi-vol-7b95cc49-9c1f-11ec-855a-ea06f4beb16f
+
+[root@lab-c2009-ceph-aio ~]# rbd info csi-vol-7b95cc49-9c1f-11ec-855a-ea06f4beb16f -p kubernetes
+rbd image 'csi-vol-7b95cc49-9c1f-11ec-855a-ea06f4beb16f':
+	size 1 GiB in 256 objects
+	order 22 (4 MiB objects)
+	snapshot_count: 0
+	id: 37b4396277f1
+	block_name_prefix: rbd_data.37b4396277f1
+	format: 2
+	features: layering
+	op_features:
+	flags:
+	create_timestamp: Fri Mar  4 19:59:19 2022
+	access_timestamp: Fri Mar  4 19:59:19 2022
+	modify_timestamp: Fri Mar  4 19:59:19 2022
+```
+
+创建示例 Pod
+
+```
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl apply -f pod.yaml
+
+[root@lab-c2009-k8s-aio-ceph rbd]# lsblk -l|grep rbd
+rbd0        251:0    0    1G  0 disk /var/lib/kubelet/pods/9f47c56f-675c-40fc-9b6e-5f00676bf8d0/volumes/kubernetes.io~csi/pvc-d45b457f-9c67-4b82-b28b-329a1eb1747d/mount
+
+[root@lab-c2009-k8s-aio-ceph rbd]# kubectl exec -it csi-rbd-demo-pod -- bash
+
+root@csi-rbd-demo-pod:/# lsblk -l|grep rbd
+rbd0 251:0    0    1G  0 disk /var/lib/www/html
+```
+
+遇到问题需要排查的话：`kubectl logs csi-rbdplugin-provisioner-5b4464666c-bzxf7 -c csi-provisioner`
 
 ### 4.4 跨命名空间的快照和备份
 
