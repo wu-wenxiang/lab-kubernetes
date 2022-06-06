@@ -1457,7 +1457,7 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 1. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
 1. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
 1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctr
-1. 和基础工具/服务（python/git）不一样，runc/containerd/docker 建议二进制部署，这样方便升级（和 bug 修复）。
+1. 关于用 RPM 包还是二进制安装，it depends。如果我们可以预见不会频繁 apply patch，比如基础服务/工具：python/git，甚至 runc/containerd/docker，那么推荐 RPM。如果我们对安全或者 SLA 有较高的要求（等不及 rpm 提供方出 hotfix），自身技术实力也能充分保证， 那建议二进制部署，这样方便及时升级（和 bug 修复）。
 1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
 1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
 1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者 Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
@@ -1471,6 +1471,170 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 [返回目录](#课程目录)
 
 #### 3.1.1 KubeAdmin
+
+##### 3.1.1.1 单节点集群部署
+
+基于 Containerd 部署 K8S 1.23.3 集群
+
+1. CentOS 7.9，升级 kernel，参考 [1.1.1 内核升级](#111-内核升级)
+
+    ```bash
+    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+    yum install -y https://www.elrepo.org/elrepo-release-7.0-4.el7.elrepo.noarch.rpm
+    yum -y --disablerepo="*" --enablerepo="elrepo-kernel" list available
+    yum -y --disablerepo=\* --enablerepo=elrepo-kernel install kernel-lt.x86_64
+    awk -F\' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg
+
+    grub2-set-default 0
+    # 这里的 0 要根据实际情况来填写
+
+    reboot
+    ```
+
+    重启后，`uname -a` 检查内核版本，可以看到
+
+    ```console
+    [root@kubernetes001 ~]# uname -a
+    Linux kubernetes001 5.4.197-1.el7.elrepo.x86_64 #1 SMP Sat Jun 4 08:43:19 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+    ```
+
+1. 部署 Containerd 和 ctictl 等工具，参考 [2.2.2.1 Crictl](#2221-crictl)
+
+    ```bash
+    # 如果之前安装 centos 默认源的 docker，要先删除掉
+    yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+
+    yum install -y yum-utils
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    yum install -y containerd.io
+
+    systemctl enable containerd --now
+    ```
+
+    然后用 ctr 检查 containerd 是否正常运行
+
+    ```console
+    [root@kubernetes001 ~]# ctr version
+    Client:
+    Version:  1.6.4
+    Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
+    Go version: go1.17.9
+
+    Server:
+    Version:  1.6.4
+    Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
+    UUID: 1cd1f73e-28ae-4f7c-9fa3-5ccdcdb2a23c
+    ```
+
+    [可选]：然后部署 crictl
+
+    ```bash
+    VERSION="v1.24.1"
+    wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+
+    tar zxvf crictl-$VERSION-linux-amd64.tar.gz
+    mv crictl /usr/bin/
+
+    cp /etc/containerd/config.toml /etc/containerd/config.toml.bak
+    containerd config default > /etc/containerd/config.toml
+    vi /etc/containerd/config.toml
+    ```
+
+    修改 `SystemdCgroup` 和 `sandbox_image`
+
+    ```ini
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+    ...
+    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+        SystemdCgroup = true
+    ...
+    [plugins."io.containerd.grpc.v1.cri"]
+        sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.6"
+    ...
+    ```
+
+    然后，重启服务
+
+    ```bash
+    systemctl restart containerd
+    # 检查版本，验证可用
+    crictl version
+    ```
+
+1. 部署 Kubernetes
+
+    ```bash
+    # 3. 关闭防火墙（默认就是关闭的，不用做）
+    # systemctl stop firewalld.service
+    # systemctl disable firewalld.service
+
+    # 4. 关闭 selinux（默认就是关闭的，不用做）
+    # vi /etc/selinux/config
+    # 将 SELINUX=enforcing 改为 SELINUX=disabled
+
+    # 5. 关闭 swap（默认就是关闭的，不用做）
+    # swapoff /dev/sda2
+    # vi /etc/fstab
+    # 在 swap 分区这行前加 # 禁用掉，保存退出
+    # reboot
+
+    # 6. 配置系统相关属性
+    cat <<EOF > /etc/sysctl.d/k8s.conf
+    net.bridge.bridge-nf-call-ip6tables = 1
+    net.bridge.bridge-nf-call-iptables = 1
+    net.ipv4.ip_forward = 1
+    EOF
+
+    sysctl -p
+    sysctl --system
+
+    modprobe br_netfilter
+    echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+
+    # 7. 配置yum源
+    cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+    [kubernetes]
+    name=Kubernetes
+    baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+    enabled=1
+    gpgcheck=0
+    repo_gpgcheck=0
+    gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+            http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+    EOF
+
+    # 8. 安装 CRI
+
+    # 10. 下载 kubernetes
+    export k8s_version="1.23.3"
+
+    yum install -y kubelet-${k8s_version}-0 kubeadm-${k8s_version}-0 kubectl-${k8s_version}-0  --disableexcludes=kubernetes
+
+    # 11. 启动 kubelet
+    systemctl restart kubelet
+    systemctl enable kubelet
+
+    # 12. 用 kubeadm 初始化创建 K8S 集群
+    kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v${k8s_version} --pod-network-cidr=10.244.0.0/16
+
+    # 13. 配置 .kube/config 用于使用 kubectl
+    mkdir -p $HOME/.kube
+    cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+
+    # 15. 安装 calico
+    kubectl apply -f https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
+
+    # 看到 node Ready 就 OK
+    kubectl get nodes
+    ```
+
+##### 3.1.1.2 增加 CRI-O Worker 节点
+
+拓扑结构：1 Master（Containerd） + 1 Worker（CRI-O）
+
+此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示 Kubelet 对接不同 CRI 时的情况。
 
 #### 3.1.2 Sealos
 
