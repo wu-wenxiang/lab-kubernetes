@@ -110,10 +110,22 @@ echo "export PATH=$PATH:/opt/rh/rh-python38/root/usr/bin" >> /etc/profile && sou
 
 mkdir ~/.pip
 vi ~/.pip/pip.conf
-# [global]
-# index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+设置如下代理：
+
+```ini
+[global]
+index-url=https://pypi.tuna.tsinghua.edu.cn/simple/
+```
+
+然后升级 pip
+
+```bash
 python3 -m pip install --upgrade pip
 ```
+
+验证版本
 
 ```console
 [root@lab-c2009 ~]# python3 --version
