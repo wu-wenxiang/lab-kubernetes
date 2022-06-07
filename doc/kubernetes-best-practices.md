@@ -449,8 +449,8 @@ wget https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/docker-quickstar
 # 如果是 CentOS 7.x 需要安装下 python3
 # yum install python3 python3-pip
 
-# pip3 install -r requirements.txt
-pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
+# python3 -m pip install -r requirements.txt
+python3 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt
 
 python3 app.py
 # * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
