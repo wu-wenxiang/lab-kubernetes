@@ -1553,6 +1553,7 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 ### 2.6 最佳实践
 
+1. 如果需要 debug 容器网络，可以先找到该容器进程的 pid，然后进入其 network namespace，就可以方便地调试（包括 ip / route / iptables / ping / traceroute / tcpdump 等命令皆可操作），可以从宿主机上抓容器虚拟网卡的网络包，然后进行分析。
 1. 生产环境建议用 Containerd，稳定性、性能和生态支持都有明显优势
 1. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
 1. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
@@ -1572,6 +1573,26 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 ### 3.1 集群的创建删除、扩缩容、备份恢复
 
 [返回目录](#课程目录)
+
+生产环境配置
+
+| Host-Node | CPU | RAM | root | etcd | kubelet | CRI |
+| - | - | - | - | - | - | - |
+| Master * 3 | 16C+ | 32G+ | 100G+ | 40G+ | 250G+ | 250G+ |
+| Worker * N | 16C+ | 32G+ | 100G+ | N/A | 250G+ | 250G+ |
+
+1. ETCD 需要 SSD
+1. 确保 kubelet 使用的磁盘容量大于容器运行时使用的磁盘！
+1. 考虑如何限制容器内 inode 泄露或磁盘写满：CRI rootfs 限制方案
+1. 考虑是否禁止 hostpath / local 类型的 storageclass
+1. 备份需要对接额外的 NFS 或对象存储
+
+参考部署架构
+
+![](/image/openshift-ha-deployment.png)
+
+1. Infra 节点能避免 Worker Node 直接对外暴露
+2. ELB 提供 VIP，或者 LB 类型 service 对外提供 VIP
 
 #### 3.1.1 KubeAdmin
 
