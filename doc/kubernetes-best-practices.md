@@ -1389,12 +1389,14 @@ CRI 接口是：`unix:///var/run/crio/crio.sock`
 
 在同一个集群中，混用不同的 CRI 实验，参考：<https://gobomb.github.io/post/container-runtime-note/>
 
-安装 cri-o
+安装 cri-o，参考：<https://cri-o.io/>
 
 ```bash
-yum install yum-utils
-yum-config-manager --add-repo=https://cbs.centos.org/repos/paas7-crio-311-candidate/x86_64/os/
-yum install --nogpgcheck cri-o
+OS=CentOS_7
+VERSION=1.23
+curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo
+curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
+yum install cri-o
 ```
 
 修改 kubelet 启动参数（也可以写在 EnvironmentFile 指定的文件里）：
