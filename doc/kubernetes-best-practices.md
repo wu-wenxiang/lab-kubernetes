@@ -276,7 +276,7 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 
 这个就说来话长了，我也查了半天，诸君姑且听之。
 
-- **中标麒麟**：2010/12/16，中标 Linux 和军方的“银河麒麟”在上海宣布合并，开发方中标软件有限公司和国防科技大学同日缔结了战略合作协议，双方今后将共同以“中标麒麟”的新品牌出现。
+- **中标麒麟**：2010/12/16，中标 Linux 和国防科大的“银河麒麟”在上海宣布合并，开发方中标软件有限公司和国防科技大学同日缔结了战略合作协议，双方今后将共同以“中标麒麟”的新品牌出现。
 - **银河麒麟** Kylin Operating System 是天津麒麟信息技术有限公司旗下的国产 Linux 操作系统，源自国防科大“麒麟”、“银河麒麟”操作系统，支持主流 X86 架构 CPU 以及国产飞腾 CPU 平台。国防科大继续了老“麒麟”的开发。
 - **优麒麟** UbuntuKylin 是 Ubuntu 社区中面向中文用户的 Ubuntu 衍生版本，中文名称优麒麟，与麒麟系统没有关系。优麒麟有两个身份，首先它是 Ubuntu 的一个官方 Flavor 版本。其次，它背后也有国防科大和天津麒麟的支持，可以看做银河麒麟的社区版。优麒麟最初的目标是像 Ubuntu 一样占领中国市场，可是很多人直接选择了 Ubuntu，一些选择了更接地气的 Deepin，所以优麒麟并不算非常成功。
 - **湖南麒麟**，湖南麒麟信息工程技术有限公司（简称湖南麒麟）是 2007 年成立的一家民营企业，公司成立之初依托国防科技大学计算机学院，长期致力于信息安全的研发，在集中管控和机要密码等领域有一定的影响力。2014 年天津麒麟成立时，国防科大将“麒麟”、“银河麒麟”等无形资产注入了天津麒麟，湖南麒麟原有的操作系统研发团队整体转入天津麒麟。现在的湖南麒麟，只是一家单纯的民营企业了，可以视为一个新的系统。
@@ -812,7 +812,7 @@ CONTAINER           IMAGE               CREATED             STATE               
 
 1. docker 构建在 containerd 之上，所以在生产环境中，我们可以同时拥有 containerd 和 docker，不干扰。
 1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
-1. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时**。
+1. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时。
 
 ##### 2.2.2.2 ctr
 
@@ -1373,6 +1373,40 @@ Server: Docker Engine - Community
  docker-init:
   Version:          0.19.0
   GitCommit:        de40ad0
+```
+
+此时有个问题，用 nerdctl 运行带 -p 参数的容器会失败，报错 cni 版本不匹配。
+
+检查 nerdctl 参数，发现默认 cni path 是 `/usr/libexec/cni/`，有三种方法：
+
+1. 更新这个目录下的 cni（更新到 1.1.1 版本）
+1. 或者该目录软链接到 `/opt/cni/bin/` 目录，此目录下的 cni 是 1.1.1 版本的
+1. 再或者删除 `/usr/libexec/cni/` 目录（删除后，nerdctl 默认的 cni path 变成了 `/opt/cni/bin/`）
+
+都可以解决此问题。
+
+```console
+[root@kubernetes004 ~]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+FATA[0000] failed to create shim task: OCI runtime create failed: runc create failed: unable to start container process: error during container init: error running hook #0: error running hook: exit status 1, stdout: , stderr: time="2022-06-07T21:21:59+08:00" level=fatal msg="failed to call cni.Setup: plugin type=\"bridge\" failed (add): incompatible CNI versions; config is \"1.0.0\", plugin supports [\"0.1.0\" \"0.2.0\" \"0.3.0\" \"0.3.1\" \"0.4.0\"]"
+Failed to write to log, write /var/lib/nerdctl/1935db59/containers/default/954e3d09f83bdce90305b2e8f58dad59a58ac5d9f350711a4025c7854067470c/oci-hook.createRuntime.log: file already closed: unknown
+
+[root@kubernetes004 ~]# nerdctl -h | grep cni
+      --cni-netconfpath string   cni config directory [$NETCONFPATH] (default "/etc/cni/net.d")
+      --cni-path string          cni plugins binary directory [$CNI_PATH] (default "/usr/libexec/cni")
+
+[root@kubernetes004 ~]# ls /usr/libexec/cni/
+bandwidth    dhcp         flannel      host-local   loopback     portmap      sample       static       vlan
+bridge       firewall     host-device  ipvlan       macvlan      ptp          sbr          tuning
+
+[root@kubernetes004 ~]# rm -rf /usr/libexec/cni/
+
+[root@kubernetes004 ~]# nerdctl -h | grep cni
+      --cni-netconfpath string   cni config directory [$NETCONFPATH] (default "/etc/cni/net.d")
+      --cni-path string          cni plugins binary directory [$CNI_PATH] (default "/opt/cni/bin")
+
+[root@kubernetes004 ~]# nerdctl rm -f nginx
+[root@kubernetes004 ~]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+4958c5b1ad1fd2db2d8d1c4ccd0d796cd9115d4f07f17aa7a1fa615b89831c7a
 ```
 
 ### 2.3 CRI-O
