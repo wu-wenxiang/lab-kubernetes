@@ -1501,6 +1501,18 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 
 ![](/image/katacontainers-architecture-diagram.jpg)
 
+实现 ECI 不只可以通过 K8S，也可以通过 OpenStack zun 来直接编排 Kata，参考 <https://github.com/cloudmaster2010/openstack/blob/main/devstack/3.zun-kata-kuryr.md>
+
+Kata 安装步骤，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md#kata-deploy-installation>
+
+第一种安装方案：参考 <https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>
+
+1. **安装 snap**，参考：<https://snapcraft.io/docs/installing-snap-on-centos>
+1. **通过 snap 安装 kata-container**，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/snap-installation-guide.md>。如果报错：`too early for operation, device not yet seeded or device model not acknowledged`，可以参考：<https://blog.csdn.net/u010620626/article/details/117259178>，`sudo setenforce 0`
+1. **安装 containerd**，完成适配，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>，和 <https://github.com/kata-containers/kata-containers/blob/main/docs/install/container-manager/containerd/containerd-install.md#install-containerd>
+
+第二种安装方案，先安装好 containerd + k8s，再通过 kata-deploy 部署。参考：<https://github.com/kata-containers/kata-containers/blob/main/tools/packaging/kata-deploy/README.md>
+
 除 Kata 以外，还有 Frakti / gVisor 等
 
 - Frakti 提供了 hypervisor 级别的隔离性，提供的是内核级别的而非 Linux 命名空间级别的隔离：
@@ -1768,9 +1780,15 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 #### 3.1.2 Sealos
 
+参考：<https://github.com/labring/sealos#quickstart>
+
 #### 3.1.3 KubeKey
 
+参考：<https://kubesphere.com.cn/docs/installing-on-linux/introduction/kubekey/>
+
 #### 3.1.4 K0S
+
+参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/install/>
 
 #### 3.1.5 K3S
 
