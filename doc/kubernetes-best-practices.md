@@ -1583,7 +1583,6 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
 1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者 Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
 1. ECI 解决方案中，Kata 相对成熟，可以应用于 OpenStack Zun 或者 K8S。
-1. GPU 容器方案，建议选 Nvidia 的 MIG 方法，要注意区分不同的 GPU 类型，推理或者训练。
 
 ## 3. K8S 生命周期管理
 
@@ -1787,6 +1786,8 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
 此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示 Kubelet 对接不同 CRI 时的情况。
 
+[CRIO 部署](#23-cri-o) 时注意，sandbox 要配置成 `registry.aliyuncs.com/google_containers`，`gcr.io` 的 pause 容器拉取不了，或者可以 podman 手动 load
+
 ##### 3.1.1.3 移除 Node 节点
 
 参考：<https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/>
@@ -1936,10 +1937,10 @@ spec:
 
 ```bash
 # 1. 将 /etc/kubernetes/manifests/ kube-apiserver.yaml 文件移动到别处，停止 kube-apiserver 服务
-mv /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/ 
+mv /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/
 
 # 2. 将 /etc/kubernetes/manifests/ etcd.yaml 文件移动到别处，停止 etcd server 服务
-mv /etc/kubernetes/manifests/etcd.yaml /tmp/ 
+mv /etc/kubernetes/manifests/etcd.yaml /tmp/
 
 # 3. 运行如下命令，将损坏的数据文件移至其他地方
 mv /var/lib/etcd/* /tmp/
@@ -2040,7 +2041,7 @@ crontab -e
   -  自行关闭防火墙 selinux 等
   -  自行安装 docker 或者 containerd（未测试）
   -  自行安装 kubeadm/kubelet/kubectl
-  -  若待加入集群使用了非 k8s.gcr.io 的仓库，请自行修改 /etc/docker/daemon.json 或者 /etc/containerd/config.toml  
+  -  若待加入集群使用了非 k8s.gcr.io 的仓库，请自行修改 /etc/docker/daemon.json 或者 /etc/containerd/config.toml
 2. 生成 certificate-key(在master0节点执行)
 
     该过程遇上 warning 可以忽略。主要目的是让 kubeadm 自己处理证书，不用我们 scp
@@ -2090,7 +2091,7 @@ crontab -e
 
     ```bash
     # 集群本身安装了 etcdctl 工具，可省略这几步
-    tar -zxvf etcd-v3.3.4-linux-amd64.tar.gz 
+    tar -zxvf etcd-v3.3.4-linux-amd64.tar.gz
     cd etcd-v3.3.4-linux-amd64
     cp etcdctl /usr/local/sbin/
 
@@ -2138,13 +2139,128 @@ crontab -e
 
 参考：<https://github.com/labring/sealos#quickstart>
 
+先确定能 ssh 172.19.30.106（本机 IP） 成功，然后用下面的命令就可以一行搞定 AIO 的 K8S 部署了。ctr / crictl / nerdctl 都会一起装上。
+
+```bash
+sealos run labring/kubernetes:v1.24.0 labring/calico:v3.22.1 --masters 172.19.30.106
+```
+
+本地起了镜像仓库，可以看配置文件怎么配置的。
+
+```console
+[root@lab-k8s001 ~]# crictl images
+IMAGE                                       TAG                 IMAGE ID            SIZE
+sealos.hub:5000/calico/cni                  v3.22.1             2a8ef6985a3e5       80.5MB
+sealos.hub:5000/calico/node                 v3.22.1             7a71aca7b60fc       69.6MB
+sealos.hub:5000/calico/pod2daemon-flexvol   v3.22.1             17300d20daf93       8.46MB
+sealos.hub:5000/calico/typha                v3.22.1             f822f80398b9a       52.7MB
+sealos.hub:5000/coredns/coredns             v1.8.6              a4ca41631cc7a       13.6MB
+sealos.hub:5000/etcd                        3.5.3-0             aebe758cef4cd       102MB
+sealos.hub:5000/kube-apiserver              v1.24.0             529072250ccc6       33.8MB
+sealos.hub:5000/kube-controller-manager     v1.24.0             88784fb4ac2f6       31MB
+sealos.hub:5000/kube-proxy                  v1.24.0             77b49675beae1       39.5MB
+sealos.hub:5000/kube-scheduler              v1.24.0             e3ed7dee73e93       15.5MB
+sealos.hub:5000/pause                       3.7                 221177c6082a8       311kB
+sealos.hub:5000/tigera/operator             v1.25.3             648350e58702c       44.8MB
+```
+
+优点：
+
+1. 管理 K8S 集群生命周期，HA 集群，扩缩容，清空集群，自动恢复（*If any master is down, lvscare will remove the ipvs realserver, when master recover it will add it back*）
+1. 可以从 sealos hub 下载和使用 OCI-compatible 的 openebs, minio, ingress, pgsql, mysql, redis 等插件
+1. 证书直接签 99 年（这个是优点还是安全漏洞待考…… 而且为了这个还直接改了 kubeadm 源码），依赖 k8s API 证书的 kubefed 之类就不要每年更新证书了。
+    - 参考：<https://blog.51cto.com/heyong/5149534>，修改 `cmd/kubeadm/app/constants/constants.go` 里的 CertificateValidity
+    - 参考：<https://www.infinisign.com/news/one-year-certs>，kubeadm 强制只签一年，不让传参签 99 年还是有安全方面考虑的
+    - 参考：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/>，这里介绍了证书在 upgrade 时或者手动执行时可以 renew
+
+    ```console
+    [root@lab-k8s001 ~]# kubeadm certs check-expiration
+    [check-expiration] Reading configuration from the cluster...
+    [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+
+    CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+    admin.conf                 May 15, 2122 13:08 UTC   99y             ca                      no
+    apiserver                  May 15, 2122 13:08 UTC   99y             ca                      no
+    apiserver-etcd-client      May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+    apiserver-kubelet-client   May 15, 2122 13:08 UTC   99y             ca                      no
+    controller-manager.conf    May 15, 2122 13:08 UTC   99y             ca                      no
+    etcd-healthcheck-client    May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+    etcd-peer                  May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+    etcd-server                May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+    front-proxy-client         May 15, 2122 13:08 UTC   99y             front-proxy-ca          no
+    scheduler.conf             May 15, 2122 13:08 UTC   99y             ca                      no
+
+    CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+    ca                      May 15, 2122 13:08 UTC   99y             no
+    etcd-ca                 May 15, 2122 13:08 UTC   99y             no
+    front-proxy-ca          May 15, 2122 13:08 UTC   99y             no
+    ```
+
+缺点：
+
+1. 不受支持的离线包要自己制作
+1. 没有 Web UI 界面
+1. 不支持集中管理多个 K8S 集群的生命周期
+1. 没考虑升级、备份、恢复自动化（4.0 估计还没重构到这）
+1. 修改了 kubeadm 的业务逻辑（ipvs 和 99 年），不 100% 兼容社区 kubeadm 了
+
 #### 3.1.3 KubeKey
 
 参考：<https://kubesphere.com.cn/docs/installing-on-linux/introduction/kubekey/>
 
+安装步骤：<https://kubesphere.com.cn/docs/installing-on-linux/on-premises/install-kubesphere-on-bare-metal/>
+
+```
+# 配置好密钥，确定可以 ssh 免密登录需要安装 kubelet 的 node
+
+yum install openssl openssl-devel
+yum install socat -y
+yum install epel-release
+yum install conntrack-tools -y
+
+export KKZONE=cn
+curl -sfL https://get-kk.kubesphere.io | VERSION=v2.0.0 sh -
+
+./kk create config --with-kubernetes v1.21.5
+
+vi config-sample.yaml
+
+# {name: node1, address: 172.19.30.105, internalAddress: 172.19.30.105, user: root}
+# 这里 172.19.30.105 是 node IP
+# node1 要写你期望的节点名称，安装时会根据这个设置 hostname 的
+
+./kk create cluster -f config-sample.yaml
+
+# 部署完成后，检查 pod
+kubectl get pod -A
+docker ps
+```
+
+优点：
+
+1. 对 kubeadm 进行了封装，略改善了 HA 部署体验
+
+缺点：
+
+1. 支持的版本比较久远（2022.06.08，CentOS 7.9 kubeadm 官方 1.24.X 都出来了，kk 只支持到 1.23.0）
+1. 最新支持 kubesphere 3.2.1 的 k8s 版本还是 1.21.5（1.22.x 实验性支持，1.23 未涉及）实测 1.23.3 没啥问题，但官方为宣称，总担心有坑……
+1. 1.21.5 安装时还是默认用 docker 作为容器运行时，不是 containerd。可以 describe node：`Container Runtime Version:  docker://20.10.8`
+1. 命令行工具 crictl / nerdctl 之类都没有装
+
+槽点：
+
+1. 没啥高级功能…… 为啥不直接用 kubeadm，封装干嘛呢……
+1. 跑了一遍 kk 之后，收到短信：`【阿里云】尊敬的 XXXX：云盾云安全中心检测到您的服务器：XXXX 出现了紧急安全事件：恶意脚本代码执行，建议您立即登录云安全中心控制台-安全告警处理 http://a.aliyun.com/XXXX 进行处理。`
+
+    ![](/image/kubekey-aliyun-alert.png)
+
 #### 3.1.4 K0S
 
 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/install/>
+
+1. 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/system-requirements/#host-operating-system> 内核必须先升级到 4.3 以上
+1. 得弄好离线包…… load 好镜像再装……
+1. 有延迟…… 2022.06.08 CentOS 7.9 1.24.x 都出来了，这最新还在 1.23.6
 
 #### 3.1.5 K3S
 
