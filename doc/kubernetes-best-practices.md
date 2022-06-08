@@ -2081,6 +2081,8 @@ crontab -e
 
     ```bash
     kubectl delete nodes master0
+
+    # 在 master0 上运行 reset
     kubeadm reset
     ```
 
