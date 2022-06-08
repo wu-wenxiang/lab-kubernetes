@@ -942,7 +942,9 @@ io.containerd.internal.v1             tracing                  -              ok
 io.containerd.grpc.v1                 cri                      linux/amd64    ok
 ```
 
-私有镜像仓库相关的配置在 cri 插件中，文档Configure Image Registry中包含了镜像仓库的配置。 关于私有仓库和认证信息配置示例如下，修改/etc/containerd/config.toml：
+devmapper plugin error 是因为没有配置，可以暂时忽略，devmapper 概念可以参考：<https://pkg.go.dev/github.com/containerd/containerd/snapshots/devmapper#section-readme>
+
+私有镜像仓库相关的配置在 cri 插件中，文档 Configure Image Registry中包含了镜像仓库的配置。 关于私有仓库和认证信息配置示例如下，修改/etc/containerd/config.toml：
 
 ```ini
 ...
@@ -1049,7 +1051,12 @@ ctr -n default i ls
 
 综上：
 
-1. containerd 可以有多个 namespaces，default/k8s.io/moby。这里的 namespace 不是 k8s 层面的，而是 containerd 用来隔离不同的 plugin 的。
+1. containerd 可以有多个 namespaces，default/k8s.io/moby。这里的 namespace 不是 k8s 层面的，而是 containerd 自己的概念空间。参考 <https://github.com/containerd/containerd/blob/main/docs/namespaces.md>
+
+    *containerd offers a fully namespaced API so multiple consumers can all use a single containerd instance without conflicting with one another. Namespaces allow multi-tenancy within a single daemon. This removes the need for the common pattern of using nested containers to achieve this separation. Consumers are able to have containers with the same names but with settings and/or configurations that vary drastically. For example, system or infrastructure level containers can be hidden in one namespace while user level containers are kept in another. Underlying image content is still shared via content addresses but image names and metadata are separate per namespace.*
+
+    *It is important to note that namespaces, as implemented, is an administrative construct that is not meant to be used as a security feature. It is trivial for clients to switch namespaces.*
+
 1. 通过 kubelet/crictl 启动的容器，ns 就是 k8s.io，通过 docker 启动的就是 moby。docker ps 是看不到 k8s.io 下的容器的。对于 containerd 而言， docker 和 kubelet 是两个不同的客户端。
 1. nerdctl 和 ctr 默认都是 default namespaces
 1. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces。
@@ -1582,6 +1589,14 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 [返回目录](#课程目录)
 
+K8S 的操作要记得参考：<https://kubernetes.io/>
+
+[K8S 有哪些组件](https://kubernetes.io/zh/docs/concepts/architecture/#)？api-server、kube-scheduler、kube-controller、etcd、coredns、kubelete、kubeproxy
+
+组件结构图
+
+![](/image/k8s-architecture.png)
+
 ### 3.1 集群的创建删除、扩缩容、备份恢复
 
 [返回目录](#课程目录)
@@ -1772,11 +1787,350 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 
 此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示 Kubelet 对接不同 CRI 时的情况。
 
-##### 3.1.1.3 删除 K8S
+##### 3.1.1.3 移除 Node 节点
+
+参考：<https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/>
+
+```bash
+# 首先确认节点情况
+kubectl get nodes
+
+# 然后告诉 API Server 暂停该节点的调度
+kubectl drain <node name>
+
+# 等节点恢复正常后，需要加回，可以用
+kubectl uncordon <node name>
+```
+
+##### 3.1.1.4 ETCD 操作和备份恢复
+
+ETCD 命令行工具安装
+
+```bash
+# Ubuntu 环境上用 apt-get 安装
+apt install etcd-client
+```
+其它环境直接下载二进制文件，参考：<https://github.com/etcd-io/etcd/releases>
+
+```bash
+ETCD_VER=v3.5.4
+
+# choose either URL
+GOOGLE_URL=https://storage.googleapis.com/etcd
+GITHUB_URL=https://github.com/etcd-io/etcd/releases/download
+DOWNLOAD_URL=${GOOGLE_URL}
+
+rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+rm -rf /tmp/etcd-download-test && mkdir -p /tmp/etcd-download-test
+
+curl -L ${DOWNLOAD_URL}/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd-download-test --strip-components=1
+rm -f /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+
+/tmp/etcd-download-test/etcd --version
+/tmp/etcd-download-test/etcdctl version
+/tmp/etcd-download-test/etcdutl version
+# start a local etcd server
+/tmp/etcd-download-test/etcd
+
+# write,read to etcd
+/tmp/etcd-download-test/etcdctl --endpoints=localhost:2379 put foo bar
+/tmp/etcd-download-test/etcdctl --endpoints=localhost:2379 get foo
+```
+
+通过 API Server 理解 ETCD 使用情况，测试 etcdctl 存取内容
+
+```console
+root@ckalab001:~# ps -ef | grep api | grep -i etcd
+root       24761   24743  3 10:17 ?        00:06:53 kube-apiserver --advertise-address=172.31.43.206 --allow-privileged=true --authorization-mode=Node,RBAC --client-ca-file=/etc/kubernetes/pki/ca.crt --enable-admission-plugins=NodeRestriction --enable-bootstrap-token-auth=true --etcd-cafile=/etc/kubernetes/pki/etcd/ca.crt --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.crt --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key --etcd-servers=https://127.0.0.1:2379 --insecure-port=0 --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.crt --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname --proxy-client-cert-file=/etc/kubernetes/pki/front-proxy-client.crt --proxy-client-key-file=/etc/kubernetes/pki/front-proxy-client.key --requestheader-allowed-names=front-proxy-client --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.crt --requestheader-extra-headers-prefix=X-Remote-Extra- --requestheader-group-headers=X-Remote-Group --requestheader-username-headers=X-Remote-User --secure-port=6443 --service-account-issuer=https://kubernetes.default.svc.cluster.local --service-account-key-file=/etc/kubernetes/pki/sa.pub --service-account-signing-key-file=/etc/kubernetes/pki/sa.key --service-cluster-ip-range=10.96.0.0/12 --tls-cert-file=/etc/kubernetes/pki/apiserver.crt --tls-private-key-file=/etc/kubernetes/pki/apiserver.key
+
+# 设置环境变量，ETCDCTL_API=3
+root@ckalab001:~# export ETCDCTL_API=3
+
+root@ckalab001:~# etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 put /firstkey trystack
+OK
+
+root@ckalab001:~# etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 get /firstkey
+/firstkey
+trystack
+```
+
+备份恢复，参考：<https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster>
+
+```bash
+# list 所有的 key
+etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 get --prefix --keys-only ""
+
+# list 所有的 key & value
+etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 get --prefix ""
+
+# backup & restore
+etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 snapshot save a.txt
+# etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kubernetes/pki/apiserver-etcd-client.key" --cacert="/etc/kubernetes/pki/etcd/ca.crt" --endpoints=https://127.0.0.1:2379 snapshot restore a.txt
+```
+
+##### 3.1.1.5 Master0 节点的备份恢复
+
+Kubeadm 部署 k8s 集群时，master0 尤其重要，需要通过该节点来把证书推送给新加入的节点。当 master0 节点出现故障，可以利用备份恢复 master0 节点。通过 kubeadm 安装的 k8s，主节点包括两类的灾备恢复：
+
+- etcd 数据存储恢复
+- 主节点控制组件恢复
+
+场景描述：
+
+- 当前环境时 master0/master1/master2，三个 master 节点 HA
+- 会尝试备份 master0 节点，再用 master3 替换 master0
+
+**Etcd 数据备份**：定义 etcd-backup.yaml 文件，运行在 master0 上
+
+```yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup
+  namespace: kube-system
+spec:
+  schedule: "0 0 * * *" # 指定时间
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            # Same image as in /etc/kubernetes/manifests/etcd.yaml
+            image: k8s.gcr.io/etcd-amd64:3.2.18
+            env:
+            - name: ETCDCTL_API
+              value: "3"
+            command: ["/bin/sh"]
+            args: ["-c", "etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /backup/etcd-snapshot-$(date +%Y-%m-%d_%H:%M:%S_%Z).db"]
+            volumeMounts:
+            - mountPath: /etc/kubernetes/pki/etcd
+              name: etcd-certs
+              readOnly: true
+            - mountPath: /backup
+              name: backup
+          restartPolicy: OnFailure
+          # 指定master0节点执行
+          nodeName: master0
+          hostNetwork: true
+          volumes:
+          - name: etcd-certs
+            hostPath:
+              path: /etc/kubernetes/pki/etcd
+              type: DirectoryOrCreate
+          - name: backup
+            hostPath:
+              path: /tmp/etcd_backup/
+              type: DirectoryOrCreate
+```
+
+实现思路：
+
+1. 定义 CronJob，这个 pod 每天凌晨自动运行 (schedule: "0 0 * * *")，用户可以自定义运行时间
+2. 运行在 master0 节点上，通过 nodeName 实现
+3. 挂载了 master0 机器上的 /tmp/etcd_backup/ 作为备份
+4. Args 参数中的 `etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /backup/etcd-snapshot-$(date +%Y-%m-%d_%H:%M:%S_%Z).db` 即为备份命令，按照时间的格式命名 etcd 的备份数据
+
+**Etcd 数据恢复**：
+
+```bash
+# 1. 将 /etc/kubernetes/manifests/ kube-apiserver.yaml 文件移动到别处，停止 kube-apiserver 服务
+mv /etc/kubernetes/manifests/kube-apiserver.yaml /tmp/ 
+
+# 2. 将 /etc/kubernetes/manifests/ etcd.yaml 文件移动到别处，停止 etcd server 服务
+mv /etc/kubernetes/manifests/etcd.yaml /tmp/ 
+
+# 3. 运行如下命令，将损坏的数据文件移至其他地方
+mv /var/lib/etcd/* /tmp/
+
+# 4. 运行以下命令，临时运行 docker 容器，将数据从备份里恢复到 /var/lib/etcd/
+docker run --rm \
+   -v '/tmp/etcd_backup/:/backup' \
+   -v '/var/lib/etcd:/var/lib/etcd' \
+   --env ETCDCTL_API=3 \
+   'k8s.gcr.io/etcd-amd64:3.2.18' \
+  /bin/sh -c "etcdctl snapshot restore '/backup/etcd-snapshot-xxx_UTC.db' ; mv /default.etcd/member/ /var/lib/etcd/"
+
+# 5. 将/etc/kubernetes/manifests/kube-apiserver.yaml文件放回原来路径，恢复kube-api server服务
+# 6. 将/etc/kubernetes/manifests/etcd.yaml文件放回原来路径，恢复etcd server服务
+```
+
+**主节点数据备份**主要包括三个部分：
+
+- `/etc/kubernetes/` 目录下的所有文件(证书，manifest 文件)
+- 用户主目录下 .kube/config 文件(kubectl 连接认证)
+- /var/lib/kubelet/ 目录下所有文件(plugins 容器连接认证)
+
+定义 k8s-master-backup.yaml 文件，运行在 master0 上。
+
+```yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: k8s-master-backup
+  namespace: kube-system
+spec:
+  # activeDeadlineSeconds: 100
+  schedule: "5 0 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: k8s-master-backup
+            image: docker.io/alpine:latest
+            command: ["/bin/sh"]
+            args: ["-c", "tar -zcvf /backup/k8s-master-$(ifconfig eth0 | grep 'inet addr:' | awk '{print $2}' | cut -c 6-)-$(date +%Y-%m-%d_%H:%M:%S_%Z).tar.gz /kubernetes /kubelet"]
+            volumeMounts:
+            - mountPath: /backup
+              name: backup
+            - mountPath: /kubernetes
+              name: kubernetes
+            - mountPath: /kubelet
+              name: kubelet
+          restartPolicy: OnFailure
+          # 指定节点master0执行
+          nodeName: master0
+          hostNetwork: true
+          volumes:
+          - name: backup
+            hostPath:
+              path: /tmp/k8s_master_backup/
+              type: DirectoryOrCreate
+          - name: kubernetes
+            hostPath:
+              path: /etc/kubernetes/
+              type: DirectoryOrCreate
+          - name: kubelet
+            hostPath:
+              path: /var/lib/kubelet/
+              type: DirectoryOrCreate
+```
+
+实现思路：
+
+1. 通过 hostPath 方式挂载了 /etc/kubernetes 目录
+2. 以 hostPath 方式挂载了 /var/lib/kubelet 目录
+3. 以 hostNetwork: true 方式运行，能读取主机IP地址
+4. 以 nodeName 方式，运行于 master0 节点
+5. Backup 目录默认挂载于宿主机 /tmp/k8s_master_backup/
+
+注意：为防止宿主机本身故障，建议备份文件应定期转移到备份机器上，编写脚本定时将备份文件传到备份机器上
+
+创建脚本文件 filescp.sh，filescp.sh 文件内容
+
+```bash
+#!/bin/bash
+scp -i .ssh/id_rsa /tmp/etcd_backup/ root@10.0.0.76:/tmp
+scp -i .ssh/id_rsa /tmp/k8s_master_backup/ root@10.0.0.76:/tmp
+```
+
+```bash
+# 加入脚本执行到计划任务
+crontab -e
+
+# 添加计划任务(计划每日0时30分执行，时间用户可自指定)
+30 0 * * * /tmp/filescp.sh
+```
+
+**新建节点替换 master0**
+
+1. 准备一个待加入的节点 master3
+  -  自行关闭防火墙 selinux 等
+  -  自行安装 docker 或者 containerd（未测试）
+  -  自行安装 kubeadm/kubelet/kubectl
+  -  若待加入集群使用了非 k8s.gcr.io 的仓库，请自行修改 /etc/docker/daemon.json 或者 /etc/containerd/config.toml  
+2. 生成 certificate-key(在master0节点执行)
+
+    该过程遇上 warning 可以忽略。主要目的是让 kubeadm 自己处理证书，不用我们 scp
+
+    ```console
+    $ kubeadm init phase upload-certs --upload-certs
+    # 或者
+    $ kubeadm init phase upload-certs --upload-certs --config /tmp/.k8s/kubeadm.yaml
+
+    b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
+    ```
+
+3. 查看加入集群命令(master0节点执行)
+
+    ```bash
+    kubeadm token create --print-join-command
+    kubeadm join 192.168.40.199:16443 --token e5wrs0.lqcem5us4a04tp5x --discovery-token-ca-cert-hash sha256:61c6754582a1ca7668770594acd1efa36a9c5c71a897517d8fb6f6c9db8ee314
+    ```
+
+4. 将 master3 节点加入 k8s 集群，充当控制节点(master3 节点上执行)
+
+    ```bash
+    kubeadm join apiserver.cluster.local:6443 --token 6g5enb.ub1pap31ty0zoym4     --discovery-token-ca-cert-hash sha256:a057ab2330c6dba1de3816a291ea3786a5a558d5737d94ef64c5c045bf1e5e1c --control-plane --certificate-key b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
+    ```
+
+5. 查看 master3 是否加入成功
+
+    ```bash
+    mkdir -p $HOME/.kube
+    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+    kubectl get pod -A
+    kubectl get node
+    ```
+
+6. 将 master0 从 k8s 集群删除(任意 master 节点执行)
+
+    ```bash
+    kubectl delete nodes master0
+    kubeadm reset
+    ```
+
+7. 获取 master0 节点的 hash 值(任意 master 节点执行)
+
+    ```bash
+    # 集群本身安装了 etcdctl 工具，可省略这几步
+    tar -zxvf etcd-v3.3.4-linux-amd64.tar.gz 
+    cd etcd-v3.3.4-linux-amd64
+    cp etcdctl /usr/local/sbin/
+
+    # 获取 master0 节点 hash 值
+    ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member list
+    ```
+
+    输出：
+
+    ```
+    1203cdd3ad75e761, started, master0, https://192.168.40.180:2380, https://192.168.40.180:2379
+    dda71d9d52b97028, started, master1, https://192.168.40.181:2380, https://192.168.40.181:2379
+    dkeijf23cjd3445k, started, master2, https://192.168.40.182:2380, https://192.168.40.182:2379
+
+    找到 master0 对应的 hash 值是：1203cdd3ad75e761
+
+8. 根据 hash 删除 etcd 信息，执行如下命令:
+
+    ```bash
+    ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member remove 1203cdd3ad75e761
+    ```
+
+9. 查看节点是否加入成功
+
+    ```console
+    $ kubectl get nodes
+
+    NAME STATUS ROLES AGE VERSION
+    master3 Ready control-plane,master 50s v1.20.6
+    master1 Ready control-plane,master 35m v1.20.6
+    master2 Ready control-plane,master 35m v1.20.6
+    ```
+
+##### 3.1.1.6 删除 K8S
 
 参考：<https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-reset/>
 
 `kubectl reset -f`
+
+##### 3.1.1.7 常见的集群排错思路
+
+参考：<https://kubernetes.io/docs/tasks/debug/debug-cluster/#cluster-failure-modes>
 
 #### 3.1.2 Sealos
 
@@ -2276,6 +2630,9 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 
 ### 3.7 最佳实践
 
+1. K8S 的操作要记得参考：<https://kubernetes.io>
+1. 部署 K8S 节点时，要记得 root / kubelet / etcd / 备份 / cri 用不同的存储分区，etcd 要注意用 ssd
+1. K8S 架构中，一般会增加 infra 节点来避免 worker node 直接对外暴露
 1. 生产环境中：推荐 kubeadm，K8S + Kubeadm + Calico + KubeSphere
 1. 边缘环境：推荐 K3S + AutoK3S + Rancher
 1. KubeKey / Kubeasz / K0S 各有优势，但需要学习和深入理解（Debug）不同的工具和技术栈
