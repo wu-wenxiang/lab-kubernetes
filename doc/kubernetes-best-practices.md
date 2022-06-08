@@ -2333,6 +2333,12 @@ systemctl enable --now docker
 curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_EXEC="--docker" sh -
 ```
 
+如果不用 docker 的话，改成
+
+```bash
+curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
+```
+
 输出下述日志，即部署完成
 
 ```log
@@ -2373,7 +2379,7 @@ nginx-6799fc88d8-pc4wz   1/1     Running   0          101s
 
 ```console
 # 修改 CNI 网络模式
-# 默认情况下，K3s 将以 flannel 作为 CNI 运行，使用 VXLAN 作为默认后端。如需修改 CNI 的模式，可以参考下述命令安装
+# 默认情况下，K3S 将以 flannel 作为 CNI 运行，使用 VXLAN 作为默认后端。如需修改 CNI 的模式，可以参考下述命令安装
 # --flannel-backend=vxlan   (默认) 使用 VXLAN 后端。
 # --flannel-backend=ipsec	使用 IPSEC 后端，对网络流量进行加密。
 # --flannel-backend=host-gw	使用 host-gw 后端。
@@ -2589,6 +2595,27 @@ WantedBy=multi-user.target
 ```
 
 #### 3.1.6 AutoK3S
+
+参考：<https://github.com/cnrancher/autok3s>
+
+```bash
+curl -sS https://rancher-mirror.rancher.cn/autok3s/install.sh  | INSTALL_AUTOK3S_MIRROR=cn sh -
+
+# The commands will start autok3s daemon with an interactionable UI.
+autok3s -d serve --bind-address 0.0.0.0
+```
+
+优点：
+
+1. 公有云 & native provider
+2. 自定义配置参数
+3. 实时 log
+4. kubectl web console
+5. rollback
+
+缺点：
+
+1. 只支持 k3s
 
 ### 3.2 版本升级
 
