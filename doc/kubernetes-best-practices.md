@@ -3590,13 +3590,48 @@ local-path-pvc   Bound    pvc-013cdb6b-fe6e-4fa8-9e5b-8a5e4957a91b   128Mi      
 
 [返回目录](#课程目录)
 
+Container Network Interface (CNI) 最早是由 CoreOS 发起的容器网络规范，是 Kubernetes 网络插件的基础。其基本思想为：Container Runtime 在创建容器时，先创建好 network namespace，然后调用 CNI 插件为这个 netns 配置网络，其后再启动容器内的进程。现成为 CNCF 主推的网络模型。
+
+CNI 插件包括两部分：CNI Plugin 和 IPAM Plugin
+
+- CNI Plugin负责给容器配置网络，它包括两个基本的接口
+  - 配置网络: AddNetwork(net NetworkConfig, rt RuntimeConf) (types.Result, error)
+  - 清理网络: DelNetwork(net NetworkConfig, rt RuntimeConf) error
+- IPAM Plugin 负责给容器分配IP地址，主要实现包括 host-local 和 dhcp。
+
+Kubernetes Pod 中的其他容器都是 Pod 所属 pause 容器的网络，创建过程为：
+
+1. kubelet 先创建 pause 容器生成 network namespace
+2. 调用网络 CNI driver，根据配置调用具体的 cni 插件
+3. cni 插件给 pause 容器配置网络
+4. pod 中其他的容器都使用 pause 容器的网络
+
+参考：
+
+- <https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/>
+- <https://kubernetes.io/docs/concepts/cluster-administration/networking/>
+- <https://feisky.gitbooks.io/kubernetes/content/network/cni/cni.html>
+- <https://zhuanlan.zhihu.com/p/110648535>
+
+所有 CNI 插件均支持通过环境变量和标准输入传入参数：
+
+```bash
+echo '{"cniVersion": "0.3.1","name": "mynet","type": "macvlan","bridge": "cni0","isGateway": true,"ipMasq": true,"ipam": {"type": "host-local","subnet": "10.244.1.0/24","routes": [{ "dst": "0.0.0.0/0" }]}}' | sudo CNI_COMMAND=ADD CNI_NETNS=/var/run/netns/a CNI_PATH=./bin CNI_IFNAME=eth0 CNI_CONTAINERID=a CNI_VERSION=0.3.1 ./bin/bridge
+
+echo '{"cniVersion": "0.3.1","type":"IGNORED", "name": "a","ipam": {"type": "host-local", "subnet":"10.1.2.3/24"}}' | sudo CNI_COMMAND=ADD CNI_NETNS=/var/run/netns/a CNI_PATH=./bin CNI_IFNAME=a CNI_CONTAINERID=a CNI_VERSION=0.3.1 ./bin/host-local
+```
+
 ### 5.2 对接 Calico
 
 [返回目录](#课程目录)
 
+参考：<https://github.com/projectcalico/calico>
+
 ### 5.3 对接 OVN
 
 [返回目录](#课程目录)
+
+参考：<https://github.com/kubeovn/kube-ovn#kube-ovn-vs-calico>
 
 ### 5.4 多网络平面
 
