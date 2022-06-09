@@ -1071,7 +1071,7 @@ podman 是 CRI-O 项目分裂出来的，由 redhat 发起。
 参考：<https://podman.io/getting-started/>
 
 ```bash
-yum install podman
+yum install -y podman
 
 podman pull docker.io/library/httpd
 podman images
@@ -1437,7 +1437,7 @@ OS=CentOS_7
 VERSION=1.23
 curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/$OS/devel:kubic:libcontainers:stable.repo
 curl -L -o /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:$VERSION/$OS/devel:kubic:libcontainers:stable:cri-o:$VERSION.repo
-yum install cri-o
+yum install -y cri-o
 ```
 
 修改 kubelet 启动参数（也可以写在 EnvironmentFile 指定的文件里）：
@@ -2215,10 +2215,10 @@ sealos.hub:5000/tigera/operator             v1.25.3             648350e58702c   
 ```
 # 配置好密钥，确定可以 ssh 免密登录需要安装 kubelet 的 node
 
-yum install openssl openssl-devel
-yum install socat -y
-yum install epel-release
-yum install conntrack-tools -y
+yum install -y openssl openssl-devel
+yum install -y socat
+yum install -y epel-release
+yum install -y conntrack-tools
 
 export KKZONE=cn
 curl -sfL https://get-kk.kubesphere.io | VERSION=v2.0.0 sh -
@@ -2763,9 +2763,9 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 
 #### 3.4.1 KubeSphere
 
-参考 <https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/>
+先装好 K8S，准备检查：<https://kubesphere.io/docs/installing-on-kubernetes/introduction/prerequisites/>。注意：**要有 default 的 storageclass**，可以用 NFS 配置一个。
 
-准备检查：<https://kubesphere.io/docs/installing-on-kubernetes/introduction/prerequisites/>
+然后安装 KubeSphere：参考 <https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/>。
 
 ### 3.5 监控、计量和告警
 
@@ -3091,17 +3091,31 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 [root@lab-c2009-ceph-aio ~]# cat /etc/system-release
 CentOS Linux release 7.9.2009 (Core)
 
-[root@lab-c2009-ceph-aio ~]# yum install python3
+[root@lab-c2009-ceph-aio ~]# yum install python3 -y
 [root@lab-c2009-ceph-aio ~]# python3 -V
 Python 3.6.8
 
 [root@lab-c2009-ceph-aio ~]# ls /dev/vd*
 /dev/vda  /dev/vda1  /dev/vda2  /dev/vdb
+```
 
-[root@lab-c2009-ceph-aio ~]# yum install docker -y
-[root@lab-c2009-ceph-aio ~]# systemctl enable docker --now
-[root@lab-c2009-ceph-aio ~]# docker --version
-Docker version 1.13.1, build 7d71120/1.13.1
+确认内核升级完毕，python3 部署完成（最好是 3.8，但实验环境中用 3.6 也行）
+
+```bash
+yum install -y yum-utils
+yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+
+yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+yum list docker-ce --showduplicates | sort -r
+
+yum install -y docker-ce-20.10.16 docker-ce-cli-20.10.16 containerd.io docker-compose-plugin
+
+systemctl enable docker --now
+
+docker version
 ```
 
 安装 Cephadm
@@ -3170,7 +3184,7 @@ cephadm bootstrap --config initial-ceph.conf --mon-ip 192.168.122.229
 
 ```console
 [root@lab-c2009-ceph-aio ~]# cephadm add-repo --release octopus
-[root@lab-c2009-ceph-aio ~]# yum install ceph-common
+[root@lab-c2009-ceph-aio ~]# yum install -y ceph-common
 [root@lab-c2009-ceph-aio ~]# ceph -s
   cluster:
     id:     090a76ec-9bb4-11ec-91af-525400cd7283
@@ -3521,6 +3535,8 @@ VolumeSnapshotContent 是 cluster 级别
 
 [返回目录](#课程目录)
 
+参考：<https://github.com/rancher/local-path-provisioner>
+
 ### 4.6 最佳实践
 
 1. K8S 上的存储一般用商用 NAS（协议用 NFS）或者 CephRBD，相对成熟可靠。尽量不要用 CephFS（生产环境中存在丢数据风险）。
@@ -3557,7 +3573,7 @@ VolumeSnapshotContent 是 cluster 级别
 ### 5.6 最佳实践
 
 1. 推荐 Calico，需要追求性能可以用 BGP 模式
-1. 如果是 IPIP/vxlan 模式，需要考虑 MTU
+1. [如果是 IPIP/vxlan 模式，需要考虑 MTU](http://blog.wuwenxiang.net/k8s-app-debug)
 1. 只有网元虚拟化，或者 ECS 场景，才推荐用 Multus 和 KubeOVN
 1. DPDK 取决于 CNI 支持，比如 ovs-dpdk
 1. 物理网卡加速取决于网卡硬件和驱动支持
@@ -3570,24 +3586,482 @@ VolumeSnapshotContent 是 cluster 级别
 
 [返回目录](#课程目录)
 
+
+#### 6.1.1 Network Policy
+
+参考：<https://kubernetes.io/docs/concepts/services-networking/network-policies/>
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: test-network-policy
+  namespace: default
+spec:
+  # podSelector: {} 表示选择所有 pod 应用 NetworkPolicy
+  podSelector: # 表示选择包含标签 role=db 的 pod 应用下面的 NetworkPolicy
+    matchLabels:
+      role: db
+  policyTypes: # 表示 NetworkPolicy 包含 ingress 和 egress 流量规则
+  - Ingress
+  - Egress
+  ingress: # ingress 规则白名单列表，每条规则允许同时匹配 from 和 ports  流，可以有条个规则。
+  # 第 1 条白名单，包含 from + ports 的组合规则，允许来自172.17网段(172.17.1除外)、或标 签 project=myproject 的命名空间的所 有 pod 、或 default 命名空间下标签 role=frontend 的 pod 访问（限 tcp 6379 端口）
+  - from:
+    - ipBlock:
+        cidr: 172.17.0.0/16
+        except:
+        - 172.17.1.0/24
+    - namespaceSelector:
+        matchLabels:
+          project: myproject
+    - podSelector:
+        matchLabels:
+          role: frontend
+    ports:
+    - protocol: TCP
+      port: 6379
+  # 第二条白名单，只包含 from 规则，允许来自所有命名空间包含 environment=testing 标签的 pod 访问（不限端口）
+  - from:
+    - namespaceSelector: {}
+      podSelector:
+        matchLabels:
+          environment: testing
+  egress: # egress 规则白名单列表，同 ingress 规则一样，每条规则包含 to+ports，可以有多条规则。
+  - to:
+    - ipBlock:
+        cidr: 10.0.0.0/24
+    ports:
+    - protocol: TCP
+      port: 5978
+```
+
+#### 6.1.2 PodSecurityPolicy
+
+参考：<https://kubernetes.io/docs/concepts/security/pod-security-policy/>，1.25 以后转 <https://kubernetes.io/docs/concepts/security/pod-security-admission/> (1.23 是 beta)
+
+psp 的用法，包括 5 步骤
+
+1. 创建 psp
+
+    ```yaml
+    apiVersion: policy/v1beta1
+    kind: PodSecurityPolicy
+    metadata:
+    name: restrict-policy
+    spec:
+    privileged: false
+    seLinux:
+        rule: RunAsAny
+    supplementalGroups:
+        rule: RunAsAny
+    runAsUser:
+        rule: RunAsAny
+    fsGroup:
+        rule: RunAsAny
+    volumes:
+    - '*'
+    ```
+
+2. 创建 clusterrole，使用 psp
+
+    `kubectl create clusterrole restrict-access-role --verb=use --resource=psp --resource-name=restrict-policy`
+
+3. 创建 serviceaccount
+
+    `kubectl create sa psp-denial-sa -n staging`
+
+4. 绑定 clusterrole 到 serviceaccount
+
+    `kubectl create clusterrolebinding dany-access-bind --clusterrole=restrict-access-role --serviceaccount=staging:psp-denial-sa`
+
+5. 启用 PSP
+
+    ```yaml
+    vi /etc/kubernetes/manifests/kube-apiserver.yaml
+    # 确保有以下内容：
+    - --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
+    ```
+
 ### 6.2 权限限制
 
 [返回目录](#课程目录)
+
+#### 6.2.1 使用 AppArmor 限制容器对资源的访问
+
+参考：<https://kubernetes.io/zh/docs/tutorials/security/apparmor/>
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: podx
+  annotations:
+    container.apparmor.security.beta.kubernetes.io/podx: localhost/nginx-profile-3
+spec:
+  containers:
+  - image: busybox
+    imagePullPolicy: IfNotPresent
+    name: podx
+    command: [ "sh", "-c", "echo 'Hello AppArmor!' && sleep 1h" ]
+    resources: {}
+  nodeName: node01
+  dnsPolicy: ClusterFirst
+  restartPolicy: Always
+```
+
+#### 6.2.2 限制 Pod 访问 K8S API 的权限
+
+参考：<https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server>
+
+serviceaccount 有个选项 automountServiceAccountToken, 这个选项决定是否自动挂载 secret 到 pod。
+有这个选项，我们可以控制 pod 创建并绑定 serviceaccount 时，不自动挂载对应的 secret，这样 pod 就没有权限访问 apiserver，提高了业务 pod 的安全性。
+
+可以在 serviceaccount 和 pod 的 spec 里设置，pod 的设置优先于 serviceaccount 里的设置。
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: backend-sa
+  namespace: qa
+automountServiceAccountToken: false
+```
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: backend
+  namespace: qa
+spec:
+  serviceAccountName: backend-sa
+  containers:
+  - image: nginx:1.9
+    imagePullPolicy: IfNotPresent
+    name: backend
+```
+
+删除未使用的 serviceaccount
+
+自动挂载的 service token 的 pod 可以做很多事，比如 get secret
+
+```bash
+k -n restricted get pod -o yaml | grep automountServiceAccountToken
+
+curl https://kubernetes.default/api/v1/namespaces/restricted/secrets -H "Authorization: Bearer $(cat /run/secrets/kubernetes.io/serviceaccount/token)" -k
+```
 
 ### 6.3 K8S 安全扫描工具
 
 [返回目录](#课程目录)
 
+#### 6.3.1 修复 kube-bench 发现的安全问题
+
+参考：<https://github.com/aquasecurity/kube-bench>
+
+```console
+$ kubectl apply -f https://github.com/aquasecurity/kube-bench/raw/main/job.yaml
+job.batch/kube-bench created
+
+$ kubectl get pods
+NAME                      READY   STATUS              RESTARTS   AGE
+kube-bench-j76s9   0/1     ContainerCreating   0          3s
+
+# Wait for a few seconds for the job to complete
+$ kubectl get pods
+NAME                      READY   STATUS      RESTARTS   AGE
+kube-bench-j76s9   0/1     Completed   0          11s
+
+# The results are held in the pod's logs
+kubectl logs kube-bench-j76s9
+[INFO] 1 Master Node Security Configuration
+[INFO] 1.1 API Server
+...
+```
+
+`kube-bench` 是一个 CIS 评估工具，扫描 kubernetes 集群存在的安全问题，基本上按照扫描结果的修复建议进行修复就可以了，系统会给出很具体的修复措施。
+
+```bash
+kube-bench run --targets=master | grep kube-controller -A 3
+
+kube-bench run --targets=node | grep /var/lib/kubelet/config.yaml -B2
+```
+
+比较常见的是 kubeadm 创建的 kubernetes 服务器权限设置有问题，允许未经授权的访问。
+
+- 使用 Node,RBAC 授权模式和 NodeRestriction 准入控制器
+
+    ```yaml
+    vi /etc/kubernetes/manifests/kube-apiserver.yaml
+    # 确保以下内容
+    - --authorization-mode=Node,RBAC
+    - --enable-admission-plugins=NodeRestriction
+    - --client-ca-file=/etc/kubernetes/pki/ca.crt
+    - --enable-bootstrap-token-auth=true
+    ```
+
+- system:anonymous 的 ClusterRolebinding 角色绑定，匿名用户有集群管理员权限，需要取消
+
+    ```bash
+    kubectl delete clusterrolebinding system:anonymous
+    ```
+
+```bash
+# 修复 kube-apiserver 安全问题
+vi /etc/kubernetes/manifests/kube-apiserver
+#修改：
+--authorization-mode=Node,RBAC
+#添加
+--insecure-port=0
+#删除
+# --insecure-bind-address=0.0.0.0
+
+#修复 kubelet 安全问题
+vi /var/lib/kubelet/config.yaml
+# 将authentication.anonymous.enabled 设置为 false
+authentication:
+  anonymous:
+    enabled: false
+# authorization.mode 设置为 Webhook
+authorization:
+  mode: Webhook
+
+# 修复 etcd 安全问题
+vi /etc/kubernetes/manifests/etcd.yaml
+# 修改为true：
+- --client-cert-auth=true
+
+# 以上修复完成后 重新加载配置文件并重启kubelet
+
+systemctl daemon-reload
+systemctl restart kubelet
+```
+
+#### 6.3.2 筛选可能不符合最佳实践的 pod
+
+- 启用了特权的 pod，主要是检查 pod 是否含 privileged: true
+
+    `kubectl get po xxx -n production -o yaml| grep -i "privileged: true"`
+
+- 检查有状态 pod
+
+    `kubectl get pods XXXX -n production -o jsonpath={.spec.volumes} | jq`
+
+#### 6.3.3 使用 sysdig 检查容器里里的异常进程
+
+参考：<https://sysdig.com/use-cases/kubernetes-security/>
+
+sysdig 的基本用法，记住两个帮助命令：
+
+- `sysdig -h` 查看 sysdig 帮助
+- `sysdig -l` 查看 sysdig 支持的元数据
+
+另外 sysdig 支持指定 containerid 分析特定容器
+
+```bash
+# 查看容器id
+docker ps |grep tomcat
+sysdig -M 30 -p "*%evt.time,%user.uid,%proc.name" container.id=xxxx>opt/DFA/incidents/summary
+```
+
 ### 6.4 容器镜像安全扫描
 
 [返回目录](#课程目录)
+
+#### 6.4.1 dockerfile 的不安全指令
+
+dockerfile 里常见的不安全指令包括：
+
+1. 使用 root 用户
+1. 添加特定能力的 securityContext 安全上下文
+
+```dockerfile
+USER root
+
+securityContext:
+  {"Capabilities": {'add':{NET_BIND_SERVICE}, 'drop: []'}, 'privileged': TRUE}
+```
+
+#### 6.4.2 扫描镜像安全漏洞并处理使用有安全漏洞镜像的 pod
+
+镜像扫描工具 trivy，参考：<https://github.com/aquasecurity/trivy>
+
+```bash
+# 获取镜像名
+kubect get pod XXXX -n kamino -o yaml | grep image
+# 扫描镜像
+trivy imagename | grep (HIGH|CRITICAL)
+# kubectl delete po xxx
+```
 
 ### 6.5 审计日志
 
 [返回目录](#课程目录)
 
+参考：<https://kubernetes.io/docs/tasks/debug/debug-cluster/audit/>
+
+启动日志审计，包括两个步骤：
+
+1. 编写日志审计策略文件
+
+    ```yaml
+    apiVersion: audit.k8s.io/v1
+    kind: Policy
+    omitStages:
+    - "RequestReceived"
+    rules:
+    - level: RequestResponse
+        resources:
+        - group: ""
+        resources: ["namespaces"]
+
+    - level: Request
+        resources:
+        - group: ""
+        resources: ["persistentvolumes"]
+        namespaces: ["front-apps"]
+
+    - level: Metadata
+        resources:
+        - group: ""
+        resources: ["secrets", "configmaps"]
+
+    - level: Metadata
+        omitStages:
+        - "RequestReceived"
+    ```
+
+1. 修改 `kube-apiserver.yaml` 配置文件，启用日志审计策略，日志策略配置文件位置、日志文件存储位置、循环周期。
+
+    `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
+
+    ```yaml
+    # 设置日志审计策略文件在 pod 里的 mount 位置
+    - --audit-policy-file=/etc/kubernetes/logpolicy/sample-policy.yaml
+
+    # 设置日志文件存储位置
+    - --audit-log-path=/var/log/kubernetes/audit-logs.txt
+
+    # 设置日志文件循环
+    - --audit-log-maxage=10
+    - --audit-log-maxbackup=2
+
+    # mount 日志策略和日志文件的
+    volumeMounts:
+    - mountPath: /etc/kubernetes/logpolicy/sample-policy.yaml
+        name: audit
+        readOnly: true
+    - mountPath: /var/log/kubernetes/audit-logs.txt
+        name: audit-log
+        readOnly: false
+    volumes:
+    - name: audit
+        hostPath:
+        path: /etc/kubernetes/logpolicy/sample-policy.yaml
+        type: File
+    - name: audit-log
+        hostPath:
+        path: /var/log/kubernetes/audit-logs.txt
+        type: FileOrCreate
+    ```
+
+1. 重启 API Server 来检查 audit.log
+
+    ```bash
+    cd /etc/kubernetes/manifests/
+    mv kube-apiserver.yaml ..
+    watch crictl ps # wait for apiserver gone
+    truncate -s 0 /etc/kubernetes/audit/logs/audit.log
+    mv ../kube-apiserver.yaml .
+
+    cat audit.log | tail | jq
+
+    # shows Secret entries
+    cat audit.log | grep '"resource":"secrets"' | wc -l
+
+    # confirms Secret entries are only of level Metadata
+    cat audit.log | grep '"resource":"secrets"' | grep -v '"level":"Metadata"' | wc -l
+
+    # shows RequestResponse level entries
+    cat audit.log | grep -v '"level":"RequestResponse"' | wc -l
+
+    # shows RequestResponse level entries are only for system:nodes
+    cat audit.log | grep '"level":"RequestResponse"' | grep -v "system:nodes" | wc -l
+    ```
+
 ### 6.6 镜像准入检查
 
 [返回目录](#课程目录)
 
+ImagePolicyWebhook
+
+参考：<https://kubernetes.io/docs/reference/access-authn-authz/admission-controllers/#imagepolicywebhook>
+
+ImagePolicyWebhook 准入控制器的使用，分 4 个步骤
+
+1. 修改控制器配置文件，将未找到有效后端时的默认拒绝改为默认不拒绝
+
+    `vi /etc/kubernetes/epconfig/admission_configuration.json`
+
+    ```json
+    {
+
+    "imagePolicy": {
+        "kubeConfigFile": "/etc/kubernetes/epconfig/kubeconfig.yaml",
+        "allowTTL": 50,
+        "denyTTL": 50,
+        "retryBackoff": 500,
+        "defaultAllow": false
+    }
+    }
+    ```
+
+2. 修改控制器访问 webhook server 的 kubeconfig
+
+    `vi /etc/kubernetes/epconfig/kubeconfig.yaml`
+
+    修改如下内容
+
+    ```yaml
+    apiVersion: v1
+    kind: Config
+    clusters:
+    - cluster:
+        certificate-authority: /etc/kubernetes/epconfig/webhook.pem
+        server: https://acme.local:8082/image_policy  # web hook server 的地址
+    name: bouncer_webhook
+    # 以下省略
+    ```
+
+3. 启用 ImagePolicyWebhook
+
+    `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
+
+    ```yaml
+    # 启用 ImagePolicyWebhook
+    - --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
+    # 指定准入控制器配置文件
+    - --admission-control-config-file=/etc/kubernetes/epconfig/admission_configuration.json
+    # mount
+        volumeMounts:
+        - mountPath: /etc/kubernetes/epconfig
+        name: epconfig
+    # 映射 volumes
+    volumes:
+        - name: epconfig
+        hostPath:
+        path: /etc/kubernetes/epconfig
+    ```
+
+4. 测试是否生效
+
+    ```bash
+    systemctl daemon-reload
+    systemctl restart kubelet
+    kubectl apply -f /cks/img/web1.yaml
+    ```
+
 ### 6.7 最佳实践
+
+综上～
