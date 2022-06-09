@@ -3537,6 +3537,42 @@ VolumeSnapshotContent 是 cluster 级别
 
 参考：<https://github.com/rancher/local-path-provisioner>
 
+```console
+[root@lab-k8s004 ~]# kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.22/deploy/local-path-storage.yaml
+namespace/local-path-storage created
+serviceaccount/local-path-provisioner-service-account created
+clusterrole.rbac.authorization.k8s.io/local-path-provisioner-role created
+clusterrolebinding.rbac.authorization.k8s.io/local-path-provisioner-bind created
+deployment.apps/local-path-provisioner created
+storageclass.storage.k8s.io/local-path created
+configmap/local-path-config created
+
+[root@lab-k8s004 ~]# kubectl get sc
+NAME         PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  50s
+
+[root@lab-k8s004 ~]# kubectl patch storageclass local-path -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
+storageclass.storage.k8s.io/local-path patched
+
+[root@lab-k8s004 ~]# kubectl get sc
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  75s
+
+[root@lab-k8s004 ~]# kubectl create -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pvc/pvc.yaml
+persistentvolumeclaim/local-path-pvc created
+
+[root@lab-k8s004 ~]# kubectl create -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pod/pod.yaml
+pod/volume-test created
+
+[root@lab-k8s004 ~]# kubectl get pv
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                    STORAGECLASS   REASON   AGE
+pvc-013cdb6b-fe6e-4fa8-9e5b-8a5e4957a91b   128Mi      RWO            Delete           Bound    default/local-path-pvc   local-path              23s
+
+[root@lab-k8s004 ~]# kubectl get pvc
+NAME             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+local-path-pvc   Bound    pvc-013cdb6b-fe6e-4fa8-9e5b-8a5e4957a91b   128Mi      RWO            local-path     40s
+```
+
 ### 4.6 最佳实践
 
 1. K8S 上的存储一般用商用 NAS（协议用 NFS）或者 CephRBD，相对成熟可靠。尽量不要用 CephFS（生产环境中存在丢数据风险）。
