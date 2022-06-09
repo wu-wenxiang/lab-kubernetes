@@ -2142,6 +2142,8 @@ crontab -e
 先确定能 ssh 172.19.30.106（本机 IP） 成功，然后用下面的命令就可以一行搞定 AIO 的 K8S 部署了。ctr / crictl / nerdctl 都会一起装上。
 
 ```bash
+wget -c https://sealyun-home.oss-cn-beijing.aliyuncs.com/sealos-4.0/latest/sealos-amd64 -O sealos && chmod +x sealos && mv sealos /usr/bin
+
 sealos run labring/kubernetes:v1.24.0 labring/calico:v3.22.1 --masters 172.19.30.106
 ```
 
