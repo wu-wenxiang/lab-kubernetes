@@ -3637,9 +3637,13 @@ echo '{"cniVersion": "0.3.1","type":"IGNORED", "name": "a","ipam": {"type": "hos
 
 [返回目录](#课程目录)
 
+参考：<https://github.com/k8snetworkplumbingwg/multus-cni>
+
 ### 5.5 物理网卡加速
 
 [返回目录](#课程目录)
+
+参考：<https://github.com/k8snetworkplumbingwg/sriov-network-device-plugin>
 
 ### 5.6 最佳实践
 
