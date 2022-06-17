@@ -759,7 +759,10 @@ yum install docker-ce-20.10.16 docker-ce-cli-20.10.16 containerd.io docker-compo
 
 systemctl enable docker --now
 
+echo "alias docker-compose='docker compose'" >> /etc/profile && source /etc/profile
+
 docker version
+docker-compose version
 ```
 
 然后可以检查 systemctl 的配置文件：
