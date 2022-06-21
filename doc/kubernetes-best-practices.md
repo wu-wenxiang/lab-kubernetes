@@ -753,9 +753,8 @@ yum-config-manager \
 
 yum install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-yum list docker-ce --showduplicates | sort -r
-
-yum install docker-ce-20.10.16 docker-ce-cli-20.10.16 containerd.io docker-compose-plugin
+# yum list docker-ce --showduplicates | sort -r
+# yum install docker-ce-20.10.16 docker-ce-cli-20.10.16 containerd.io docker-compose-plugin
 
 systemctl enable docker --now
 
@@ -1757,19 +1756,29 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
             http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
     EOF
 
+    # cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+    # [kubernetes]
+    # name=Kubernetes
+    # baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+    # enabled=1
+    # gpgcheck=0
+    # repo_gpgcheck=0
+    # gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+    # https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+    # EOF
+
     # 8. 安装 CRI
 
-    # 10. 下载 kubernetes
+    # 10. 下载 kubernetes https://kubernetes.io/releases/
     export k8s_version="1.23.3"
 
     yum install -y kubelet-${k8s_version}-0 kubeadm-${k8s_version}-0 kubectl-${k8s_version}-0  --disableexcludes=kubernetes
 
     # 11. 启动 kubelet
-    systemctl restart kubelet
-    systemctl enable kubelet
+    systemctl enable kubelet --now
 
-    # 12. 用 kubeadm 初始化创建 K8S 集群
-    kubeadm init --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v${k8s_version} --pod-network-cidr=10.244.0.0/16
+    # 12. 用 kubeadm 初始化创建 K8S 集群 https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#options
+    kubeadm init --cri-socket unix:///run/containerd/containerd.sock --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v${k8s_version} --pod-network-cidr=10.244.0.0/16
 
     # 13. 配置 .kube/config 用于使用 kubectl
     mkdir -p $HOME/.kube
@@ -1778,6 +1787,7 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
     # 15. 安装 calico
     kubectl apply -f https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
+    # kubectl apply -f https://raw.githubusercontent.com/99cloud/lab-openstack/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
 
     # 看到 node Ready 就 OK
     kubectl get nodes
