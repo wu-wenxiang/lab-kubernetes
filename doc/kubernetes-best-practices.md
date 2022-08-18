@@ -2350,18 +2350,18 @@ echo '{"registry-mirrors": ["http://hub-mirror.c.163.com"]}'>/etc/docker/daemon.
 systemctl enable --now docker
 ```
 
-部署脚本安装
+部署脚本安装（近期 k3s 和 autok3s 都在调整中，rancher-mirror.cnrancher.com 在归档，功能受影响，rancher-mirror.oss-cn-beijing.aliyuncs.com 尚未能全功代替）
 
 ``` bash
 # curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker" sh -
 # 受限国内网络，大多数时候上述脚本无法安装，建议采用下述国内加速安装脚本
-curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_EXEC="--docker" sh -
+curl -sfL https://rancher-mirror.oss-cn-beijing.aliyuncs.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_EXEC="--docker" sh -
 ```
 
 如果不用 docker 的话，改成
 
 ```bash
-curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
+curl -sfL https://rancher-mirror.oss-cn-beijing.aliyuncs.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn sh -
 ```
 
 输出下述日志，即部署完成
