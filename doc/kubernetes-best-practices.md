@@ -28,6 +28,7 @@
 | | 下午 | [3. K8S 生命周期管理](#3-k8s-生命周期管理) | [3.1 K8S 集群创建删除、扩缩容、备份恢复](#31-集群的创建删除扩缩容备份恢复) |
 | | | | [3.2 K8S 升级](#32-版本升级) |
 | 第 3 天 | 上午 | | [3.1.2 Sealos](#312-sealos) 和其它工具（kubekey/k0s） |
+| | | | [3.1.4 KubeClipper](#314-kubeclipper) |
 | | | | [3.1.5 K3S](#315-k3s) |
 | | 下午 | | [3.3 迁移和纳管：Rancher 和 K3S](#33-迁移和纳管) |
 | | | | [3.4 统一认证和鉴权：KubeSphere](#34-统一认证和鉴权) 和计量、日志 |
@@ -2269,13 +2270,22 @@ docker ps
 
     ![](/image/kubekey-aliyun-alert.png)
 
-#### 3.1.4 K0S
+#### 3.1.4 KubeClipper
 
-参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/install/>
+参考：<https://kubeclipper.io/>
 
-1. 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/system-requirements/#host-operating-system> 内核必须先升级到 4.3 以上
-1. 得弄好离线包…… load 好镜像再装……
-1. 有延迟…… 2022.06.08 CentOS 7.9 1.24.x 都出来了，这最新还在 1.23.6
+源码：<https://github.com/kubeclipper-labs>，喜欢的话请帮忙 star
+
+QuickStart：<https://github.com/kubeclipper-labs/kubeclipper/blob/master/README_zh.md#quick-start>
+
+| | KubeClipper | Sealos | KubeKey | Kubeasz | KubeOperator | K0S |
+| - | - | - | - | - | - | - |
+| 图形化页面 | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| 轻依赖 - 不依赖 ansible 等 | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
+| 多区域、多集群管理 | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
+| 支持多版本 K8S、CRI | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 离线安装 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 基于 kubeadm 封装 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
 
 #### 3.1.5 K3S
 
@@ -2631,6 +2641,14 @@ autok3s -d serve --bind-address 0.0.0.0
 缺点：
 
 1. 只支持 k3s
+
+#### 3.1.7 K0S
+
+参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/install/>
+
+1. 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/system-requirements/#host-operating-system> 内核必须先升级到 4.3 以上
+1. 得弄好离线包…… load 好镜像再装……
+1. 有延迟…… 2022.06.08 CentOS 7.9 1.24.x 都出来了，这最新还在 1.23.6
 
 ### 3.2 版本升级
 
