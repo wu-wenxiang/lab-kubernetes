@@ -26,11 +26,12 @@
 | | | | [2.2 服务注册和服务发现](#22-服务注册和服务发现) |
 | | 下午 | | [2.3 云安全](#23-云安全) |
 | | | | [2.4 事件](#24-事件溯源和-cqrs) |
-| 第 3 天 | 上午 | [3. istio](#3-istio) | [3.1 环境搭建](#31-环境搭建) |
-| | | | [3.2 流量监控](#32-流量监控-调用链跟踪) |
-| | 下午 | | [3.3 灰度发布](#33-灰度发布) |
-| | | | [3.4 流量治理](#34-流量治理) |
-| | | | [3.5 服务保护](#35-服务保护) |
+| 第 3 天 | 上午 | [3. istio](#3-istio) | [3.1 微服务框架](#31-微服务框架)
+| | | | [3.2 环境搭建](#32-环境搭建) |
+| | | | [3.3 流量监控](#33-流量监控-调用链跟踪) |
+| | 下午 | | [3.4 灰度发布](#34-灰度发布) |
+| | | | [3.5 流量治理](#35-流量治理) |
+| | | | [3.6 服务保护](#36-服务保护) |
 
 ## 1. 云原生
 
@@ -293,11 +294,22 @@ Restful Demo:
 
 #### 2.2.2 K8S 服务发现
 
-#### 2.2.3 API Gateway
+#### 2.2.3 API Gateway vs Middleware
 
-#### 2.2.4 Middleware
+基于 Nginx 的 API Gateway 应用：[Skyline](https://opendev.org/openstack/skyline-apiserver/src/branch/master/skyline_apiserver/templates/nginx.conf.j2)
 
-#### 2.2.5 微前端
+基于 [OpenResty](https://openresty.org/cn/) 的 Kong
+
+![](/image/microservice-apigateway-kong.png)
+
+另一种解决思路：Middleware，比如 [OpenStack Keystone](https://opendev.org/openstack/keystonemiddleware)
+
+- [Middleware Architecture](https://docs.openstack.org/keystonemiddleware/latest/middlewarearchitecture.html)
+- [Audit middleware](https://docs.openstack.org/keystonemiddleware/latest/audit.html)
+
+#### 2.2.4 微前端
+
+qiankun：<https://qiankun.umijs.org/zh>
 
 ### 2.3 云安全
 
@@ -309,22 +321,54 @@ Restful Demo:
 
 ## 3. istio
 
-### 3.1 环境搭建
+### 3.1 微服务框架
+
+微服务的三个阶段：
+
+1. 拆解单体服务，自建微服务框架
+1. 使用 SpringCloud / Dubbo 等侵入式微服务框架
+1. 使用服务网格，Sidecar 服务框架
+
+Istio 解决了 SpringCloud 等同行的如下遗留问题：
+
+1. 多语言技术栈不统一：C++、Java、PHP、Go。Spring Cloud 无法提出非 Java 语言的微服务治理。
+1. 服务治理周期长：微服务治理框架与业务耦合，上线周期长，策略调整周期长。
+1. 产品能力弱：Spring Cloud 缺乏平台化和产品化的能力，可视化能力弱。
+
+企业什么情况适合使用 SpringCloud？
+
+1. 企业的开源语言主要是 Java
+1. 治理策略变更不频繁（没有动态服务治理强需求），通过上线可以解决问题
+1. 更新升级不频繁（微服务框架升级与业务升级不相互耦合）
+1. 无过多高级治理功能需求（不需要混沌调试，智能调参，容器间网络可编程）
+1. 业务规模不是非常大（核心业务不一定是微服务框架）
+
+反之，应该选择 K8S 或 K8S + istio
+
+### 3.2 环境搭建
 
 [返回目录](#课程目录)
 
-### 3.2 流量监控-调用链跟踪
+参考：<https://istio.io/latest/zh/docs/setup/getting-started/>
+
+Demo：istio 环境搭建
+
+Demo：istio 升级
+
+Demo：bookinfo demo
+
+### 3.3 流量监控-调用链跟踪
 
 [返回目录](#课程目录)
 
-### 3.3	灰度发布
+### 3.4	灰度发布
 
 [返回目录](#课程目录)
 
-### 3.4 流量治理
+### 3.5 流量治理
 
 [返回目录](#课程目录)
 
-### 3.5 服务保护
+### 3.6 服务保护
 
 [返回目录](#课程目录)
