@@ -977,11 +977,11 @@ devmapper plugin error 是因为没有配置，可以暂时忽略，devmapper �
 crictl pull harbor.my.org/library/nginx:1.1
 ```
 
-##### 2.2.2.3 nerdctr
+##### 2.2.2.3 nerdctl
 
 参考：<https://github.com/containerd/nerdctl>
 
-nerdctr 是一个非常棒的客户端：
+nerdctl 是一个非常棒的客户端：
 
 - 保持了和 Docker 一致的使用习惯
 - 甚至兼容 Docker-Compose
@@ -1580,7 +1580,7 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 1. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
 1. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
 1. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
-1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctr
+1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctl
 1. 关于用 RPM 包还是二进制安装，it depends。如果我们可以预见不会频繁 apply patch，比如基础服务/工具：python/git，甚至 runc/containerd/docker，那么推荐 RPM。如果我们对安全或者 SLA 有较高的要求（等不及 rpm 提供方出 hotfix），自身技术实力也能充分保证， 那建议二进制部署，这样方便及时升级（和 bug 修复）。
 1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
 1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。

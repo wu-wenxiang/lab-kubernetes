@@ -48,7 +48,7 @@
 - **易于自动化**
 - **易于发布**
 
-与之对应的解决方案：**Restful API + 微服务 + 容器化**
+与之对应的解决方案：**API + 微服务 + 容器化**
 
 [云原生的十二要素法则](https://12factor.net)
 
@@ -73,7 +73,8 @@
     - 团队新成员能否快速理解代码？
 1. 是否测试驱动开发（本质上即是否有信心交付）？
     - 测试是 trade off 的艺术，编程人员只需要为他们认为不自信的代码编写单元测试
-    - 测试工程师需要为所有的 API 测试和功能测试、界面测试负责，尽可能自动化
+    - 单元测试只对程序员有意义，代码覆盖率是单元测试的客观指标，太低不合适，一般认为需要覆盖 60% 以上
+    - 测试工程师需要为所有的 API 测试和功能测试、界面测试负责，尽可能自动化，测试工程师不考虑代码覆盖率，而是考虑测试用例覆盖率
     - 一个 bug 被研发自己发现，和被测试人员发现，和被现场使用者发现，cost 不可同日而语
 1. 尽早发布、频繁发布
     - 代码应该少量提交，多次提交，每次提交应该涵盖一个完整的小功能或者 bug 修复
@@ -90,17 +91,79 @@
         - 依赖关系耦合紧密
     
         因此，反之，如果应用恰好没有这三个问题，那么单体就是最好的设计，不需要硬拆微服务做过度设计。
+
     - 微服务遵循设计模式 6 原则中的**单一责任原则（SRP）**，即一个服务只负责一个功能
 
 ### 1.2 容器化和持续交付
 
 [返回目录](#课程目录)
 
+#### 1.2.1 应用容器化
+
+##### 1.2.1.0 容器技术栈
+
+![](/image/k8s-cri-tools.png)
+
+##### 1.2.1.1 Docker 和 Containerd
+
+Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标准的容器运行时，它强调简单性、健壮性和可移植性。
+
+![](/image/k8s-cri-docker.png)
+
+![](/image/k8s-cri-containerd.png)
+
+![](/image/docker-and-kubernetes-use-containerd-2000-opt.png)
+
+实验：[应用容器化和 Docker 基本操作](kubernetes-best-practices.md#213-docker-部署和基本使用)
+
+![](/image/k8s-containerd-tools.png)
+
+实验：[Containerd 相关工具：nerdctl](kubernetes-best-practices.md#2223-nerdctl)
+
+##### 1.2.1.2 K8S
+
+K8S 的操作要记得参考：<https://kubernetes.io/>
+
+[K8S 有哪些组件](https://kubernetes.io/zh/docs/concepts/architecture/#)？api-server、kube-scheduler、kube-controller、etcd、coredns、kubelete、kubeproxy
+
+组件结构图
+
+![](/image/k8s-architecture.png)
+
+实验：[K8S 基本操作和应用部署到 K8S](kubernetes-best-practices.md#3111-单节点集群部署)
+
+#### 1.2.2 弹性容器实例（ECI）
+
+弹性容器实例的功能项包括：
+
+- 同时兼容原生容器和虚拟机的使用体验
+- 比虚拟机轻量的资源分配能力，以方便资源快速申请、弹性
+- 类似虚拟机的使用体验，可登陆，可任意安装组件
+- 有固定 IP 地址，胖容器从创建到删除，IP 地址保持不变
+- 可以通过 SSH 远程登陆系统。
+- 严格的资源隔离，如 CPU、内存等
+
+哪些云厂商提供 ECI？
+
+- [博云胖容器](https://mp.weixin.qq.com/s?__biz=MzIzNzA5NzM3Ng==&mid=2651860132&idx=1&sn=cb0eac52be444c162fb505ebbdef6c0f&chksm=f329546bc45edd7d4789aa85ae5edb8a9f8d8313dd1ca273946ef019e0997b39665d29e24c8c&scene=21#wechat_redirect)
+- [Kata 和它的朋友们](kubernetes-best-practices.md#24-kata-和它的朋友们)
+- [阿里云 ECI](https://eci.console.aliyun.com/#/eci/cn-shanghai/list)：[从 Docker Hub 拉取镜像创建实例](https://help.aliyun.com/document_detail/119093.html)
+
+#### 1.2.3 EKS
+
+#### 1.2.4 CI/CD
+
 ### 1.3 微服务和 API 设计
 
 [返回目录](#课程目录)
 
+#### 1.3.1 微服务设计
+
+#### 1.3.2 Restful API
+
 ### 1.4 有状态服务
+
+#### 1.4.1 RDS 服务
 
 [返回目录](#课程目录)
 
@@ -110,6 +173,8 @@
 
 ## 2. 微服务
 
+[返回目录](#课程目录)
+
 ### 2.1 微服务应该有多微
 
 [返回目录](#课程目录)
@@ -117,6 +182,14 @@
 ### 2.2 服务注册和服务发现
 
 [返回目录](#课程目录)
+
+#### 2.2.1 服务发现类型
+
+#### 2.2.2 K8S 服务发现
+
+#### 2.2.3 API Gateway
+
+#### 2.2.4 微前端
 
 ### 2.3 云安全
 
@@ -147,3 +220,5 @@
 ### 3.5 服务保护
 
 [返回目录](#课程目录)
+
+##
