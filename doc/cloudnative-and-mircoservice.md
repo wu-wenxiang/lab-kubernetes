@@ -129,7 +129,9 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
 ![](/image/k8s-architecture.png)
 
-实验：[K8S 基本操作和应用部署到 K8S](kubernetes-best-practices.md#3111-单节点集群部署)
+实验：[K8S 基本操作](kubernetes-best-practices.md#3111-单节点集群部署)
+
+实验：部署应用到 K8S 平台：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#29-%E5%90%AF%E5%8A%A8%E4%B8%80%E4%B8%AA-pod) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#29-%E5%90%AF%E5%8A%A8%E4%B8%80%E4%B8%AA-pod)
 
 #### 1.2.2 弹性容器实例（ECI）
 
