@@ -162,7 +162,7 @@ K8S 作为一个整体的资源（类同 VM / 存储 / VPC）对外提供。公�
 
 托管的 CI/CD 包括：github workflow，阿里云 devops 云效
 
-自建的 CI/CD 包括：jenkins，drain，drone，建木，tekton
+自建的 CI/CD 包括：jenkins，drone，建木，tekton
 
 Jenkins 是最使用最广的自动化任务管理框架。它有以下缺点：
 
@@ -234,7 +234,7 @@ SOA 的事件教训：
 基本的设计原则：
 
 - 整个 OpenStack 拆分成若干模块，各模块中包含若干服务
-- 模块中必须有一个 API 通信服务，模块之间通过改 API 服务彼此通信
+- 模块中必须有一个 API 通信服务，模块之间通过该 API 服务彼此通信
 - 模块内通过消息队列通信
 - 服务必须能横向扩展
 
