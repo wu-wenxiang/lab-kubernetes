@@ -268,17 +268,52 @@ Restful Demo:
 
 参考阿里云 RDS 服务
 
+#### 1.4.2 K8S 怎么处理有状态服务
+
+参考 [Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#84-k8s-%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#84-k8s-%E6%80%8E%E4%B9%88%E5%A4%84%E7%90%86%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1)
+
 ### 1.5 WebSocket
 
 [返回目录](#课程目录)
 
-#### 1.5.1 消息队列直接提供 WebSocket
-
-参考 OpenV2X Roadmocker，[Github](https://github.com/open-v2x/roadmocker) 或 [Gitee](https://gitee.com/open-v2x/roadmocker)
-
-#### 1.5.2 应用服务提供 WebSocket
+#### 1.5.1 应用服务提供 WebSocket
 
 参考 FastAPI：[WebSocket](https://fastapi.tiangolo.com/zh/advanced/websockets/)
+
+WebSocket 是有状态的长连接
+
+1. 一旦应用关闭，所有的 WebSocket 都会断开
+2. WebSocket 的横向扩展会非常麻烦
+
+```text
+        ┌────────────┐  ┌─────────────┐
+        │   Server   │  │    Server   │
+        └─┬─────┬────┘  └┬─────┬─────┬┘
+          │     │        │     │     │
+        ┌─┴─┐ ┌─┴─┐    ┌─┴─┐ ┌─┴─┐ ┌─┴─┐
+        │   │ │   │    │   │ │   │ │   │
+        │   │ │   │    │   │ │   │ │   │
+        └───┘ └───┘    └───┘ └───┘ └───┘
+```
+
+#### 1.5.2 消息队列直接提供 WebSocket
+
+解决上述问题的方法是增加中间件：消息队列
+
+```text
+      ┌────────────┐  ┌────────────┐  ┌─────────────┐
+      │  Server    │  │   Server   │  │   Server    │
+      └─────┬──────┘  └──────┬─────┘  └──────┬──────┘
+            │                │               │
+───────────┬┴────┬─────┬─────┼─────┬─────┬───┴─┬─────────  Message Queue
+           │     │     │     │     │     │     │
+         ┌─┴─┐ ┌─┴─┐ ┌─┴─┐ ┌─┴─┐ ┌─┴─┐ ┌─┴─┐ ┌─┴─┐
+         │   │ │   │ │   │ │   │ │   │ │   │ │   │
+         │   │ │   │ │   │ │   │ │   │ │   │ │   │
+         └───┘ └───┘ └───┘ └───┘ └───┘ └───┘ └───┘
+```
+
+参考 OpenV2X Roadmocker，[Github](https://github.com/open-v2x/roadmocker) 或 [Gitee](https://gitee.com/open-v2x/roadmocker)
 
 ## 2. 微服务
 
@@ -288,15 +323,22 @@ Restful Demo:
 
 [返回目录](#课程目录)
 
+这是一个 Tradeoff，没有固定答案，但
+
+1. 一个微服务应该只做一件事
+1. 它是独立的，很容易改动和升级，改动它不会影响到其它服务
+
 ### 2.2 服务注册和服务发现
 
 [返回目录](#课程目录)
 
-#### 2.2.1 服务发现类型
+#### 2.2.1 服务发现在 ETSI 标准中的应用
 
-#### 2.2.2 K8S 服务发现
+![](/image/etsi-arch.png)
 
-#### 2.2.3 API Gateway vs Middleware
+![](/image/service-discover-arch.png)
+
+#### 2.2.2 API Gateway vs Middleware
 
 基于 Nginx 的 API Gateway 应用：[Skyline](https://opendev.org/openstack/skyline-apiserver/src/branch/master/skyline_apiserver/templates/nginx.conf.j2)
 
@@ -304,22 +346,81 @@ Restful Demo:
 
 ![](/image/microservice-apigateway-kong.png)
 
+Kong QuickStart，参考：
+
+- [Getting started Kong API Gateway](https://www.popularowl.com/api-first/kong-api-gateway-getting-started/)
+- [Kong 3.0.x Get Started](https://docs.konghq.com/gateway/3.0.x/get-started/)
+
+![](/image/kong-concepts.png)
+
+![](/image/apigateway-workflow.png)
+
+![](/image/apigateway-arch.png)
+
 另一种解决思路：Middleware，比如 [OpenStack Keystone](https://opendev.org/openstack/keystonemiddleware)
 
 - [Middleware Architecture](https://docs.openstack.org/keystonemiddleware/latest/middlewarearchitecture.html)
 - [Audit middleware](https://docs.openstack.org/keystonemiddleware/latest/audit.html)
 
+Keystone 怎么处理服务注册和服务发现？参考：[Github](https://github.com/99cloud/lab-openstack/blob/master/doc/class-01-OpenStack-Administration.md#33-keystone-%E5%90%84%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%9C%BA%E7%90%86%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84) 或 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/blob/master/doc/class-01-OpenStack-Administration.md#33-keystone-%E5%90%84%E5%8A%9F%E8%83%BD%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%9C%BA%E7%90%86%E6%98%AF%E6%80%8E%E6%A0%B7%E7%9A%84)
+
+#### 2.2.3 K8S 服务发现
+
+K8S：
+
+1. 通过 Service 实现服务注册和服务发现
+1. 通过 Ingress 实现 API Gateway
+1. 通过 ConfigMap 和 Secret 实现配置管理
+1. 通过 Job 和 CronJob 实现一次性后台任务
+
+参考 [Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#lesson-07-service) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#lesson-07-service)
+
 #### 2.2.4 微前端
 
 qiankun：<https://qiankun.umijs.org/zh>
+
+Demo：<https://github.com/moweiwei/react-app-qiankun/>
 
 ### 2.3 云安全
 
 [返回目录](#课程目录)
 
+#### 2.3.1 认证
+
+认证方式：
+
+1. HTTP Basic
+1. Cookie / JWT Token
+1. Windows 身份认证（NTLM and Kerberos），基于 AD
+1. SAML（ADFS / AD Azure / Shibboleth 等），安全断言标记语言是一种 bearer token 技术，其中包含用于授权 SAML token 的身份信息提供者和验证他们的应用程序
+1. OAuth/OpenID
+
+OAuth 的优势
+
+1. 操作系统无关
+1. 允许 Web 上的不同系统中共享授权声明
+1. 简单易用
+1. 坚实可靠（但 Keystone 打死不对接 OAuth2）
+1. 提供广泛的语言和类库实现
+1. 提供免费、开源的身份信息提供商服务器软件（Github 等）
+1. 有权使用基于云的身份信息提供商（Google、Auth0、StormPath）
+
+Keystone Token
+
+参考：[Github](https://github.com/99cloud/lab-openstack/blob/master/doc/class-01-OpenStack-Administration.md#32-keystone-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E6%9C%89%E5%93%AA%E4%BA%9B) 或 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/blob/master/doc/class-01-OpenStack-Administration.md#32-keystone-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E6%9C%89%E5%93%AA%E4%BA%9B)
+
 ### 2.4 事件溯源和 CQRS
 
 [返回目录](#课程目录)
+
+事件溯源：`f(status_A, event_1) = statusB`
+
+1. 幂等
+1. 可测试
+
+拥抱最终一致性
+
+CQRS（命令查询责任分离），比如：SQL 读写分离
 
 ## 3. istio
 
