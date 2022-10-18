@@ -1687,7 +1687,11 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
     tar zxvf crictl-$VERSION-linux-amd64.tar.gz
     mv crictl /usr/bin/
+    ```
 
+    接下来修改 containerd 配置，避开 gcr
+
+    ```bash
     cp /etc/containerd/config.toml /etc/containerd/config.toml.bak
     containerd config default > /etc/containerd/config.toml
     vi /etc/containerd/config.toml
