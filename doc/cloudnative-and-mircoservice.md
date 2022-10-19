@@ -340,6 +340,8 @@ WebSocket 是有状态的长连接
 
 #### 2.2.2 API Gateway vs Middleware
 
+![](/image/apigateway-servicediscover.png)
+
 基于 Nginx 的 API Gateway 应用：[Skyline](https://opendev.org/openstack/skyline-apiserver/src/branch/master/skyline_apiserver/templates/nginx.conf.j2)
 
 基于 [OpenResty](https://openresty.org/cn/) 的 Kong
