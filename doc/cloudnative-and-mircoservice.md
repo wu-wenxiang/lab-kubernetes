@@ -592,3 +592,85 @@ Demo：bookinfo demo
     在 Istio 体系中的应用不使用 Ingress 也可以正常访问微服务。但是 PaaS 上运行的应用未必都是 Istio 体系下的，其他非微服务或者非 Istio 体系下的服务还是要通过 Ingress 访问。此外，Istio 本身的监控系统和 Kiali 的界面都是通过 Ingress 访问的。
 
     相比 Spring Cloud，Istio 较好地实现了微服务的路由管理。但在实际生产中，仅有微服务的路由管理是不够的，还需要诸如不同微服务之间的业务系统集成管理、微服务的 API 管理、微服务中的规则流程管理等。
+
+### 3.8 基于 KubeSphere 的服务网格
+
+KubeSphere 对 istio 进行了初步的产品化封装。
+
+#### 3.8.1 环境安装
+
+##### 3.8.1.1 安装标准 K8S v1.23.6
+
+准备环境：
+
+- 硬件：8Core / 32G / 60G
+- 操作系统：CentOS 7.9
+
+安装 [KubeClipper](kubernetes-best-practices.md#314-kubeclipper) v1.2.1
+
+```bash
+curl -sfL https://oss.kubeclipper.io/kcctl.sh | KC_REGION=cn KC_VERSION=v1.2.1 bash -
+
+kcctl deploy
+```
+
+然后通过浏览器访问服务器（不要用命令行，因为有一个 KubeClipper v1.2.1 有已知 issue），`http://<Server-IP>`，`admin` / `Thinkbig1`，创建集群：
+
+- 去掉 Master 污点，方便调度业务 Pod
+- 选 Docker，方便使用 Docker 命令
+- 选 ipvs，不要选 iptables，因为 KubeClipper v1.2.1 有已知 issue
+
+其它保持默认，创建 AIO 集群。
+
+##### 3.8.1.1 安装 KubeSphere v3.2.1（带 istio）
+
+首先安装默认存储，直接用 [Local Path Provider](kubernetes-best-practices.md#45-local-和动态分配)
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.22/deploy/local-path-storage.yaml
+
+kubectl patch storageclass local-path -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
+```
+
+然后[安装 KubeSphere](kubernetes-best-practices.md#341-kubesphere) v3.2.1
+
+```bash
+wget https://github.com/kubesphere/ks-installer/releases/download/v3.2.1/kubesphere-installer.yaml
+
+# 替换 ks-installer 镜像，因为 nginx ingress controller 有 bug
+sed -i 's/image: kubesphere/image: caas4/g' kubesphere-installer.yaml
+
+# 同上，这两个镜像更新一下，也是因为上述 bug
+docker pull caas4/ks-apiserver:v3.2.1
+docker pull caas4/ks-controller-manager:v3.2.1
+docker tag caas4/ks-apiserver:v3.2.1 kubesphere/ks-apiesrver:v3.2.1
+docker tag caas4/ks-controller-manager:v3.2.1 kubesphere/ks-controller-manager:v3.2.1
+
+kubectl apply -f kubesphere-installer.yaml
+
+wget https://github.com/kubesphere/ks-installer/releases/download/v3.2.1/cluster-configuration.yaml
+
+cp cluster-configuration.yaml cluster-configuration.yaml.bak
+vi cluster-configuration.yaml
+```
+
+```diff
+# diff cluster-configuration.yaml cluster-configuration.yaml.bak
+78c78
+<     enabled: true             # Enable or disable the KubeSphere DevOps System.
+---
+>     enabled: false             # Enable or disable the KubeSphere DevOps System.
+148c148
+<     enabled: true     # Base component (pilot). Enable or disable KubeSphere Service Mesh (Istio-based).
+---
+>     enabled: false     # Base component (pilot). Enable or disable KubeSphere Service Mesh (Istio-based).
+```
+
+```bash
+kubectl apply -f cluster-configuration.yaml
+
+# 看安装记录
+kubectl logs -n kubesphere-system $(kubectl get pod -n kubesphere-system -l 'app in (ks-install, ks-installer)' -o jsonpath='{.items[0].metadata.name}') -f
+```
+
+#### 3.8.2 服务网格测试
