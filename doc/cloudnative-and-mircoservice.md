@@ -530,11 +530,122 @@ Istio 解决了 SpringCloud 等同行的如下遗留问题：
 
 参考：<https://istio.io/latest/zh/docs/setup/getting-started/>
 
-Demo：istio 环境搭建
+#### 3.2.1 硬件环境
 
-Demo：istio 升级
+- 硬件：4Core / 8G / 40G
+- 操作系统：Ubuntu 20.04 / CentOS 7.9
+- 机器最好能翻墙，因为 istio 安装需要从 github 上下载 release 包
 
-Demo：bookinfo demo
+#### 3.2.2 安装 K8S 1.23.6
+
+安装 [KubeClipper](kubernetes-best-practices.md#314-kubeclipper) v1.2.1
+
+```bash
+curl -sfL https://oss.kubeclipper.io/kcctl.sh | KC_REGION=cn KC_VERSION=v1.2.1 bash -
+
+kcctl deploy
+```
+
+然后通过浏览器访问服务器（[不要用命令行，因为有一个 KubeClipper v1.2.1 有已知 issue](https://github.com/kubeclipper/kubeclipper/issues/274)），`http://<Server-IP>`，`admin` / `Thinkbig1`，创建集群：
+
+- 去掉 Master 污点，方便调度业务 Pod
+- 选 Docker，方便使用 Docker 命令
+- 默认会选 ipvs，不要选 iptables，因为 KubeClipper v1.2.1 有已知 issue，会导致使用 iptables provider 的 K8S 集群删除时会失败
+
+其它保持默认，创建 AIO 集群。
+
+#### 3.2.3 安装 istio 1.11.2 版本
+
+```bash
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
+
+cd istio-1.11.2
+echo "export PATH=$PWD/bin:\$PATH" >> ~/.bashrc
+. ~/.bashrc
+
+#  demo 配置组合包含了一组专为测试准备的功能集合，另外还有用于生产或性能测试的配置组合。
+istioctl install --set profile=demo -y
+
+# 给命名空间添加标签，指示 Istio 在部署应用的时候，自动注入 Envoy 边车代理：
+kubectl label namespace default istio-injection=enabled
+```
+
+```console
+root@meshlab:~# istioctl install --set profile=demo -y
+✔ Istio core installed
+✔ Istiod installed
+✔ Egress gateways installed
+✔ Ingress gateways installed
+✔ Installation complete
+Thank you for installing Istio 1.11.  Please take a few minutes to tell us about your install/upgrade experience!  https://forms.gle/kWULBRjUv7hHci7T6
+
+root@meshlab:~# kubectl label namespace default istio-injection=enabled
+namespace/default labeled
+
+root@meshlab:~# kubectl get svc -n istio-system
+NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                                      AGE
+istio-egressgateway    ClusterIP      172.25.0.254   <none>        80/TCP,443/TCP                                                               8m2s
+istio-ingressgateway   LoadBalancer   172.25.0.190   <pending>     15021:32094/TCP,80:31204/TCP,443:30721/TCP,31400:30724/TCP,15443:31264/TCP   8m2s
+istiod                 ClusterIP      172.25.0.19    <none>        15010/TCP,15012/TCP,443/TCP,15014/TCP                                        8m14s
+
+root@meshlab:~# kubectl get po -n istio-system
+NAME                                    READY   STATUS    RESTARTS   AGE
+istio-egressgateway-7fdbfcc9f-9r8qc     1/1     Running   0          11m
+istio-ingressgateway-69944847bc-kwh2r   1/1     Running   0          11m
+istiod-5ff694cc8-lx6c7                  1/1     Running   0          12m
+```
+
+部署 [bookinfo 应用](https://istio.io/latest/zh/docs/examples/bookinfo/)
+
+```console
+root@meshlab:~# wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
+
+root@meshlab:~# kubectl apply -f bookinfo.yaml 
+service/details created
+serviceaccount/bookinfo-details created
+deployment.apps/details-v1 created
+service/ratings created
+serviceaccount/bookinfo-ratings created
+deployment.apps/ratings-v1 created
+service/reviews created
+serviceaccount/bookinfo-reviews created
+deployment.apps/reviews-v1 created
+deployment.apps/reviews-v2 created
+deployment.apps/reviews-v3 created
+service/productpage created
+serviceaccount/bookinfo-productpage created
+deployment.apps/productpage-v1 created
+```
+
+应用很快会启动起来。当每个 Pod 准备就绪时，Istio 边车代理将伴随它们一起部署。
+
+```console
+root@meshlab:~# kubectl get services
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
+details       ClusterIP   172.25.0.143   <none>        9080/TCP   6m7s
+kubernetes    ClusterIP   172.25.0.1     <none>        443/TCP    57m
+productpage   ClusterIP   172.25.0.61    <none>        9080/TCP   6m7s
+ratings       ClusterIP   172.25.0.214   <none>        9080/TCP   6m7s
+reviews       ClusterIP   172.25.0.228   <none>        9080/TCP   6m7s
+
+root@meshlab:~# kubectl get pods
+NAME                              READY   STATUS    RESTARTS   AGE
+details-v1-5498c86cf5-6jp4x       2/2     Running   0          6m10s
+productpage-v1-65b75f6885-6nhqb   2/2     Running   0          6m10s
+ratings-v1-b477cf6cf-5w27x        2/2     Running   0          6m10s
+reviews-v1-79d546878f-xqk5k       2/2     Running   0          6m10s
+reviews-v2-548c57f459-qhtgt       2/2     Running   0          6m10s
+reviews-v3-6dd79655b9-jxx8t       2/2     Running   0          6m10s
+```
+
+确认上面的操作都正确之后，运行下面命令，通过检查返回的页面标题，来验证应用是否已在集群中运行，并已提供网页服务：
+
+```console
+root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
+<title>Simple Bookstore App</title>
+```
+
+#### 3.2.4 bookinfo demo
 
 ### 3.3 流量监控-调用链跟踪
 
@@ -599,30 +710,16 @@ KubeSphere 对 istio 进行了初步的产品化封装。
 
 #### 3.8.1 环境安装
 
-##### 3.8.1.1 安装标准 K8S v1.23.6
+##### 3.8.1.1 预置条件
 
 准备环境：
 
 - 硬件：8Core / 32G / 60G
 - 操作系统：CentOS 7.9
 
-安装 [KubeClipper](kubernetes-best-practices.md#314-kubeclipper) v1.2.1
+安装 [K8S 1.23.6](#322-安装-k8s-1236)
 
-```bash
-curl -sfL https://oss.kubeclipper.io/kcctl.sh | KC_REGION=cn KC_VERSION=v1.2.1 bash -
-
-kcctl deploy
-```
-
-然后通过浏览器访问服务器（不要用命令行，因为有一个 KubeClipper v1.2.1 有已知 issue），`http://<Server-IP>`，`admin` / `Thinkbig1`，创建集群：
-
-- 去掉 Master 污点，方便调度业务 Pod
-- 选 Docker，方便使用 Docker 命令
-- 选 ipvs，不要选 iptables，因为 KubeClipper v1.2.1 有已知 issue
-
-其它保持默认，创建 AIO 集群。
-
-##### 3.8.1.1 安装 KubeSphere v3.2.1（带 istio）
+##### 3.8.1.2 安装 KubeSphere v3.2.1（带 istio）
 
 首先安装默认存储，直接用 [Local Path Provider](kubernetes-best-practices.md#45-local-和动态分配)
 
