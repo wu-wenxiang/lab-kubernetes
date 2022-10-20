@@ -266,7 +266,10 @@ Restful Demo:
 
 [返回目录](#课程目录)
 
-参考阿里云 RDS 服务
+公有云和私有云都有 RDS，参考：
+
+- 私有云：OpenStack 的 Trove
+- 公有云：[阿里云 RDS 服务](https://rdsnext.console.aliyun.com/dashboard/)
 
 #### 1.4.2 K8S 怎么处理有状态服务
 
@@ -370,12 +373,11 @@ Keystone 怎么处理服务注册和服务发现？参考：[Github](https://git
 
 K8S：
 
-1. 通过 Service 实现服务注册和服务发现
-1. 通过 Ingress 实现 API Gateway
-1. 通过 ConfigMap 和 Secret 实现配置管理
-1. 通过 Job 和 CronJob 实现一次性后台任务
-
-参考 [Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#lesson-07-service) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#lesson-07-service)
+1. 通过 Service 实现服务注册和服务发现：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#37-daemonset--statefulset) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#37-daemonset--statefulset)
+1. 有状态应用和无头服务：[Github](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#72-%E5%AE%9E%E9%AA%8C%E5%8F%91%E5%B8%83%E6%9C%8D%E5%8A%A1) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#72-%E5%AE%9E%E9%AA%8C%E5%8F%91%E5%B8%83%E6%9C%8D%E5%8A%A1)
+1. 通过 Ingress 实现 API Gateway：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#73-%E4%BB%80%E4%B9%88%E6%98%AF-ingress) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#73-%E4%BB%80%E4%B9%88%E6%98%AF-ingress)
+1. 通过 ConfigMap 和 Secret 实现配置管理：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#61-%E4%BB%80%E4%B9%88%E6%98%AF-configmap--secret) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#61-%E4%BB%80%E4%B9%88%E6%98%AF-configmap--secret)
+1. 通过 [Job](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/job/) 和 [CronJob](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/cron-jobs/) 实现一次性后台任务
 
 #### 2.2.4 微前端
 
@@ -415,12 +417,12 @@ Keystone Token
 
 [返回目录](#课程目录)
 
-事件溯源：`f(status_A, event_1) = statusB`
+事件溯源：`f(status_A, event_1) = status_B`
 
 1. 幂等
 1. 可测试
 
-拥抱最终一致性
+原则：拥抱最终一致性
 
 CQRS（命令查询责任分离），比如：SQL 读写分离
 
