@@ -376,6 +376,13 @@ K8S：
 1. 通过 Service 实现服务注册和服务发现：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#37-daemonset--statefulset) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#37-daemonset--statefulset)
 1. 有状态应用和无头服务：[Github](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#72-%E5%AE%9E%E9%AA%8C%E5%8F%91%E5%B8%83%E6%9C%8D%E5%8A%A1) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#72-%E5%AE%9E%E9%AA%8C%E5%8F%91%E5%B8%83%E6%9C%8D%E5%8A%A1)
 1. 通过 Ingress 实现 API Gateway：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#73-%E4%BB%80%E4%B9%88%E6%98%AF-ingress) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#73-%E4%BB%80%E4%B9%88%E6%98%AF-ingress)
+
+    ![](/image/ingress-service.drawio.svg)
+
+    - 集群内部客户端，理论上也能走 Ingress，将其当作 API Gateway 来用，但比较麻烦，因为 Ingress 是用域名和路由来区分应用，需要域名解析。
+    - Ingress 只能做到 API Gateway 中的服务汇聚功能，多个服务端点汇聚成一个服务端点，然后在这个服务端点中通过 url 路由来区分不同的子服务。实际应用中，API Gateway 还有统一认证、鉴权、限流、计量、分析等业务无关的通用能力。所以实际应用中一般会有单独的 API Gateway 存在，比如 Kong，或者服务提供商自己提供一个 API Gateway 供自己的服务使用。
+    - Ingress 到 Pod，声明时会经过 Service 关联，但实际实现时不一定经过 Service，Ingress 可能会直接转发到 Pod。
+
 1. 通过 ConfigMap 和 Secret 实现配置管理：[Github](https://github.com/99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#61-%E4%BB%80%E4%B9%88%E6%98%AF-configmap--secret) 或 [Gitee](https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#61-%E4%BB%80%E4%B9%88%E6%98%AF-configmap--secret)
 1. 通过 [Job](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/job/) 和 [CronJob](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/cron-jobs/) 实现一次性后台任务
 
@@ -527,9 +534,6 @@ Istio 解决了 SpringCloud 等同行的如下遗留问题：
 ### 3.2 环境搭建
 
 [返回目录](#课程目录)
-
-参考：<https://istio.io/latest/zh/docs/setup/getting-started/>
-
 #### 3.2.1 硬件环境
 
 - 硬件：4Core / 8G / 40G
@@ -555,6 +559,8 @@ kcctl deploy
 其它保持默认，创建 AIO 集群。
 
 #### 3.2.3 安装 istio 1.11.2 版本
+
+参考：<https://istio.io/latest/zh/docs/setup/getting-started/>
 
 ```bash
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
@@ -600,7 +606,7 @@ istiod-5ff694cc8-lx6c7                  1/1     Running   0          12m
 ```console
 root@meshlab:~# wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
 
-root@meshlab:~# kubectl apply -f bookinfo.yaml 
+root@meshlab:~# kubectl apply -f bookinfo.yaml
 service/details created
 serviceaccount/bookinfo-details created
 deployment.apps/details-v1 created
@@ -643,6 +649,66 @@ reviews-v3-6dd79655b9-jxx8t       2/2     Running   0          6m10s
 ```console
 root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
+```
+
+此时，BookInfo 应用已经部署，但还不能被外界访问。 要开放访问，您需要创建 Istio 入站网关（Ingress Gateway）, 它会在网格边缘把一个路径映射到路由。
+
+```bash
+wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/networking/bookinfo-gateway.yaml
+```
+
+```yaml
+# cat bookinfo-gateway.yaml
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: bookinfo-gateway
+spec:
+  selector:
+    istio: ingressgateway # use istio default controller
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: bookinfo
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - bookinfo-gateway
+  http:
+  - match:
+    - uri:
+        exact: /productpage
+    - uri:
+        prefix: /static
+    - uri:
+        exact: /login
+    - uri:
+        exact: /logout
+    - uri:
+        prefix: /api/v1/products
+    route:
+    - destination:
+        host: productpage
+        port:
+          number: 9080
+```
+
+```console
+# kubectl apply -f bookinfo-gateway.yaml
+gateway.networking.istio.io/bookinfo-gateway created
+virtualservice.networking.istio.io/bookinfo created
+
+# istioctl analyze
+✔ No validation issues found when analyzing namespace: default.
 ```
 
 #### 3.2.4 bookinfo demo
