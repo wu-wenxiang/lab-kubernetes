@@ -538,7 +538,7 @@ Istio 解决了 SpringCloud 等同行的如下遗留问题：
 
 - 硬件：4Core / 8G / 40G
 - 操作系统：Ubuntu 20.04 / CentOS 7.9
-- 机器最好能翻墙，因为 istio 安装需要从 github 上下载 release 包
+- 机器需要能从 github 上下载 release 包（istio 安装需要）
 
 #### 3.2.2 安装 K8S 1.23.6
 
@@ -550,11 +550,11 @@ curl -sfL https://oss.kubeclipper.io/kcctl.sh | KC_REGION=cn KC_VERSION=v1.2.1 b
 kcctl deploy
 ```
 
-然后通过浏览器访问服务器（[不要用命令行，因为有一个 KubeClipper v1.2.1 有已知 issue](https://github.com/kubeclipper/kubeclipper/issues/274)），`http://<Server-IP>`，`admin` / `Thinkbig1`，创建集群：
+然后通过浏览器访问服务器（[不要用命令行，因为有一个 KubeClipper v1.2.1 有已知 issue](https://github.com/kubeclipper/kubeclipper/issues/274)），`http://<Server-IP>`，`admin` / `Thinkbig1`，创建集群：d
 
 - 去掉 Master 污点，方便调度业务 Pod
 - 选 Docker，方便使用 Docker 命令
-- 默认会选 ipvs，不要选 iptables，因为 KubeClipper v1.2.1 有已知 issue，会导致使用 iptables provider 的 K8S 集群删除时会失败
+- 默认会选 ipvs，不要选 iptables，因为 [KubeClipper v1.2.1 有已知 issue，会导致使用 iptables provider 的 K8S 集群删除时会失败](https://github.com/kubeclipper/kubeclipper/issues/288)
 
 其它保持默认，创建 AIO 集群。
 
