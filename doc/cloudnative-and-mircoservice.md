@@ -29,9 +29,10 @@
 | 第 3 天 | 上午 | [3. istio](#3-istio) | [3.1 微服务框架](#31-微服务框架)
 | | | | [3.2 环境搭建](#32-环境搭建) |
 | | | | [3.3 流量监控](#33-流量监控-调用链跟踪) |
-| | 下午 | | [3.4 灰度发布](#34-灰度发布) |
-| | | | [3.5 流量治理](#35-流量治理) |
-| | | | [3.6 服务保护](#36-服务保护) |
+| | 下午 | | [3.4 istio 运维建议](#34-istio-运维建议) |
+| | | | [3.5 基于 KubeSphere 的服务网格](#35-基于-kubesphere-的服务网格) |
+| | | | [3.6 灰度发布](#36-灰度发布) |
+| | | | [3.7 服务治理](#37-服务治理) |
 
 ## 1. 云原生
 
@@ -601,7 +602,13 @@ istio-ingressgateway-69944847bc-kwh2r   1/1     Running   0          11m
 istiod-5ff694cc8-lx6c7                  1/1     Running   0          12m
 ```
 
-部署 [bookinfo 应用](https://istio.io/latest/zh/docs/examples/bookinfo/)
+#### 3.2.4 bookinfo demo
+
+参考：[bookinfo 应用](https://istio.io/latest/zh/docs/examples/bookinfo/)
+
+bookinfo 应用是 istio 的官方推荐学习用例。
+
+##### 3.2.4.1 部署 bookinfo 应用
 
 ```console
 root@meshlab:~# wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
@@ -650,6 +657,36 @@ reviews-v3-6dd79655b9-jxx8t       2/2     Running   0          6m10s
 root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
 ```
+
+配置 NodePort，令外部可以访问到上述 `/productpage` 页面
+
+`kubectl edit svc productpage`，然后查找 type: ClusterIP，改成 type: NodePort
+
+```console
+[root@meshlab ~]# kubectl get svc
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+productpage   ClusterIP   10.104.42.127   <none>        9080/TCP   167m
+
+[root@meshlab ~]# kubectl edit svc productpage
+service/productpage edited
+
+[root@meshlab ~]# kubectl get svc
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
+```
+
+可以看到随机分配的 NodePort 端口是 32373，每次可能不同，可以从如下命令取得访问路径：
+
+```console
+[root@meshlab ~]# export PRODUCTPAGE_PORT=$(kubectl get svc productpage -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+
+[root@meshlab ~]# echo "http://<external-ip>:${PRODUCTPAGE_PORT}"
+http://<external-ip>:32373
+```
+
+这样从外部即可访问 book info 页面。
+
+##### 3.2.4.2 （可选）配置 istio ingress gateway
 
 此时，BookInfo 应用已经部署，但还不能被外界访问。 要开放访问，您需要创建 Istio 入站网关（Ingress Gateway）, 它会在网格边缘把一个路径映射到路由。
 
@@ -711,25 +748,42 @@ virtualservice.networking.istio.io/bookinfo created
 ✔ No validation issues found when analyzing namespace: default.
 ```
 
-#### 3.2.4 bookinfo demo
+```bash
+# 将 istio ingress gateway 的 service type 从 LoadBalancer 改成 NodePort
+kubectl edit svc istio-ingressgateway -n istio-system
+
+# 查找 type: LoadBalancer，改成 type: NodePort
+
+# 配置环境变量
+export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+
+echo "http://$GATEWAY_URL/productpage"
+# http://172.31.246.192:31924/productpage
+```
+
+上面的 `GATEWAY_URL` 可能是内网地址，如果是 FIP，需要改成公网地址才能被外部用户访问。
 
 ### 3.3 流量监控-调用链跟踪
 
 [返回目录](#课程目录)
 
-### 3.4	灰度发布
+```bash
+wget https://github.com/istio/istio/releases/download/1.11.2/istio-1.11.2-linux-amd64.tar.gz
 
-[返回目录](#课程目录)
+tar zxvf istio-1.11.2-linux-amd64.tar.gz
+cd istio-1.11.2
+kubectl apply -f samples/addons
+kubectl rollout status deployment/kiali -n istio-system
 
-### 3.5 流量治理
+# 如果在安装插件时出错，再运行一次命令。 有一些和时间相关的问题，再运行就能解决。
+```
 
-[返回目录](#课程目录)
+如果没有配置 istio-ingress-gateway，那么 `kubectl edit svc kiali -n istio-system`，改成 nodeport，也可也访问 kiali 页面
 
-### 3.6 服务保护
-
-[返回目录](#课程目录)
-
-### 3.7 Istio 运维建议
+### 3.4 Istio 运维建议
 
 1. 版本选择
 
@@ -770,13 +824,11 @@ virtualservice.networking.istio.io/bookinfo created
 
     相比 Spring Cloud，Istio 较好地实现了微服务的路由管理。但在实际生产中，仅有微服务的路由管理是不够的，还需要诸如不同微服务之间的业务系统集成管理、微服务的 API 管理、微服务中的规则流程管理等。
 
-### 3.8 基于 KubeSphere 的服务网格
+### 3.5 基于 KubeSphere 的服务网格
 
 KubeSphere 对 istio 进行了初步的产品化封装。
 
-#### 3.8.1 环境安装
-
-##### 3.8.1.1 预置条件
+#### 3.5.1 预置条件
 
 准备环境：
 
@@ -785,7 +837,7 @@ KubeSphere 对 istio 进行了初步的产品化封装。
 
 安装 [K8S 1.23.6](#322-安装-k8s-1236)
 
-##### 3.8.1.2 安装 KubeSphere v3.2.1（带 istio）
+#### 3.5.2 安装 KubeSphere v3.2.1（带 istio）
 
 首先安装默认存储，直接用 [Local Path Provider](kubernetes-best-practices.md#45-local-和动态分配)
 
@@ -836,4 +888,24 @@ kubectl apply -f cluster-configuration.yaml
 kubectl logs -n kubesphere-system $(kubectl get pod -n kubesphere-system -l 'app in (ks-install, ks-installer)' -o jsonpath='{.items[0].metadata.name}') -f
 ```
 
-#### 3.8.2 服务网格测试
+### 3.6	灰度发布
+
+[返回目录](#课程目录)
+
+#### 3.6.1 部署测试用例
+
+参考 [Github](https://github.com/99cloud/micro-service-demo) 或 [Gitee](https://gitee.com/dev-99cloud/micro-service-demo)，可以将 demo 部署到标准 K8S 环境。
+
+然后，将 demo 部署到 KubeSphere
+
+#### 3.6.2 金丝雀发布
+
+##### 3.6.2.1 按比例
+
+##### 3.6.2.2 按请求标签
+
+### 3.7 服务治理
+
+[返回目录](#课程目录)
+
+#### 3.7.1 熔断
