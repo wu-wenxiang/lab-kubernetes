@@ -563,6 +563,8 @@ kcctl deploy
 
 参考：<https://istio.io/latest/zh/docs/setup/getting-started/>
 
+1.11 版本可以参考：<https://istio.io/v1.11/zh/docs/setup/getting-started/>
+
 ```bash
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
 
@@ -782,6 +784,8 @@ kubectl rollout status deployment/kiali -n istio-system
 ```
 
 如果没有配置 istio-ingress-gateway，那么 `kubectl edit svc kiali -n istio-system`，改成 nodeport，也可也访问 kiali 页面
+
+接下来可以参考：<https://istio.io/v1.11/zh/docs/setup/getting-started/#%E5%90%8E%E7%BB%AD%E6%AD%A5%E9%AA%A4> 完成后续实验
 
 ### 3.4 Istio 运维建议
 
