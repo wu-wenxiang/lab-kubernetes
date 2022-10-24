@@ -28,7 +28,7 @@
 | | | | [2.4 事件](#24-事件溯源和-cqrs) |
 | 第 3 天 | 上午 | [3. istio](#3-istio) | [3.1 微服务框架](#31-微服务框架)
 | | | | [3.2 环境搭建](#32-环境搭建) |
-| | | | [3.3 流量监控](#33-流量监控-调用链跟踪) |
+| | | | [3.3 流量监控和治理](#33-流量监控和治理) |
 | | 下午 | | [3.4 istio 运维建议](#34-istio-运维建议) |
 | | | | [3.5 基于 KubeSphere 的服务网格](#35-基于-kubesphere-的服务网格) |
 | | | | [3.6 灰度发布](#36-灰度发布) |
@@ -696,7 +696,7 @@ kubectl get po -n bookinfo
 确认上面的操作都正确之后，运行下面命令，通过检查返回的页面标题，来验证应用是否已在集群中运行，并已提供网页服务：
 
 ```console
-root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
+root@meshlab:~# kubectl exec "$(kubectl get pod -n bookinfo -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -n bookinfo -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
 <title>Simple Bookstore App</title>
 ```
 
@@ -705,14 +705,14 @@ root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.it
 `kubectl edit svc productpage`，然后查找 type: ClusterIP，改成 type: NodePort
 
 ```console
-[root@meshlab ~]# kubectl get svc
+[root@meshlab ~]# kubectl get svc -n bookinfo
 NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 productpage   ClusterIP   10.104.42.127   <none>        9080/TCP   167m
 
-[root@meshlab ~]# kubectl edit svc productpage
+[root@meshlab ~]# kubectl edit svc productpage -n bookinfo
 service/productpage edited
 
-[root@meshlab ~]# kubectl get svc
+[root@meshlab ~]# kubectl get svc -n bookinfo
 NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
 productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
 ```
@@ -720,7 +720,7 @@ productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
 可以看到随机分配的 NodePort 端口是 32373，每次可能不同，可以从如下命令取得访问路径：
 
 ```console
-[root@meshlab ~]# export PRODUCTPAGE_PORT=$(kubectl get svc productpage -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+[root@meshlab ~]# export PRODUCTPAGE_PORT=$(kubectl get svc productpage -n bookinfo -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
 
 [root@meshlab ~]# echo "http://<external-ip>:${PRODUCTPAGE_PORT}"
 http://<external-ip>:32373
@@ -850,12 +850,12 @@ export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -
 export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
 echo "http://$GATEWAY_URL/productpage"
-# http://172.31.246.192:31924/productpage
+# http://47.243.142.173:32237/productpage
 ```
 
 上面的 `GATEWAY_URL` 可能是内网地址，需要改成公网地址（Floating IP）才能被外部用户访问。
 
-### 3.3 流量监控-调用链跟踪
+### 3.3 流量监控和治理
 
 [返回目录](#课程目录)
 
