@@ -677,13 +677,60 @@ istiod-5ff694cc8-lx6c7                  1/1     Running   0          12m
 
 参考：[bookinfo 应用](https://istio.io/latest/zh/docs/examples/bookinfo/)
 
+v1.11 版本：<https://istio.io/v1.11/zh/docs/examples/bookinfo/>
+
 bookinfo 应用是 istio 的官方推荐学习用例。
 
-##### 3.2.4.1 部署 bookinfo 应用
+bookinfo 可以在无服务网格环境直接部署
+
+```bash
+wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
+
+kubectl delete ns bookinfo
+kubectl create ns bookinfo
+
+kubectl -n bookinfo apply -f bookinfo.yaml
+kubectl get po -n bookinfo
+```
+
+确认上面的操作都正确之后，运行下面命令，通过检查返回的页面标题，来验证应用是否已在集群中运行，并已提供网页服务：
 
 ```console
-root@meshlab:~# wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
+root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
+<title>Simple Bookstore App</title>
+```
 
+配置 NodePort，令外部可以访问到上述 `/productpage` 页面
+
+`kubectl edit svc productpage`，然后查找 type: ClusterIP，改成 type: NodePort
+
+```console
+[root@meshlab ~]# kubectl get svc
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+productpage   ClusterIP   10.104.42.127   <none>        9080/TCP   167m
+
+[root@meshlab ~]# kubectl edit svc productpage
+service/productpage edited
+
+[root@meshlab ~]# kubectl get svc
+NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
+```
+
+可以看到随机分配的 NodePort 端口是 32373，每次可能不同，可以从如下命令取得访问路径：
+
+```console
+[root@meshlab ~]# export PRODUCTPAGE_PORT=$(kubectl get svc productpage -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
+
+[root@meshlab ~]# echo "http://<external-ip>:${PRODUCTPAGE_PORT}"
+http://<external-ip>:32373
+```
+
+这样从外部即可访问 book info 页面，每次访问 `http://<external-ip>:32373/productpage` 都会呈现不同的效果，这是因为 review 采用了 K8S 原生的金丝雀发布。
+
+##### 3.2.4.1 部署 bookinfo 应用到服务网格
+
+```console
 root@meshlab:~# kubectl apply -f bookinfo.yaml
 service/details created
 serviceaccount/bookinfo-details created
@@ -722,40 +769,7 @@ reviews-v2-548c57f459-qhtgt       2/2     Running   0          6m10s
 reviews-v3-6dd79655b9-jxx8t       2/2     Running   0          6m10s
 ```
 
-确认上面的操作都正确之后，运行下面命令，通过检查返回的页面标题，来验证应用是否已在集群中运行，并已提供网页服务：
-
-```console
-root@meshlab:~# kubectl exec "$(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}')" -c ratings -- curl -s productpage:9080/productpage | grep -o "<title>.*</title>"
-<title>Simple Bookstore App</title>
-```
-
-配置 NodePort，令外部可以访问到上述 `/productpage` 页面
-
-`kubectl edit svc productpage`，然后查找 type: ClusterIP，改成 type: NodePort
-
-```console
-[root@meshlab ~]# kubectl get svc
-NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
-productpage   ClusterIP   10.104.42.127   <none>        9080/TCP   167m
-
-[root@meshlab ~]# kubectl edit svc productpage
-service/productpage edited
-
-[root@meshlab ~]# kubectl get svc
-NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
-```
-
-可以看到随机分配的 NodePort 端口是 32373，每次可能不同，可以从如下命令取得访问路径：
-
-```console
-[root@meshlab ~]# export PRODUCTPAGE_PORT=$(kubectl get svc productpage -o jsonpath='{.spec.ports[?(@.name=="http")].nodePort}')
-
-[root@meshlab ~]# echo "http://<external-ip>:${PRODUCTPAGE_PORT}"
-http://<external-ip>:32373
-```
-
-这样从外部即可访问 book info 页面。
+同样可以修改 productpage 服务的类型为 NodePort 来访问它。
 
 ##### 3.2.4.2 （可选）配置 istio ingress gateway
 
@@ -820,22 +834,24 @@ virtualservice.networking.istio.io/bookinfo created
 ```
 
 ```bash
-# 将 istio ingress gateway 的 service type 从 LoadBalancer 改成 NodePort
+# 将 istio ingress gateway 的 spec 下，添加
+# externalIPs:
+# - 47.243.226.54
+# 这里 47.243.226.54 是外网 IP
 kubectl edit svc istio-ingressgateway -n istio-system
-
-# 查找 type: LoadBalancer，改成 type: NodePort
 
 # 配置环境变量
 export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
 export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
-export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+# export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+export INGRESS_HOST=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.externalIPs[0]}')
 export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
 
 echo "http://$GATEWAY_URL/productpage"
 # http://172.31.246.192:31924/productpage
 ```
 
-上面的 `GATEWAY_URL` 可能是内网地址，如果是 FIP，需要改成公网地址才能被外部用户访问。
+上面的 `GATEWAY_URL` 可能是内网地址，需要改成公网地址（Floating IP）才能被外部用户访问。
 
 ### 3.3 流量监控-调用链跟踪
 
