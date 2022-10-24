@@ -726,7 +726,9 @@ productpage   NodePort    10.104.42.127   <none>        9080:32373/TCP   168m
 http://<external-ip>:32373
 ```
 
-这样从外部即可访问 book info 页面，每次访问 `http://<external-ip>:32373/productpage` 都会呈现不同的效果，这是因为 review 采用了 K8S 原生的金丝雀发布。
+这样从外部即可访问 book info 页面。
+
+每次访问 `http://<external-ip>:32373/productpage` 都会呈现不同的效果，有时书评的输出包含星级评分，有时则不包含。这是因为 review 服务采用了 K8S 原生的金丝雀发布，同时运行 3 个版本（Service 根据每个版本 pod 的数量作为权重进行流量分发）。
 
 ##### 3.2.4.1 部署 bookinfo 应用到服务网格
 
@@ -871,6 +873,87 @@ kubectl rollout status deployment/kiali -n istio-system
 如果没有配置 istio-ingress-gateway，那么 `kubectl edit svc kiali -n istio-system`，改成 nodeport，也可也访问 kiali 页面
 
 接下来可以参考：<https://istio.io/v1.11/zh/docs/setup/getting-started/#%E5%90%8E%E7%BB%AD%E6%AD%A5%E9%AA%A4> 完成后续实验
+
+#### 3.3.1 应用默认目标规则
+
+```bash
+kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+
+# 等待几秒钟，以使目标规则生效
+# 您可以使用以下命令查看目标规则
+
+kubectl get destinationrules -o yaml
+```
+
+#### 3.3.2 配置请求路由
+
+仅路由到一个版本，请应用为微服务设置默认版本的 Virtual Service。在这种情况下，Virtual Service 将所有流量路由到每个微服务的 v1 版本。
+
+```bash
+kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+
+# 使用以下命令显示已定义的路由：
+kubectl get virtualservices -o yaml
+
+# 您还可以使用以下命令显示相应的 subset 定义：
+kubectl get destinationrules -o yaml
+```
+
+您已将 Istio 配置为路由到 Bookinfo 微服务的 v1 版本，最重要的是 reviews 服务的版本 1。
+
+现在，无论您刷新多少次，页面的评论部分都不会显示评级星标。这是因为您将 Istio 配置为将评论服务的所有流量路由到版本 reviews:v1，而此版本的服务不访问星级评分服务。
+
+#### 3.3.3 基于用户身份的路由
+
+接下来，您将更改路由配置，以便将来自特定用户的所有流量路由到特定服务版本。在这种情况下，来自名为 jason 的用户的所有流量将被路由到服务 reviews:v2。
+
+请注意，Istio 对用户身份没有任何特殊的内置机制。事实上，productpage 服务在所有到 reviews 服务的 HTTP 请求中都增加了一个自定义的 end-user 请求头，从而达到了本例子的效果。
+
+请记住，reviews:v2 是包含星级评分功能的版本。
+
+```bash
+kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+
+# 删除应用程序的 Virtual Service
+# kubectl delete -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+```
+
+#### 3.3.4 故障注入
+
+<https://istio.io/v1.11/zh/docs/tasks/traffic-management/fault-injection/>
+
+```bash
+# 注入 7s 延迟
+kubectl apply -f samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml
+```
+
+#### 3.3.5 流量转移
+
+<https://istio.io/v1.11/zh/docs/tasks/traffic-management/traffic-shifting/>
+
+```bash
+# 100% v1
+kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+
+# 50% v1 + 50% v3
+kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+
+# 100% v3
+kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+```
+
+#### 3.3.6 通过 Prometheus 查询度量指标
+
+<https://istio.io/v1.11/zh/docs/tasks/observability/metrics/querying-metrics/>
+
+```bash
+# 通过 NodePort 暴露 prometheus
+kubectl -n istio-system edit svc prometheus
+```
+
+#### 3.3.7 使用 Grafana 可视化指标
+
+<https://istio.io/v1.11/zh/docs/tasks/observability/metrics/using-istio-dashboard/>
 
 ### 3.4 Istio 运维建议
 
