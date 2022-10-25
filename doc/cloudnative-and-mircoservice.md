@@ -702,7 +702,7 @@ root@meshlab:~# kubectl exec "$(kubectl get pod -n bookinfo -l app=ratings -o js
 
 配置 NodePort，令外部可以访问到上述 `/productpage` 页面
 
-`kubectl edit svc productpage`，然后查找 type: ClusterIP，改成 type: NodePort
+`kubectl edit svc productpage -n bookinfo`，然后查找 type: ClusterIP，改成 type: NodePort
 
 ```console
 [root@meshlab ~]# kubectl get svc -n bookinfo
