@@ -2628,11 +2628,17 @@ WantedBy=multi-user.target
 参考：<https://github.com/cnrancher/autok3s>
 
 ```bash
-curl -sS https://rancher-mirror.rancher.cn/autok3s/install.sh  | INSTALL_AUTOK3S_MIRROR=cn sh -
+curl -sS https://rancher-mirror.oss-cn-beijing.aliyuncs.com/autok3s/install.sh | INSTALL_AUTOK3S_MIRROR=cn sh -
 
 # The commands will start autok3s daemon with an interactionable UI.
 autok3s -d serve --bind-address 0.0.0.0
 ```
+
+注意：
+
+1. 默认会启动在 8080 端口
+2. 创建集群时，建议打开高级选项，用 oss 上的脚本部署（避免后续安装存在网络延迟），enable cluster etcd，选 explorer
+3. explorer 对每一个集群都是一个单独的进程，以 kubeconfig 为启动参数，为一个 k8s 集群提供启动界面服务（kube-explorer-ui），然后 autok3s-ui 集成各个 kube-explorer-ui（通过 proxy）。
 
 优点：
 
