@@ -2,7 +2,7 @@
 
 ## 注意 ⚠️
 
-- *斜体表示引用*
+- _斜体表示引用_
 - **未经允许，禁止转载**
 
 ## 学习本课程前，你应该具备如下知识：
@@ -14,36 +14,36 @@
 
 ## 课程目录
 
-| Date | Time | Title | Content |
-| ---- | ---- | ----- | ------- |
-| 第 1 天 | 上午 | [1. 操作系统](#1-操作系统) | [1.1 CentOS 7](#11-centos-7) |
-| | | | [1.4 Rocky](#14-rocky) 和其它选择（1.2-1.8） |
-| | | | [1.9 最佳实践](#19-最佳实践) |
-| | | [2. 容器运行时](#2-容器运行时) | [2.1 LXC 和 Docker（网络和存储模型） ](#21-docker) |
-| | 下午 | | [2.2 Containerd 和命令行工具们](#22-containerd) |
-| | | | [2.3 CRI-O](#23-cri-o) |
-| 第 2 天 | 上午 | | [2.4 ECI 和 Kata](#24-kata-和它的朋友们) |
-| | | | [2.5 GPU](#25-gpu) |
-| | | | [2.6 最佳实践](#26-最佳实践) |
-| | 下午 | [3. K8S 生命周期管理](#3-k8s-生命周期管理) | [3.1 K8S 集群创建删除、扩缩容、备份恢复](#31-集群的创建删除扩缩容备份恢复) |
-| | | | [3.2 K8S 升级](#32-版本升级) |
-| 第 3 天 | 上午 | | [3.1.2 Sealos](#312-sealos) 和其它工具（kubekey/k0s） |
-| | | | [3.1.4 KubeClipper](#314-kubeclipper) |
-| | | | [3.1.5 K3S](#315-k3s) |
-| | 下午 | | [3.3 迁移和纳管：Rancher 和 K3S](#33-迁移和纳管) |
-| | | | [3.4 统一认证和鉴权：KubeSphere](#34-统一认证和鉴权) 和计量、日志 |
-| | | | [3.7 最佳实践](#37-最佳实践) |
-| | | [4. 存储管理](#4-存储管理) | [4.2 对接 NAS/NFS](#42-对接-nfs-和-nas) |
-| 第 4 天 | 上午 | | [4.3 对接 CephRBD](#43-对接-ceph-rbd) |
-| | | | [4.4 跨命名空间复制 PVC ](#44-跨命名空间的快照和备份) |
-| | | | [4.6 最佳实践 ](#46-最佳实践) |
-| | | [5. 网络管理](#5-网络管理) | [5.2 对接 Calico](#52-对接-calico) |
-| | 下午 | | [5.3 对接 OVN](#53-对接-ovn) 和 Multus |
-| | | | [5.6 最佳实践](#56-最佳实践) |
-| | | [6. 安全相关](#6-安全相关) | [6.2 权限控制](#62-权限限制) |
-| | | | [6.3 扫描工具](#63-k8s-安全扫描工具) |
-| | | | [6.5 审计日志](#65-审计日志) |
-| | | | [6.7 最佳实践](#67-最佳实践) |
+| Date  | Time | Title                          | Content                                        |
+| ----- | ---- | ------------------------------ | ---------------------------------------------- |
+| 第 1 天 | 上午   | [1. 操作系统](#1-操作系统)             | [1.1 CentOS 7](#11-centos-7)                   |
+|       |      |                                | [1.4 Rocky](#14-rocky) 和其它选择（1.2-1.8）          |
+|       |      |                                | [1.9 最佳实践](#19-最佳实践)                           |
+|       |      | [2. 容器运行时](#2-容器运行时)           | [2.1 LXC 和 Docker（网络和存储模型）](#21-docker)        |
+|       | 下午   |                                | [2.2 Containerd 和命令行工具们](#22-containerd)       |
+|       |      |                                | [2.3 CRI-O](#23-cri-o)                         |
+| 第 2 天 | 上午   |                                | [2.4 ECI 和 Kata](#24-kata-和它的朋友们)              |
+|       |      |                                | [2.5 GPU](#25-gpu)                             |
+|       |      |                                | [2.6 最佳实践](#26-最佳实践)                           |
+|       | 下午   | [3. K8S 生命周期管理](#3-k8s-生命周期管理) | [3.1 K8S 集群创建删除、扩缩容、备份恢复](#31-集群的创建删除扩缩容备份恢复)  |
+|       |      |                                | [3.2 K8S 升级](#32-版本升级)                         |
+| 第 3 天 | 上午   |                                | [3.1.2 Sealos](#312-sealos) 和其它工具（kubekey/k0s） |
+|       |      |                                | [3.1.4 KubeClipper](#314-kubeclipper)          |
+|       |      |                                | [3.1.5 K3S](#315-k3s)                          |
+|       | 下午   |                                | [3.3 迁移和纳管：Rancher 和 K3S](#33-迁移和纳管)           |
+|       |      |                                | [3.4 统一认证和鉴权：KubeSphere](#34-统一认证和鉴权) 和计量、日志   |
+|       |      |                                | [3.7 最佳实践](#37-最佳实践)                           |
+|       |      | [4. 存储管理](#4-存储管理)             | [4.2 对接 NAS/NFS](#42-对接-nfs-和-nas)             |
+| 第 4 天 | 上午   |                                | [4.3 对接 CephRBD](#43-对接-ceph-rbd)              |
+|       |      |                                | [4.4 跨命名空间复制 PVC](#44-跨命名空间的快照和备份)             |
+|       |      |                                | [4.6 最佳实践](#46-最佳实践)                           |
+|       |      | [5. 网络管理](#5-网络管理)             | [5.2 对接 Calico](#52-对接-calico)                 |
+|       | 下午   |                                | [5.3 对接 OVN](#53-对接-ovn) 和 Multus              |
+|       |      |                                | [5.6 最佳实践](#56-最佳实践)                           |
+|       |      | [6. 安全相关](#6-安全相关)             | [6.2 权限控制](#62-权限限制)                           |
+|       |      |                                | [6.3 扫描工具](#63-k8s-安全扫描工具)                     |
+|       |      |                                | [6.5 审计日志](#65-审计日志)                           |
+|       |      |                                | [6.7 最佳实践](#67-最佳实践)                           |
 
 ## 1. 操作系统
 
@@ -61,7 +61,8 @@ CentOS 最麻烦的地方是配套的 yum/rpm 包过于久远。
 
 首先是 Kernel，3.10 的 Kernel 会遇到的问题
 
-1. KVM 无法启用硬件加速（kvm_intel 模块无法加载），告警：`QEMU: Checking if device /dev/kvm exists : FAIL (Check that the 'kvm-intel' or 'kvm-amd' modules are loaded & the BIOS has enabled virtualization)`
+1. KVM 无法启用硬件加速（kvm_intel
+   模块无法加载），告警：`QEMU: Checking if device /dev/kvm exists : FAIL (Check that the 'kvm-intel' or 'kvm-amd' modules are loaded & the BIOS has enabled virtualization)`
 2. K8S 启用 CPU/Memory limitaion 时，3.10 内核会额外耗费较多的 CPU 资源
 3. 不支持 Calico ebpf 特性
 4. 不支持较新的 cephcsi，cephfs
@@ -173,11 +174,11 @@ git version 2.32.0
 
 参考：<https://endoflife.software/operating-systems/linux/ubuntu>
 
-| LTS(Long Term Support) | Release | EOL(End Of Life) | HWE(Hardware Enablement) |
-| - | - | - | - |
-| 22.04 Jammy Jellyfish | 2022/04/21 | 2027/04 |
-| 20.04 Focal Fossa | 2020/04 | 2025/04 | 2030/04 |
-| 18.04 Bionic Beaver | 2018/04/26 | 2023/04 | 2028/04 |
+| LTS(Long Term Support) | Release    | EOL(End Of Life) | HWE(Hardware Enablement) |
+| ---------------------- | ---------- | ---------------- | ------------------------ |
+| 22.04 Jammy Jellyfish  | 2022/04/21 | 2027/04          |                          |
+| 20.04 Focal Fossa      | 2020/04    | 2025/04          | 2030/04                  |
+| 18.04 Bionic Beaver    | 2018/04/26 | 2023/04          | 2028/04                  |
 
 Ubuntu 的策略比较简单，保持循 LTS 升级即可。
 
@@ -187,15 +188,16 @@ Ubuntu 的策略比较简单，保持循 LTS 升级即可。
 
 [Comparing CentOS Stream and CentOS Linux](https://www.centos.org/cl-vs-cs/):
 
-*End of Life*
+_End of Life_
 
 - CentOS Linux 8 EOL: 2021-12-31
 - CentOS Stream 8 EOL: 2024-05-31
 - CentOS Stream 9 EOL: estimated 2027, dependent on RHEL9 end of “Full Support Phase”
 
-*Upstream vs downstream*
+_Upstream vs downstream_
 
-- CentOS Linux 是 Red Hat Enterprise Linux (RHEL) 的 rebuild，是 RHEL 的 Downstream。CentOS Linux 的版本号是 RHEL 的发布日期，比如 CentOS 8.2105 就是 RHEL 8.3（发布于 2021/05） 的 rebuild
+- CentOS Linux 是 Red Hat Enterprise Linux (RHEL) 的 rebuild，是 RHEL 的 Downstream。CentOS Linux 的版本号是
+  RHEL 的发布日期，比如 CentOS 8.2105 就是 RHEL 8.3（发布于 2021/05） 的 rebuild
 - CentOS Stream 是 RHEL 的 upstream, RHEL 的 public development 分支。简单说，就是：**不稳定**。
 
 综上，**CentOS 8 已经停止支持，CentOS 8 Stream 不稳定，两者都不要用于生产了**。
@@ -212,28 +214,38 @@ Ubuntu 的策略比较简单，保持循 LTS 升级即可。
 
 参考：<https://www.logicweb.com/what-is-rocky-linux/>
 
-2020 年 12 月（IBM 收购 Red Hat 之后），收购 CentOS 的 Red Hat 宣布，CentOS Linux 8 将于 2021 年底结束支持，比早些时候承诺的 10 年计划要短得多。CentOS Stream 是 development 版本，将按计划在2024年结束。从此以后 CentOS 将位于 RHEL 的上游，而不是下游，CentOS 用户实际上将是 RHEL 的测试人员。
+2020 年 12 月（IBM 收购 Red Hat 之后），收购 CentOS 的 Red Hat 宣布，CentOS Linux 8 将于 2021 年底结束支持，比早些时候承诺的 10
+年计划要短得多。CentOS Stream 是 development 版本，将按计划在2024年结束。从此以后 CentOS 将位于 RHEL 的上游，而不是下游，CentOS 用户实际上将是
+RHEL 的测试人员。
 
-这引发了广大 CentOS 用户的极大不满，CentOS 创始人 Gregory Kurtzer 随即宣称领导创建新的 “CentOS” 发行版的工作。Rocky 这个名字是为了纪念已故 CentOS 联合创始人 Rocky McGaugh。Kurtzer 曾在加州大学伯克利分校从事高性能计算工作很长时间。鉴于CentOS 在 CERN 等机构的粒子物理学中得到了广泛应用，这可能会是Rocky Linux 的主要关注点之一。
+这引发了广大 CentOS 用户的极大不满，CentOS 创始人 Gregory Kurtzer 随即宣称领导创建新的 “CentOS” 发行版的工作。Rocky 这个名字是为了纪念已故 CentOS
+联合创始人 Rocky McGaugh。Kurtzer 曾在加州大学伯克利分校从事高性能计算工作很长时间。鉴于CentOS 在 CERN 等机构的粒子物理学中得到了广泛应用，这可能会是Rocky
+Linux 的主要关注点之一。
 
 参考：<https://rockylinux.org/>
 
-*Enterprise Linux, the community way.
-Rocky Linux is an open-source enterprise operating system designed to be 100% bug-for-bug compatible with Red Hat Enterprise Linux®. It is under intensive development by the community.*
+_Enterprise Linux, the community way. Rocky Linux is an open-source enterprise operating system
+designed to be 100% bug-for-bug compatible with Red Hat Enterprise Linux®. It is under intensive
+development by the community._
 
 参考：<https://rockylinux.org/download/>，Planned EOL: 2029/05/31
 
-综上，**Rocky 是另起炉灶的 CentOS Linux**。当下进展不错。参考 <https://github.com/rocky-linux/rocky>，2021/06，Rocky Linux 已经生产环境 ready。建议在生产环境中使用（CentOS 7 结束支持前半年，也就是 2023 年应该转向 Rocky Linux）。
+综上，**Rocky 是另起炉灶的 CentOS Linux**。当下进展不错。参考 <https://github.com/rocky-linux/rocky>，2021/06，Rocky
+Linux 已经生产环境 ready。建议在生产环境中使用（CentOS 7 结束支持前半年，也就是 2023 年应该转向 Rocky Linux）。
 
 ### 1.5 AlmaLinux
 
-AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家提供服务器托管和 Linux 软件的公司。这是一家在 RHEL 分支方面经验丰富的公司，十多年来一直构建和维护其内部发行版 CloudLinux OS，它本身就是一个分支。
+AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家提供服务器托管和 Linux 软件的公司。这是一家在 RHEL
+分支方面经验丰富的公司，十多年来一直构建和维护其内部发行版 CloudLinux OS，它本身就是一个分支。
 
 你**应该选 Alma 还是 Rocky**？它俩都致力于提供社区版的 RHEL，这有点难回答：
 
 从所有权来说（AlmaLinux 开放，Rocky 独裁）：
 
-- Rocky Linux 由 Kurtzer 创立的 Rocky Enterprise Software Foundation (RESF) 控制和管理。同时，他还是为 Rocky Linux 提供保护伞的 Public Benefit Corporation (PBC) 所有者。所以，Kurtzer 基本上拥有 Rocky。是的，RESF 有一个管理委员会，但无论你怎么看，Kurtzer 都是公司持有人，并且可能是 Rocky Linux 的决策者。“独裁”可能是好事，也可能是坏事。理论上讲，他可能像卖 CentOS 一样，再卖一次 Rocky。我们只需要相信他，他会阻止之前发生的事情再次发生。
+- Rocky Linux 由 Kurtzer 创立的 Rocky Enterprise Software Foundation (RESF) 控制和管理。同时，他还是为 Rocky Linux
+  提供保护伞的 Public Benefit Corporation (PBC) 所有者。所以，Kurtzer 基本上拥有 Rocky。是的，RESF
+  有一个管理委员会，但无论你怎么看，Kurtzer 都是公司持有人，并且可能是 Rocky Linux 的决策者。“独裁”可能是好事，也可能是坏事。理论上讲，他可能像卖 CentOS 一样，再卖一次
+  Rocky。我们只需要相信他，他会阻止之前发生的事情再次发生。
 - AlmaLinux OS 基金会是一个真正的非营利组织，拥有独立的董事会和公共所有权，贡献者在项目治理中拥有直接投票权和直接发言权。
 
 从贡献者来说（AlmaLinux 集中，Rocky 分散）：
@@ -257,9 +269,11 @@ AlmaLinux 由 CloudLinux 的开发人员构建和维护，CloudLinux 是一家�
 
 [返回目录](#课程目录)
 
-参考：<https://developer.huaweicloud.com/ict/en/site-euleros/euleros>，EulerOS 是华为推出的企业 Linux 系统（诞生于华为科学实验室），Openeuler 是 EulerOS 的社区版本，2019 年开源，现贡献给开放原子基金会，代码托管在 <https://gitee.com/openeuler>。
+参考：<https://developer.huaweicloud.com/ict/en/site-euleros/euleros>，EulerOS 是华为推出的企业 Linux
+系统（诞生于华为科学实验室），Openeuler 是 EulerOS 的社区版本，2019 年开源，现贡献给开放原子基金会，代码托管在 <https://gitee.com/openeuler>。
 
-OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才开源的，开源在那之前），相较 CentOS 对核内关键功能如进程调度、内存管理、IO 读写进行了深度优化；同时在核外构筑了容器 iSula、虚拟化 StraitVirt、机密计算 SecGear、毕昇 JDK（Huawei JDK 的开源版本）。
+OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才开源的，开源在那之前），相较 CentOS 对核内关键功能如进程调度、内存管理、IO
+读写进行了深度优化；同时在核外构筑了容器 iSula、虚拟化 StraitVirt、机密计算 SecGear、毕昇 JDK（Huawei JDK 的开源版本）。
 
 综上，**OpenEuler 的优势是国产、信创，能较好地适配国产 ARM 服务器（特别是华为鲲鹏、泰山等）。缺点是兼容性和稳定性验证稍显不足**。
 
@@ -267,7 +281,8 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 
 [返回目录](#课程目录)
 
-龙蜥由阿里巴巴在 2021/10/20 孵化出来，诞生背景是 CentOS 8 结束支持（CentOS 8 结束支持这事，堪称“一鲸落，万物生”，可惜 Alma 和 Rocky Linux 起得太快）。
+龙蜥由阿里巴巴在 2021/10/20 孵化出来，诞生背景是 CentOS 8 结束支持（CentOS 8 结束支持这事，堪称“一鲸落，万物生”，可惜 Alma 和 Rocky Linux
+起得太快）。
 
 参考：<https://openanolis.cn/anolisos>，100% 兼容 CentOS 8 软件生态。
 
@@ -278,9 +293,14 @@ OpenEuler 兼容 CentOS（但是它并不是蹭 CentOS 8 结束支持热点才�
 这个就说来话长了，我也查了半天，诸君姑且听之。
 
 - **中标麒麟**：2010/12/16，中标 Linux 和国防科大的“银河麒麟”在上海宣布合并，开发方中标软件有限公司和国防科大同日缔结了战略合作协议，双方今后将共同以“中标麒麟”的新品牌出现。
-- **银河麒麟** Kylin Operating System 是天津麒麟信息技术有限公司旗下的国产 Linux 操作系统，源自国防科大“麒麟”、“银河麒麟”操作系统，支持主流 X86 架构 CPU 以及国产飞腾 CPU 平台。国防科大继续了老“麒麟”的开发。
-- **优麒麟** UbuntuKylin 是 Ubuntu 社区中面向中文用户的 Ubuntu 衍生版本，中文名称优麒麟，与麒麟系统没有关系。优麒麟有两个身份，首先它是 Ubuntu 的一个官方 Flavor 版本。其次，它背后也有国防科大和天津麒麟的支持，可以看做银河麒麟的社区版。优麒麟最初的目标是像 Ubuntu 一样占领中国市场，可是很多人直接选择了 Ubuntu，一些选择了更接地气的 Deepin，所以优麒麟并不算非常成功。
-- **湖南麒麟**，湖南麒麟信息工程技术有限公司（简称湖南麒麟）是 2007 年成立的一家民营企业，公司成立之初依托国防科大计算机学院，长期致力于信息安全的研发，在集中管控和机要密码等领域有一定的影响力。2014 年天津麒麟成立时，国防科大将“麒麟”、“银河麒麟”等无形资产注入了天津麒麟，湖南麒麟原有的操作系统研发团队整体转入天津麒麟。现在的湖南麒麟，只是一家单纯的民营企业了，可以视为一个新的系统。
+- **银河麒麟** Kylin Operating System 是天津麒麟信息技术有限公司旗下的国产 Linux 操作系统，源自国防科大“麒麟”、“银河麒麟”操作系统，支持主流 X86 架构
+  CPU 以及国产飞腾 CPU 平台。国防科大继续了老“麒麟”的开发。
+- **优麒麟** UbuntuKylin 是 Ubuntu 社区中面向中文用户的 Ubuntu 衍生版本，中文名称优麒麟，与麒麟系统没有关系。优麒麟有两个身份，首先它是 Ubuntu 的一个官方
+  Flavor 版本。其次，它背后也有国防科大和天津麒麟的支持，可以看做银河麒麟的社区版。优麒麟最初的目标是像 Ubuntu 一样占领中国市场，可是很多人直接选择了
+  Ubuntu，一些选择了更接地气的 Deepin，所以优麒麟并不算非常成功。
+- **湖南麒麟**，湖南麒麟信息工程技术有限公司（简称湖南麒麟）是 2007
+  年成立的一家民营企业，公司成立之初依托国防科大计算机学院，长期致力于信息安全的研发，在集中管控和机要密码等领域有一定的影响力。2014
+  年天津麒麟成立时，国防科大将“麒麟”、“银河麒麟”等无形资产注入了天津麒麟，湖南麒麟原有的操作系统研发团队整体转入天津麒麟。现在的湖南麒麟，只是一家单纯的民营企业了，可以视为一个新的系统。
 
 综上：
 
@@ -293,9 +313,10 @@ emmmmm，得承认，麒麟在信创方面有一定优势。
 
 ### 1.9 最佳实践
 
-1. 如选用 CentOS 系列，**2023/06/30 之前 CentOS 7 没问题**（需要升级 linux kernel 和工具库，比如 python 3.8，git v2）；但之后要选择 AlmaLinux 或者 Rocky Linux，二选一，**2024/06/30 之前要完成生产环境 OS 升级**。不要使用 CentOS Stream。
-1. 如选用 Ubuntu 系列，Ubuntu LTS（或者 Debian）都可以，持续升级就行
-1. 如考虑信创，OpenEuler 对国产 ARM 服务器兼容性良好；如果政策有倾向性，那么麒麟系列、龙蜥对应考虑
+1. 如选用 CentOS 系列，**2023/06/30 之前 CentOS 7 没问题**（需要升级 linux kernel 和工具库，比如 python 3.8，git v2）；但之后要选择
+   AlmaLinux 或者 Rocky Linux，二选一，**2024/06/30 之前要完成生产环境 OS 升级**。不要使用 CentOS Stream。
+2. 如选用 Ubuntu 系列，Ubuntu LTS（或者 Debian）都可以，持续升级就行
+3. 如考虑信创，OpenEuler 对国产 ARM 服务器兼容性良好；如果政策有倾向性，那么麒麟系列、龙蜥对应考虑
 
 ## 2. 容器运行时
 
@@ -320,9 +341,11 @@ Docker 的历史
 
 - Google 最早开始大规模使用容器技术（Borg 系统，后来简化重构，以 K8S 开源）
 
-    ![](/image/borg-arch.png)
+  ![](/image/borg-arch.png)
 
-- Linux 容器（LXC）技术主要两个内核特性组成：namespace & cgroup。namespace 最早是 2002 年在 2.4.19 内核中引入（mount 单元），用于实现**资源隔离**。cgroup 2000 年以前就在 google 使用，2006 年以后贡献到 Linux Kernel，用于实现**资源限制**，2008 年 LXC 技术基本完成。
+- Linux 容器（LXC）技术主要两个内核特性组成：namespace & cgroup。namespace 最早是 2002 年在 2.4.19 内核中引入（mount
+  单元），用于实现**资源隔离**。cgroup 2000 年以前就在 google 使用，2006 年以后贡献到 Linux Kernel，用于实现**资源限制**，2008 年 LXC
+  技术基本完成。
 - Docker 在 2013 年成立之后，对 LXC 进行封装，提供了极简的容器使用方案，几乎成为容器的代名词
 
 Docker Overview，参考：<https://docs.docker.com/engine/docker-overview>
@@ -372,7 +395,8 @@ root     20708     1  0 11:22 ?        00:00:00 /usr/bin/containerd-shim-runc-v2
 root     20728 20708  0 11:22 ?        00:00:00 nginx: master process nginx -g daemon off;
 ```
 
-K8S 和 Docker 有什么关系？参考：[Container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
+K8S 和 Docker
+有什么关系？参考：[Container runtimes](https://kubernetes.io/docs/setup/production-environment/container-runtimes/)
 
 Docker 和 Rocket 之争
 
@@ -383,10 +407,12 @@ Docker 和 Rocket 之争
 **OCI 标准是什么**？：runC / Kata（ 及其前身 runV 和 Clear Containers ），gVisor，Rust railcar
 
 - 容器镜像的制作标准，即 ImageSpec。大致规定：容器镜像这个压缩了的文件夹里以 xxx 结构放 xxx 文件
-- 容器要需要能接收哪些指令，以及这些指令的行为，即 RuntimeSpec。这里面的大致内容就是“容器”要能够执行 "create"，"start"，"stop"，"delete" 这些命令，并且行为要规范。
+- 容器要需要能接收哪些指令，以及这些指令的行为，即 RuntimeSpec。这里面的大致内容就是“容器”要能够执行 "create"，"start"，"stop"，"delete"
+  这些命令，并且行为要规范。
 - Docker 则把 libcontainer 封装了一下，变成 runC 捐献出来作为 OCI 的参考实现。
 
-**CRI 标准是什么**？：Docker（ 借助 dockershim ），containerd（ 借助 CRI-containerd ），CRI-O，Frakti。是一组 gRPC 接口，[cri-api/pkg/apis/services.go](https://github.com/kubernetes/cri-api/blob/master/pkg/apis/services.go)：
+**CRI 标准是什么**？：Docker（ 借助 dockershim ），containerd（ 借助 CRI-containerd ），CRI-O，Frakti。是一组 gRPC
+接口，[cri-api/pkg/apis/services.go](https://github.com/kubernetes/cri-api/blob/master/pkg/apis/services.go)：
 
 - 一套针对容器操作的接口，包括创建，启停容器等等
 - 一套针对镜像操作的接口，包括拉取镜像删除镜像等
@@ -402,9 +428,11 @@ containerd-1.1，把适配逻辑作为插件放进了 containerd 主进程中
 
 综上：
 
-1. 容器运行时是管理容器和容器镜像的程序。有两个标准，一个是 CRI，抽象了 kubelet 如何启动和管理容器；另一个是 OCI，抽象了怎么调用内核 API 来管理容器。标准实际上是定义了一系列接口，让上层应用与底层实现接耦。
-1. 实现 CRI 的 runtime 有 CRI-O、CRI-containred 等，CRI 的命令行客户端是 crictl。containerd 的客户端是 ctr。dockerd 的客户端是 docker。它们通过 unix sock 与对应的 daemon 交互。
-1. OCI 的默认实现是 runc。runc 是一个命令行工具，而不是一个 daemon。通过 runc 我们可以手动启动一个容器，也可以查看其他进程启动的容器。
+1. 容器运行时是管理容器和容器镜像的程序。有两个标准，一个是 CRI，抽象了 kubelet 如何启动和管理容器；另一个是 OCI，抽象了怎么调用内核 API
+   来管理容器。标准实际上是定义了一系列接口，让上层应用与底层实现接耦。
+2. 实现 CRI 的 runtime 有 CRI-O、CRI-containred 等，CRI 的命令行客户端是 crictl。containerd 的客户端是 ctr。dockerd 的客户端是
+   docker。它们通过 unix sock 与对应的 daemon 交互。
+3. OCI 的默认实现是 runc。runc 是一个命令行工具，而不是一个 daemon。通过 runc 我们可以手动启动一个容器，也可以查看其他进程启动的容器。
 
 #### 2.1.3 Docker 部署和基本使用
 
@@ -437,19 +465,23 @@ systemctl restart docker
 docker run hello-world
 ```
 
->Note：2021 年 7 月之后，ubuntu 环境 kubeadmin 默认都是 1.22+ 版本，因此需要将 docker 的 cgroup driver 改成 systemd（原来是 cgroup）。如果不改，后续 kubeadm init 时，会报错：`[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get "http://localhost:10248/healthz": dial tcp [::1]:10248: connect: connection refused.`
->
->检查 journalctl -x -u kubelet，可以看到：`Aug 07 15:10:45 ckalab2 kubelet[11394]: E0807 15:10:45.179485   11394 server.go:294] "Failed to run kubelet" err="failed to run Kubelet: misconfiguration: kubelet cgroup driver: \"systemd\" is different from docker cgroup driver: \"cgroupfs\""`
->
->看官方文档：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/>：`In v1.22, if the user is not setting the cgroupDriver field under KubeletConfiguration, kubeadm will default it to systemd.`
->
+> Note：2021 年 7 月之后，ubuntu 环境 kubeadmin 默认都是 1.22+ 版本，因此需要将 docker 的 cgroup driver 改成 systemd（原来是
+> cgroup）。如果不改，后续 kubeadm init
+> 时，会报错：`[kubelet-check] The HTTP call equal to 'curl -sSL http://localhost:10248/healthz' failed with error: Get "http://localhost:10248/healthz": dial tcp [::1]:10248: connect: connection refused.`
+
+> 检查 journalctl -x -u
+> kubelet，可以看到：`Aug 07 15:10:45 ckalab2 kubelet[11394]: E0807 15:10:45.179485   11394 server.go:294] "Failed to run kubelet" err="failed to run Kubelet: misconfiguration: kubelet cgroup driver: \"systemd\" is different from docker cgroup driver: \"cgroupfs\""`
+
+> 看官方文档：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/>：`In v1.22, if the user is not setting the cgroupDriver field under KubeletConfiguration, kubeadm will default it to systemd.`
+
 > 所以我们需要把 docker 的 cgroup driver 改成 systemd
->
+
 > 修改步骤参考：<https://stackoverflow.com/questions/43794169/docker-change-cgroup-driver-to-systemd>
->
+
 > 修改完成后，检查一下 docker cgroup，确保 docker cgroup 是 systemd 了：`sudo docker info | grep -i cgroup`
 
-如何创建一个镜像？如何启动和调试容器？[Github](https://github.com/99cloud/lab-openstack/tree/master/src/docker-quickstart) 或 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/tree/master/src/docker-quickstart)
+如何创建一个镜像？如何启动和调试容器？[Github](https://github.com/99cloud/lab-openstack/tree/master/src/docker-quickstart)
+或 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/tree/master/src/docker-quickstart)
 
 ```bash
 mkdir ~/test
@@ -475,6 +507,9 @@ docker build --tag=friendlyhello .
 docker images
 
 docker rm testFlask
+docker run --rm -p 4000:80 --name=testFlask friendlyhello
+
+# 也可以从 dockerhub 下载
 docker run --rm -p 4000:80 --name=testFlask 99cloud/friendlyhello:3.9.6
 # * Running on http://0.0.0.0:80/ (Press CTRL+C to quit)
 # 此时可以从浏览器访问 http://<ip>:4000
@@ -519,9 +554,11 @@ docker rmi maodouzi/get-started:part2
 
 #### 2.1.4 Docker 网络模型和 network namespace
 
-参考：<https://docs.docker.com/network/#network-drivers>，Docker 网络模型分为若干种，在生产环境中会被用到的主要是 bridge 和 host 模式。
+参考：<https://docs.docker.com/network/#network-drivers>，Docker 网络模型分为若干种，在生产环境中会被用到的主要是 bridge 和 host
+模式。
 
-host 模式是容器和宿主机共享同一个 TCP/IP 协议栈（network namespace），容器的网络和宿主机网络不做隔离（只是网络不隔离，PID / IPC / MNT / UTS 还是 namespace 隔离的）
+host 模式是容器和宿主机共享同一个 TCP/IP 协议栈（network namespace），容器的网络和宿主机网络不做隔离（只是网络不隔离，PID / IPC / MNT / UTS 还是
+namespace 隔离的）
 
 bridge 模式下，容器网络和宿主机网络是通过 network namespace 隔离开的，然后再通过类似 NAT 或者 port-mapping 技术完成转发。
 
@@ -529,7 +566,8 @@ bridge 模式下，容器网络和宿主机网络是通过 network namespace 隔
 
 ![](/image/bridge_network.jpeg)
 
-docker 容器实现没有把 network namespaces 放到标准路径 `/var/run/netns` 下，所以 `ip netns list` 命令看不到。但是可以看 `ll /proc/<pid>/ns`，两个进程的 namespaces id 相同说明在同一个 namespaces
+docker 容器实现没有把 network namespaces 放到标准路径 `/var/run/netns` 下，所以 `ip netns list` 命令看不到。但是可以看
+`ll /proc/<pid>/ns`，两个进程的 namespaces id 相同说明在同一个 namespaces
 
 ```console
 [root@cloud025 ns]# ll /proc/2179/ns/
@@ -648,19 +686,20 @@ Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标�
 
 1. 兼容 Docker
 
-    Docker 直接带 Containerd，Containerd 可以单独装，也可以装 Docker，再用 Docker 中的 Containerd 对接 K8S。这在某些必须使用到 docker 的场景中比较受欢迎，比如超融合场景，需要依赖 docker 部署 ceph 等
+   Docker 直接带 Containerd，Containerd 可以单独装，也可以装 Docker，再用 Docker 中的 Containerd 对接 K8S。这在某些必须使用到
+   docker 的场景中比较受欢迎，比如超融合场景，需要依赖 docker 部署 ceph 等
 
-1. 直接兼容 K8S CRI
-    - 不再需要 docker-shim 适配器
-    - 可直接对接 K8S CRI 接口
+2. 直接兼容 K8S CRI
+   - 不再需要 docker-shim 适配器
+   - 可直接对接 K8S CRI 接口
 
-1. 性能优良
+3. 性能优良
 
-    使用 bucketbench 对 Docker、crio 和 Containerd 的性能测试结果，包括启动、停止和删除容器，以比较它们所耗的时间：
+   使用 bucketbench 对 Docker、crio 和 Containerd 的性能测试结果，包括启动、停止和删除容器，以比较它们所耗的时间：
 
-    ![](/image/cri-stress-testing.png)
+   ![](/image/cri-stress-testing.png)
 
-    可以看到 Containerd 在各个方面都表现良好，总体性能优于 Docker 和 crio
+   可以看到 Containerd 在各个方面都表现良好，总体性能优于 Docker 和 crio
 
 #### 2.2.2 命令行对比
 
@@ -699,15 +738,15 @@ crictl 命令和 docker 命令用法基本一样，是同一家开发的东西�
 
 以下命令只有 crictl 有
 
-| crictl | Description |
-| - | - |
-| imagefsinfo | Return image filesystem info |
-| inspectp | Display the status of one or more pods |
-| port-forward | Forward local port to a pod |
-| pods | List pods |
-| runp | Run a new pod |
-| rmp | Remove one or more pods |
-| stopp | Stop one or more running pods |
+| crictl       | Description                            |
+| ------------ | -------------------------------------- |
+| imagefsinfo  | Return image filesystem info           |
+| inspectp     | Display the status of one or more pods |
+| port-forward | Forward local port to a pod            |
+| pods         | List pods                              |
+| runp         | Run a new pod                          |
+| rmp          | Remove one or more pods                |
+| stopp        | Stop one or more running pods          |
 
 参考：<https://kubernetes.io/docs/tasks/debug/debug-cluster/crictl/>
 
@@ -733,7 +772,8 @@ ERRO[0004] connect endpoint 'unix:///run/containerd/containerd.sock', make sure 
 FATA[0006] connect: connect endpoint 'unix:///run/crio/crio.sock', make sure you are running as root and the endpoint has been started: context deadline exceeded
 ```
 
-这里 crictl 不可用是因为没有为 crictl 命令配置 endpoint。在 centos 7 上部署的 docker 版本是 1.13，版本太低了，使用的不是 containerd 而是 libcontainerd，略有不同。可以卸载原有的 docker，重新安装高版本 docker。
+这里 crictl 不可用是因为没有为 crictl 命令配置 endpoint。在 centos 7 上部署的 docker 版本是 1.13，版本太低了，使用的不是 containerd 而是
+libcontainerd，略有不同。可以卸载原有的 docker，重新安装高版本 docker。
 
 参考：<https://docs.docker.com/engine/install/centos/>
 
@@ -777,7 +817,6 @@ Requires=docker.socket containerd.service
 [Service]
 ...
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock
-
 ```
 
 启动时使用了 `/run/containerd/containerd.sock`
@@ -814,8 +853,9 @@ CONTAINER           IMAGE               CREATED             STATE               
 综上：
 
 1. docker 构建在 containerd 之上，所以在生产环境中，我们可以同时拥有 containerd 和 docker，不干扰。
-1. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr 或 nerdctl 补齐。
-1. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时。
+2. crictl 命令的优点是和 docker 命令非常像，几乎一样。差异是 image 相关的处理逻辑（load / save / tag）缺失，这些不是 cri 考虑的范畴。这个可以由 ctr
+   或 nerdctl 补齐。
+3. crictl 兼容 cri API，这就使得它不仅可以用于 containerd，而且适用于 CRIO 等所有支持 CRI 接口的容器运行时。
 
 ##### 2.2.2.2 ctr
 
@@ -898,7 +938,8 @@ IMAGE                                       TAG                 IMAGE ID        
 docker.io/library/redis                     alpine3.13          554d20f203657       10.9MB
 ```
 
-crictl 不能像 ctr 那样通过参数给定用户名和密码的方式从开启认证的私有仓库中 pull 镜像。需要对 containerd 进行配置。 containerd 提供的各种功能在其内部都是通过插件实现的，可以使用 `ctr plugins ls` 查看 containerd 的插件。
+crictl 不能像 ctr 那样通过参数给定用户名和密码的方式从开启认证的私有仓库中 pull 镜像。需要对 containerd 进行配置。 containerd
+提供的各种功能在其内部都是通过插件实现的，可以使用 `ctr plugins ls` 查看 containerd 的插件。
 
 ```console
 [root@lab-kubernetes ~]# ctr plugin ls
@@ -945,9 +986,11 @@ io.containerd.internal.v1             tracing                  -              ok
 io.containerd.grpc.v1                 cri                      linux/amd64    ok
 ```
 
-devmapper plugin error 是因为没有配置，可以暂时忽略，devmapper 概念可以参考：<https://pkg.go.dev/github.com/containerd/containerd/snapshots/devmapper#section-readme>
+devmapper plugin error 是因为没有配置，可以暂时忽略，devmapper
+概念可以参考：<https://pkg.go.dev/github.com/containerd/containerd/snapshots/devmapper#section-readme>
 
-私有镜像仓库相关的配置在 cri 插件中，文档 Configure Image Registry中包含了镜像仓库的配置。 关于私有仓库和认证信息配置示例如下，修改/etc/containerd/config.toml：
+私有镜像仓库相关的配置在 cri 插件中，文档 Configure Image Registry中包含了镜像仓库的配置。
+关于私有仓库和认证信息配置示例如下，修改/etc/containerd/config.toml：
 
 ```ini
 ...
@@ -989,8 +1032,11 @@ nerdctl 是一个非常棒的客户端：
 
 参考：<https://github.com/containerd/nerdctl#features-present-in-nerdctl-but-not-present-in-docker>
 
-- [Lazy-pulling is a technique to running containers before completion of pulling the images.](https://github.com/containerd/nerdctl/blob/master/docs/stargz.md)
-- [Image encryption and decryption](https://github.com/containerd/nerdctl/blob/master/docs/ocicrypt.md)：This command only encrypts image layers, but does NOT encrypt container configuration such as Env and Cmd
+- [Lazy-pulling is a technique to running containers before completion of pulling the
+  images.](https://github.com/containerd/nerdctl/blob/master/docs/stargz.md)
+- [Image encryption and decryption](https://github.com/containerd/nerdctl/blob/master/docs/ocicrypt.md)：This
+  command only encrypts image layers, but does NOT encrypt container configuration such as Env and
+  Cmd
 - [Distribute Container Images on IPFS](https://github.com/containerd/nerdctl/blob/master/docs/ipfs.md)
 
 安装使用：
@@ -1007,63 +1053,73 @@ ctr -n default i ls
 
 1. 启动容器带 -p 需要 CNI 支持
 
-    ```console
-    [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
-    docker.io/library/nginx:alpine:
-    FATA[0013] needs CNI plugin &{"bridge" "nerdctl0" %!q(bool=true) %!q(bool=false) %!q(bool=false) %!q(bool=true) '\x00' %!q(bool=true) %!q(bool=false) '\x00' map["ranges":[[map["gateway":"10.4.0.1" "subnet":"10.4.0.0/24"]]] "routes":[map["dst":"0.0.0.0/0"]] "type":"host-local"]} to be installed in CNI_PATH ("/opt/cni/bin"), see https://github.com/containernetworking/plugins/releases: exec: "/opt/cni/bin/bridge": stat /opt/cni/bin/bridge: no such file or directory
-    ```
+   ```console
+   [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+   docker.io/library/nginx:alpine:
+   FATA[0013] needs CNI plugin &{"bridge" "nerdctl0" %!q(bool=true) %!q(bool=false) %!q(bool=false) %!q(bool=true) '\x00' %!q(bool=true) %!q(bool=false) '\x00' map["ranges":[[map["gateway":"10.4.0.1" "subnet":"10.4.0.0/24"]]] "routes":[map["dst":"0.0.0.0/0"]] "type":"host-local"]} to be installed in CNI_PATH ("/opt/cni/bin"), see https://github.com/containernetworking/plugins/releases: exec: "/opt/cni/bin/bridge": stat /opt/cni/bin/bridge: no such file or directory
+   ```
 
-    安装一下 cni 就好
+   安装一下 cni 就好
 
-    ```bash
-    mkdir -p /opt/cni/bin/
-    cd /opt/cni/bin/
-    wget https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
-    tar zxvf cni-plugins-linux-amd64-v1.1.1.tgz
-    ```
+   ```bash
+   mkdir -p /opt/cni/bin/
+   cd /opt/cni/bin/
+   wget https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
+   tar zxvf cni-plugins-linux-amd64-v1.1.1.tgz
+   ```
 
-    然后再加 -p 运行命令就不会报错了
+   然后再加 -p 运行命令就不会报错了
 
-    ```console
-    [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
-    5bc1f7fcae4e4891c7e57626286fbed1465739f2b28270ec90c88a82e1106a64
+   ```console
+   [root@lab-kubernetes tmp]# nerdctl run -d --name nginx -p 80:80 nginx:alpine
+   5bc1f7fcae4e4891c7e57626286fbed1465739f2b28270ec90c88a82e1106a64
 
-    [root@lab-kubernetes tmp]# docker ps
-    CONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS       PORTS     NAMES
-    62970cd2a517   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    admiring_yalow
-    614b35ef3e28   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    fervent_ardinghelli
+   [root@lab-kubernetes tmp]# docker ps
+   CONTAINER ID   IMAGE     COMMAND                  CREATED       STATUS       PORTS     NAMES
+   62970cd2a517   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    admiring_yalow
+   614b35ef3e28   nginx     "/docker-entrypoint.…"   5 hours ago   Up 5 hours   80/tcp    fervent_ardinghelli
 
-    [root@lab-kubernetes tmp]# docker rm -f 62970cd2a517 614b35ef3e28
-    62970cd2a517
-    614b35ef3e28
+   [root@lab-kubernetes tmp]# docker rm -f 62970cd2a517 614b35ef3e28
+   62970cd2a517
+   614b35ef3e28
 
-    [root@lab-kubernetes tmp]# docker ps
-    CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+   [root@lab-kubernetes tmp]# docker ps
+   CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
 
-    [root@lab-kubernetes tmp]# nerdctl ps -a
-    CONTAINER ID    IMAGE                             COMMAND                   CREATED           STATUS    PORTS                 NAMES
-    5bc1f7fcae4e    docker.io/library/nginx:alpine    "/docker-entrypoint.…"    38 seconds ago    Up        0.0.0.0:80->80/tcp    nginx
-    ```
+   [root@lab-kubernetes tmp]# nerdctl ps -a
+   CONTAINER ID    IMAGE                             COMMAND                   CREATED           STATUS    PORTS                 NAMES
+   5bc1f7fcae4e    docker.io/library/nginx:alpine    "/docker-entrypoint.…"    38 seconds ago    Up        0.0.0.0:80->80/tcp    nginx
+   ```
 
-1. nerdctl pull 的镜像在 default namespace 下
+2. nerdctl pull 的镜像在 default namespace 下
 
-    ```
-    [root@lab-kubernetes tmp]# ctr -n default i ls | grep nginx
-    docker.io/library/nginx:alpine       application/vnd.docker.distribution.manifest.list.v2+json sha256:a74534e76ee1121d418fa7394ca930eb67440deda413848bc67c68138535b989 9.7 MiB  linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
-    ```
+   ```
+   [root@lab-kubernetes tmp]# ctr -n default i ls | grep nginx
+   docker.io/library/nginx:alpine       application/vnd.docker.distribution.manifest.list.v2+json sha256:a74534e76ee1121d418fa7394ca930eb67440deda413848bc67c68138535b989 9.7 MiB  linux/386,linux/amd64,linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/ppc64le,linux/s390x
+   ```
 
 综上：
 
-1. containerd 可以有多个 namespaces，default/k8s.io/moby。这里的 namespace 不是 k8s 层面的，而是 containerd 自己的概念空间。参考 <https://github.com/containerd/containerd/blob/main/docs/namespaces.md>
+1. containerd 可以有多个 namespaces，default/k8s.io/moby。这里的 namespace 不是 k8s 层面的，而是 containerd 自己的概念空间。参考
+   <https://github.com/containerd/containerd/blob/main/docs/namespaces.md>
 
-    *containerd offers a fully namespaced API so multiple consumers can all use a single containerd instance without conflicting with one another. Namespaces allow multi-tenancy within a single daemon. This removes the need for the common pattern of using nested containers to achieve this separation. Consumers are able to have containers with the same names but with settings and/or configurations that vary drastically. For example, system or infrastructure level containers can be hidden in one namespace while user level containers are kept in another. Underlying image content is still shared via content addresses but image names and metadata are separate per namespace.*
+   _containerd offers a fully namespaced API so multiple consumers can all use a single containerd
+   instance without conflicting with one another. Namespaces allow multi-tenancy within a single
+   daemon. This removes the need for the common pattern of using nested containers to achieve this
+   separation. Consumers are able to have containers with the same names but with settings and/or
+   configurations that vary drastically. For example, system or infrastructure level containers can
+   be hidden in one namespace while user level containers are kept in another. Underlying image
+   content is still shared via content addresses but image names and metadata are separate per
+   namespace._
 
-    *It is important to note that namespaces, as implemented, is an administrative construct that is not meant to be used as a security feature. It is trivial for clients to switch namespaces.*
+   _It is important to note that namespaces, as implemented, is an administrative construct that is
+   not meant to be used as a security feature. It is trivial for clients to switch namespaces._
 
-1. 通过 kubelet/crictl 启动的容器，ns 就是 k8s.io，通过 docker 启动的就是 moby。docker ps 是看不到 k8s.io 下的容器的。对于 containerd 而言， docker 和 kubelet 是两个不同的客户端。
-1. nerdctl 和 ctr 默认都是 default namespaces
-1. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces。
-1. podman 不和 containerd 打交道，拉取的镜像和启动的容器都与 containerd namespace 无关。
+2. 通过 kubelet/crictl 启动的容器，ns 就是 k8s.io，通过 docker 启动的就是 moby。docker ps 是看不到 k8s.io 下的容器的。对于
+   containerd 而言， docker 和 kubelet 是两个不同的客户端。
+3. nerdctl 和 ctr 默认都是 default namespaces
+4. docker 启动的容器进程在 moby namespace，拉取的镜像不在 namespaces。
+5. podman 不和 containerd 打交道，拉取的镜像和启动的容器都与 containerd namespace 无关。
 
 ##### 2.2.2.4 podman
 
@@ -1097,12 +1153,15 @@ root     22256     1  0 17:01 ?        00:00:00 /usr/bin/conmon --api-version 1 
 
 可以看到：
 
-- podman 有个称之为 conmon 的守护进程，它是各个容器进程的父进程，每个容器各有一个，conmon 的父进程是 1 号进程。podman 中的 conmon 相当于 docker/containerd 中的 containerd-shim。
+- podman 有个称之为 conmon 的守护进程，它是各个容器进程的父进程，每个容器各有一个，conmon 的父进程是 1 号进程。podman 中的 conmon 相当于
+  docker/containerd 中的 containerd-shim。
 
 podman 相比较 docker 的优势：
 
 - docker 在实现 CRI 时，需要一个守护进程（dockerd daemon），该进程需要以 root 运行（有安全隐患）。而 podman 不需要守护程序，因此也不需要 root 用户运行。
-- 在 docker 的运行体系中，需要多个 daemon 才能调用到 OCI 的实现 RunC（dockerd 调用 containerd，containerd 调用containerd-shim，然后才能调用 runC）podman 直接调用 OCI,runtime（runC），通过 conmon 作为容器进程的管理工具，不需要dockerd 这种以 root 身份运行的守护进程。
+- 在 docker 的运行体系中，需要多个 daemon 才能调用到 OCI 的实现 RunC（dockerd 调用 containerd，containerd
+  调用containerd-shim，然后才能调用 runC）podman 直接调用 OCI,runtime（runC），通过 conmon 作为容器进程的管理工具，不需要dockerd 这种以
+  root 身份运行的守护进程。
 
 #### 2.2.3 Containerd 手动部署
 
@@ -1209,7 +1268,8 @@ opt/containerd/cluster/gce/env
 opt/containerd/cluster/version
 ```
 
-`cri-containerd-cni-1.6.5-linux-amd64.tar.gz` 包含的 runc 动态链接库与 CentOS 7 有兼容性问题。运行 runc 的时候，会遇到报错：`runc: undefined symbol: seccomp_notify_respond`
+`cri-containerd-cni-1.6.5-linux-amd64.tar.gz` 包含的 runc 动态链接库与 CentOS 7 有兼容性问题。运行 runc
+的时候，会遇到报错：`runc: undefined symbol: seccomp_notify_respond`
 
 类似这样的 bug 我们可以用 hotfix 来修复（直接下载更新版本的 runc，或者自己编译 hotfix 的 runc）。
 
@@ -1390,8 +1450,8 @@ Server: Docker Engine - Community
 检查 nerdctl 参数，发现默认 cni path 是 `/usr/libexec/cni/`，有三种方法：
 
 1. 更新这个目录下的 cni（更新到 1.1.1 版本）
-1. 或者该目录软链接到 `/opt/cni/bin/` 目录，此目录下的 cni 是 1.1.1 版本的
-1. 再或者删除 `/usr/libexec/cni/` 目录（删除后，nerdctl 默认的 cni path 变成了 `/opt/cni/bin/`）
+2. 或者该目录软链接到 `/opt/cni/bin/` 目录，此目录下的 cni 是 1.1.1 版本的
+3. 再或者删除 `/usr/libexec/cni/` 目录（删除后，nerdctl 默认的 cni path 变成了 `/opt/cni/bin/`）
 
 都可以解决此问题。
 
@@ -1423,7 +1483,8 @@ bridge       firewall     host-device  ipvlan       macvlan      ptp          sb
 
 [返回目录](#课程目录)
 
-CRI-O 是 RedHat 发布的容器运行时，旨在同时满足 CRI 标准和 OCI 标准。kubelet 通过 CRI 与 CRI-O 交互，CRI-O 通过 OCI 与 runC 交互，追求简单明了。
+CRI-O 是 RedHat 发布的容器运行时，旨在同时满足 CRI 标准和 OCI 标准。kubelet 通过 CRI 与 CRI-O 交互，CRI-O 通过 OCI 与 runC
+交互，追求简单明了。
 
 ![](/image/k8s-cri-o-flow.png)
 
@@ -1496,7 +1557,7 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 综上：
 
 1. docker ps / ctr / nerdctl 看不到 crio 创建的容器
-1. crictl / podman / runc 可以看到 pause 容器和主容器
+2. crictl / podman / runc 可以看到 pause 容器和主容器
 
 ### 2.4 Kata 和它的朋友们
 
@@ -1511,47 +1572,56 @@ fbe5b37ad3c472ea970af75afc4c58481c2dd4d89a93b1a7ca37ddda823b201c   31785       r
 
 ![](/image/katacontainers-architecture-diagram.jpg)
 
-实现 ECI 不只可以通过 K8S，也可以通过 OpenStack zun 来直接编排 Kata，参考 <https://github.com/cloudmaster2010/openstack/blob/main/devstack/3.zun-kata-kuryr.md>
+实现 ECI 不只可以通过 K8S，也可以通过 OpenStack zun 来直接编排 Kata，参考
+<https://github.com/cloudmaster2010/openstack/blob/main/devstack/3.zun-kata-kuryr.md>
 
-Kata 安装步骤，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md#kata-deploy-installation>
+Kata
+安装步骤，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/README.md#kata-deploy-installation>
 
-第一种安装方案：参考 <https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>
+第一种安装方案：参考
+<https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>
 
 1. **安装 snap**，参考：<https://snapcraft.io/docs/installing-snap-on-centos>
-1. **通过 snap 安装 kata-container**，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/snap-installation-guide.md>。如果报错：`too early for operation, device not yet seeded or device model not acknowledged`，可以参考：<https://blog.csdn.net/u010620626/article/details/117259178>，`sudo setenforce 0`
-1. **安装 containerd**，完成适配，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>，和 <https://github.com/kata-containers/kata-containers/blob/main/docs/install/container-manager/containerd/containerd-install.md#install-containerd>
+2. **通过 snap 安装
+   kata-container**，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/install/snap-installation-guide.md>。如果报错：`too early for operation, device not yet seeded or device model not acknowledged`，可以参考：<https://blog.csdn.net/u010620626/article/details/117259178>，`sudo setenforce 0`
+3. **安装
+   containerd**，完成适配，参考：<https://github.com/kata-containers/kata-containers/blob/main/docs/how-to/containerd-kata.md>，和
+   <https://github.com/kata-containers/kata-containers/blob/main/docs/install/container-manager/containerd/containerd-install.md#install-containerd>
 
-第二种安装方案，先安装好 containerd + k8s，再通过 kata-deploy 部署。参考：<https://github.com/kata-containers/kata-containers/blob/main/tools/packaging/kata-deploy/README.md>
+第二种安装方案，先安装好 containerd + k8s，再通过 kata-deploy
+部署。参考：<https://github.com/kata-containers/kata-containers/blob/main/tools/packaging/kata-deploy/README.md>
 
 除 Kata 以外，还有 Frakti / gVisor 等
 
 - Frakti 提供了 hypervisor 级别的隔离性，提供的是内核级别的而非 Linux 命名空间级别的隔离：
 
-    *Frakti lefts Kubernetes run pods and containers directly inside hypervisors via runV. It is light weighted and portable, but can provide much stronger isolation with independent kernel than linux-namespace-based container runtimes.*
+  _Frakti lefts Kubernetes run pods and containers directly inside hypervisors via runV. It is light
+  weighted and portable, but can provide much stronger isolation with independent kernel than
+  linux-namespace-based container runtimes._
 - gVisor 是拦截了系统调用，用自己实现用户态的进程而非内核来处理系统调用
 
-    运行沙箱容器时，给出了支持安全沙箱容器运行时 handler runsc，我们需要创建一个 RuntimeClass 并在 pod spec 里指定是用该 RuntimeClass
+  运行沙箱容器时，给出了支持安全沙箱容器运行时 handler runsc，我们需要创建一个 RuntimeClass 并在 pod spec 里指定是用该 RuntimeClass
 
-    ```yaml
-    apiVersion: node.k8s.io/v1beta1
-    kind: RuntimeClass
-    metadata:
-    name: untrusted
-    handler: runsc
-    ```
+      ```yaml
+      apiVersion: node.k8s.io/v1beta1
+      kind: RuntimeClass
+      metadata:
+      name: untrusted
+      handler: runsc
+      ```
 
-    这里 runsc 时 gvisor 的 "runc"
+  这里 runsc 时 gvisor 的 "runc"
 
-    还需要修改 deployment 的 pod template
+  还需要修改 deployment 的 pod template
 
-    ```yaml
-        spec:
-        runtimeClassName: untrusted
-        containers:
-        - image: vicuu/nginx:host
-            imagePullPolicy: IfNotPresent
-            name: nginx-host
-    ```
+      ```yaml
+      spec:
+          runtimeClassName: untrusted
+          containers:
+          - image: vicuu/nginx:host
+              imagePullPolicy: IfNotPresent
+              name: nginx-host
+      ```
 
 ### 2.5 GPU
 
@@ -1571,21 +1641,26 @@ Nvidia 官方提供的 containerd 支持步骤如下：
 关于 GPU 的虚拟化：
 
 1. Nvidia 官方推荐 MIG：<https://docs.nvidia.com/datacenter/cloud-native/kubernetes/mig-k8s.html>
-1. 第四范式有一种基于 CUDA 的切分 GPU 方案，比 MIG 灵活，但不被 Nvidia 官方支持。参考：<https://github.com/4paradigm/k8s-device-plugin>
+2. 第四范式有一种基于 CUDA 的切分 GPU 方案，比 MIG 灵活，但不被 Nvidia
+   官方支持。参考：<https://github.com/4paradigm/k8s-device-plugin>
 
 ### 2.6 最佳实践
 
-1. 如果需要 debug 容器网络，可以先找到该容器进程的 pid，然后进入其 network namespace，就可以方便地调试（包括 ip / route / iptables / ping / traceroute / tcpdump 等命令皆可操作），可以从宿主机上抓容器虚拟网卡的网络包，然后进行分析。
-1. 生产环境建议用 Containerd，稳定性、性能和生态支持都有明显优势
-1. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
-1. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
-1. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
-1. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctl
-1. 关于用 RPM 包还是二进制安装，it depends。如果我们可以预见不会频繁 apply patch，比如基础服务/工具：python/git，甚至 runc/containerd/docker，那么推荐 RPM。如果我们对安全或者 SLA 有较高的要求（等不及 rpm 提供方出 hotfix），自身技术实力也能充分保证， 那建议二进制部署，这样方便及时升级（和 bug 修复）。
-1. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
-1. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
-1. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者 Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
-1. ECI 解决方案中，Kata 相对成熟，可以应用于 OpenStack Zun 或者 K8S。
+1. 如果需要 debug 容器网络，可以先找到该容器进程的 pid，然后进入其 network namespace，就可以方便地调试（包括 ip / route / iptables / ping
+   / traceroute / tcpdump 等命令皆可操作），可以从宿主机上抓容器虚拟网卡的网络包，然后进行分析。
+2. 生产环境建议用 Containerd，稳定性、性能和生态支持都有明显优势
+3. 如果生产环境中其它依赖服务需要 docker 支持，可以安装，与 Containerd 不冲突
+4. 关于命令行，首选 crictl 代替，用法和 docker 命令一致，并且能兼容所有支持 CRI 接口的容器运行时，比如 containerd / CRI-O 等。
+5. Image 相关的操作，containerd 可以用自带的 ctr 命令（容器相关的也可以用 ctr，但命令格式和 docker CLI 不一致）。如果是 CRI-O，用 podman。
+6. 如果需要延迟加载、P2P 镜像服务、镜像加密存取等功能，可以使用 nerdctl
+7. 关于用 RPM 包还是二进制安装，it depends。如果我们可以预见不会频繁 apply patch，比如基础服务/工具：python/git，甚至
+   runc/containerd/docker，那么推荐 RPM。如果我们对安全或者 SLA 有较高的要求（等不及 rpm 提供方出 hotfix），自身技术实力也能充分保证，
+   那建议二进制部署，这样方便及时升级（和 bug 修复）。
+8. 关于 GPU 支持，Nvidia 之前提供了 Docker 运行时支持，后续提供了 Containerd 支持。建议用 containerd + K8S 搭配。
+9. 注意，不同的 GPU 型号对应不同的应用场景，训练和推理不混用。
+10. 关于切分 GPU 支持，建议用 Nvidia 官方提供的 MIG 方案，优点是官方支持，缺点是切分数量不够灵活。第四范式的方案切分数量灵活，但不推荐上生产，因为出问题后（比如 TF 或者
+    Pytorch 版本兼容性问题，改方案只支持特定版本） Nvidia 会说不支持。
+11. ECI 解决方案中，Kata 相对成熟，可以应用于 OpenStack Zun 或者 K8S。
 
 ## 3. K8S 生命周期管理
 
@@ -1605,16 +1680,16 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
 生产环境配置
 
-| Host-Node | CPU | RAM | root | etcd | kubelet | CRI |
-| - | - | - | - | - | - | - |
-| Master * 3 | 16C+ | 32G+ | 100G+ | 40G+ | 250G+ | 250G+ |
-| Worker * N | 16C+ | 32G+ | 100G+ | N/A | 250G+ | 250G+ |
+| Host-Node  | CPU  | RAM  | root  | etcd | kubelet | CRI   |
+| ---------- | ---- | ---- | ----- | ---- | ------- | ----- |
+| Master * 3 | 16C+ | 32G+ | 100G+ | 40G+ | 250G+   | 250G+ |
+| Worker * N | 16C+ | 32G+ | 100G+ | N/A  | 250G+   | 250G+ |
 
 1. ETCD 需要 SSD
-1. 确保 kubelet 使用的磁盘容量大于容器运行时使用的磁盘！
-1. 考虑如何限制容器内 inode 泄露或磁盘写满：CRI rootfs 限制方案
-1. 考虑是否禁止 hostpath / local 类型的 storageclass
-1. 备份需要对接额外的 NFS 或对象存储
+2. 确保 kubelet 使用的磁盘容量大于容器运行时使用的磁盘！
+3. 考虑如何限制容器内 inode 泄露或磁盘写满：CRI rootfs 限制方案
+4. 考虑是否禁止 hostpath / local 类型的 storageclass
+5. 备份需要对接额外的 NFS 或对象存储
 
 参考部署架构
 
@@ -1631,180 +1706,187 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
 
 1. CentOS 7.9，升级 kernel，参考 [1.1.1 内核升级](#111-内核升级)
 
-    ```bash
-    rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
-    yum install -y https://www.elrepo.org/elrepo-release-7.0-4.el7.elrepo.noarch.rpm
-    yum -y --disablerepo="*" --enablerepo="elrepo-kernel" list available
-    yum -y --disablerepo=\* --enablerepo=elrepo-kernel install kernel-lt.x86_64
-    awk -F\' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg
+   ```bash
+   rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+   yum install -y https://www.elrepo.org/elrepo-release-7.0-4.el7.elrepo.noarch.rpm
+   yum -y --disablerepo="*" --enablerepo="elrepo-kernel" list available
+   yum -y --disablerepo=\* --enablerepo=elrepo-kernel install kernel-lt.x86_64
+   awk -F\' '$1=="menuentry " {print i++ " : " $2}' /etc/grub2.cfg
 
-    grub2-set-default 0
-    # 这里的 0 要根据实际情况来填写
+   grub2-set-default 0
+   # 这里的 0 要根据实际情况来填写
 
-    reboot
-    ```
+   reboot
+   ```
 
-    重启后，`uname -a` 检查内核版本，可以看到
+   重启后，`uname -a` 检查内核版本，可以看到
 
-    ```console
-    [root@kubernetes001 ~]# uname -a
-    Linux kubernetes001 5.4.197-1.el7.elrepo.x86_64 #1 SMP Sat Jun 4 08:43:19 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux
-    ```
+   ```console
+   [root@kubernetes001 ~]# uname -a
+   Linux kubernetes001 5.4.197-1.el7.elrepo.x86_64 #1 SMP Sat Jun 4 08:43:19 EDT 2022 x86_64 x86_64 x86_64 GNU/Linux
+   ```
 
-1. 部署 Containerd 和 ctictl 等工具，参考 [2.2.2.1 Crictl](#2221-crictl)
+2. 部署 Containerd 和 ctictl 等工具，参考 [2.2.2.1 Crictl](#2221-crictl)
 
-    ```bash
-    # 如果之前安装 centos 默认源的 docker，要先删除掉
-    yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+   ```bash
+   # 如果之前安装 centos 默认源的 docker，要先删除掉
+   yum remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
 
-    yum install -y yum-utils
-    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-    yum install -y containerd.io
+   yum install -y yum-utils
+   yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+   yum install -y containerd.io
+   # yum install -y docker-ce docker-ce-cli docker-compose-plugin
 
-    systemctl enable containerd --now
-    ```
+   systemctl enable containerd --now
+   # systemctl enable docker --now
+   ```
 
-    然后用 ctr 检查 containerd 是否正常运行
+   然后用 ctr 检查 containerd 是否正常运行
 
-    ```console
-    [root@kubernetes001 ~]# ctr version
-    Client:
-    Version:  1.6.4
-    Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
-    Go version: go1.17.9
+   ```console
+   [root@kubernetes001 ~]# ctr version
+   Client:
+   Version:  1.6.4
+   Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
+   Go version: go1.17.9
 
-    Server:
-    Version:  1.6.4
-    Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
-    UUID: 1cd1f73e-28ae-4f7c-9fa3-5ccdcdb2a23c
-    ```
+   Server:
+   Version:  1.6.4
+   Revision: 212e8b6fa2f44b9c21b2798135fc6fb7c53efc16
+   UUID: 1cd1f73e-28ae-4f7c-9fa3-5ccdcdb2a23c
+   ```
 
-    [可选]：然后部署 crictl
+   _[可选]：然后部署 crictl_
 
-    ```bash
-    VERSION="v1.24.1"
-    wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+   ```bash
+   VERSION="v1.24.1"
+   wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
 
-    tar zxvf crictl-$VERSION-linux-amd64.tar.gz
-    mv crictl /usr/bin/
-    ```
+   tar zxvf crictl-$VERSION-linux-amd64.tar.gz
+   mv crictl /usr/bin/
+   ```
 
-    接下来修改 containerd 配置，避开 gcr
+   接下来修改 containerd 配置，避开 gcr
 
-    ```bash
-    cp /etc/containerd/config.toml /etc/containerd/config.toml.bak
-    containerd config default > /etc/containerd/config.toml
-    vi /etc/containerd/config.toml
-    ```
+   ```bash
+   cp /etc/containerd/config.toml /etc/containerd/config.toml.bak
+   containerd config default > /etc/containerd/config.toml
+   vi /etc/containerd/config.toml
+   ```
 
-    修改 `SystemdCgroup` 和 `sandbox_image`
+   修改 `SystemdCgroup` 和 `sandbox_image`
 
-    ```ini
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-    ...
-    [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-        SystemdCgroup = true
-    ...
-    [plugins."io.containerd.grpc.v1.cri"]
-        sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.6"
-    ...
-    ```
+   ```ini
+   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+   ...
+   [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+       SystemdCgroup = true
+   ...
+   [plugins."io.containerd.grpc.v1.cri"]
+       sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.6"
+   ...
+   ```
 
-    然后，重启服务
+   然后，重启服务
 
-    ```bash
-    systemctl restart containerd
-    # 检查版本，验证可用
-    crictl version
-    ```
+   ```bash
+   systemctl restart containerd
+   # 检查版本，验证可用
+   crictl version
+   ```
 
-1. 部署 Kubernetes
+3. 部署 Kubernetes
 
-    ```bash
-    # 3. 关闭防火墙（默认就是关闭的，不用做）
-    # systemctl stop firewalld.service
-    # systemctl disable firewalld.service
+   ```bash
+   # 3. 关闭防火墙（默认就是关闭的，不用做）
+   # systemctl stop firewalld.service
+   # systemctl disable firewalld.service
 
-    # 4. 关闭 selinux（默认就是关闭的，不用做）
-    # vi /etc/selinux/config
-    # 将 SELINUX=enforcing 改为 SELINUX=disabled
+   # 4. 关闭 selinux（默认就是关闭的，不用做）
+   # vi /etc/selinux/config
+   # 将 SELINUX=enforcing 改为 SELINUX=disabled
 
-    # 5. 关闭 swap（默认就是关闭的，不用做）
-    # swapoff /dev/sda2
-    # vi /etc/fstab
-    # 在 swap 分区这行前加 # 禁用掉，保存退出
-    # reboot
+   # 5. 关闭 swap（默认就是关闭的，不用做）
+   # swapoff /dev/sda2
+   # vi /etc/fstab
+   # 在 swap 分区这行前加 # 禁用掉，保存退出
+   # reboot
 
-    # 6. 配置系统相关属性
-    cat <<EOF > /etc/sysctl.d/k8s.conf
-    net.bridge.bridge-nf-call-ip6tables = 1
-    net.bridge.bridge-nf-call-iptables = 1
-    net.ipv4.ip_forward = 1
-    EOF
+   # 6. 配置系统相关属性
+   cat <<EOF > /etc/sysctl.d/k8s.conf
+   net.bridge.bridge-nf-call-ip6tables = 1
+   net.bridge.bridge-nf-call-iptables = 1
+   net.ipv4.ip_forward = 1
+   EOF
 
-    sysctl -p
-    sysctl --system
+   sysctl -p
+   sysctl --system
 
-    modprobe br_netfilter
-    echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
-    echo 1 > /proc/sys/net/ipv4/ip_forward
+   modprobe br_netfilter
+   echo 1 > /proc/sys/net/bridge/bridge-nf-call-iptables
+   echo 1 > /proc/sys/net/ipv4/ip_forward
 
-    # 7. 配置yum源
-    cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-    [kubernetes]
-    name=Kubernetes
-    baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
-    enabled=1
-    gpgcheck=0
-    repo_gpgcheck=0
-    gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
-            http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-    EOF
+   # 7. 配置yum源
+   cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+   [kubernetes]
+   name=Kubernetes
+   baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+   enabled=1
+   gpgcheck=0
+   repo_gpgcheck=0
+   gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+           http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+   EOF
 
-    # cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-    # [kubernetes]
-    # name=Kubernetes
-    # baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
-    # enabled=1
-    # gpgcheck=0
-    # repo_gpgcheck=0
-    # gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
-    # https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-    # EOF
+   # cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+   # [kubernetes]
+   # name=Kubernetes
+   # baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+   # enabled=1
+   # gpgcheck=0
+   # repo_gpgcheck=0
+   # gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg
+   # https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+   # EOF
 
-    # 8. 安装 CRI
+   # 8. 安装 CRI
 
-    # 10. 下载 kubernetes https://kubernetes.io/releases/
-    export k8s_version="1.23.3"
+   # 10. 下载 kubernetes https://kubernetes.io/releases/
+   export k8s_version="1.23.3"
 
-    yum install -y kubelet-${k8s_version}-0 kubeadm-${k8s_version}-0 kubectl-${k8s_version}-0  --disableexcludes=kubernetes
+   yum install -y kubelet-${k8s_version}-0 kubeadm-${k8s_version}-0 kubectl-${k8s_version}-0  --disableexcludes=kubernetes
 
-    # 11. 启动 kubelet
-    systemctl enable kubelet --now
+   # 11. 启动 kubelet
+   systemctl enable kubelet --now
 
-    # 12. 用 kubeadm 初始化创建 K8S 集群 https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#options
-    kubeadm init --cri-socket unix:///run/containerd/containerd.sock --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v${k8s_version} --pod-network-cidr=10.244.0.0/16
+   # 12. 用 kubeadm 初始化创建 K8S 集群 https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-init/#options
+   kubeadm init --cri-socket unix:///run/containerd/containerd.sock --image-repository registry.aliyuncs.com/google_containers --kubernetes-version=v${k8s_version} --pod-network-cidr=10.244.0.0/16
 
-    # 13. 配置 .kube/config 用于使用 kubectl
-    mkdir -p $HOME/.kube
-    cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    chown $(id -u):$(id -g) $HOME/.kube/config
+   # 13. 配置 .kube/config 用于使用 kubectl
+   mkdir -p $HOME/.kube
+   cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   chown $(id -u):$(id -g) $HOME/.kube/config
 
-    # 15. 安装 calico
-    kubectl apply -f https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
-    # kubectl apply -f https://raw.githubusercontent.com/99cloud/lab-openstack/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
+   # 15. 安装 calico
+   kubectl apply -f https://gitee.com/dev-99cloud/lab-openstack/raw/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
+   # kubectl apply -f https://raw.githubusercontent.com/99cloud/lab-openstack/master/src/ansible-cloudlab-centos/playbooks/roles/init04-prek8s/files/calico-${k8s_version}.yml
 
-    # 看到 node Ready 就 OK
-    kubectl get nodes
-    ```
+   # 看到 node Ready 就 OK
+   kubectl get nodes
+
+   # 16. [可选]：移除 taint
+   kubectl taint nodes $(hostname) node-
+   ```
 
 ##### 3.1.1.2 增加 CRI-O Worker 节点
 
 拓扑结构：1 Master（Containerd） + 1 Worker（CRI-O）
 
-此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示 Kubelet 对接不同 CRI 时的情况。
+此处采用 Containerd + CRI-O 混合 CRI 部署。生产环境中不会这么用（生产环境中会尽量用较少、较成熟的模块完成搭建，减少依赖，减少技术栈复杂度），这里这么实验是用于同时展示
+Kubelet 对接不同 CRI 时的情况。
 
-[CRIO 部署](#23-cri-o) 时注意，sandbox 要配置成 `registry.aliyuncs.com/google_containers`，`gcr.io` 的 pause 容器拉取不了，或者可以 podman 手动 load
+[CRIO 部署](#23-cri-o) 时注意，sandbox 要配置成 `registry.aliyuncs.com/google_containers`，`gcr.io` 的 pause
+容器拉取不了，或者可以 podman 手动 load
 
 ##### 3.1.1.3 移除 Node 节点
 
@@ -1829,6 +1911,7 @@ ETCD 命令行工具安装
 # Ubuntu 环境上用 apt-get 安装
 apt install etcd-client
 ```
+
 其它环境直接下载二进制文件，参考：<https://github.com/etcd-io/etcd/releases>
 
 ```bash
@@ -1890,7 +1973,8 @@ etcdctl --cert="/etc/kubernetes/pki/apiserver-etcd-client.crt" --key="/etc/kuber
 
 ##### 3.1.1.5 Master0 节点的备份恢复
 
-Kubeadm 部署 k8s 集群时，master0 尤其重要，需要通过该节点来把证书推送给新加入的节点。当 master0 节点出现故障，可以利用备份恢复 master0 节点。通过 kubeadm 安装的 k8s，主节点包括两类的灾备恢复：
+Kubeadm 部署 k8s 集群时，master0 尤其重要，需要通过该节点来把证书推送给新加入的节点。当 master0 节点出现故障，可以利用备份恢复 master0 节点。通过 kubeadm
+安装的 k8s，主节点包括两类的灾备恢复：
 
 - etcd 数据存储恢复
 - 主节点控制组件恢复
@@ -1949,7 +2033,9 @@ spec:
 1. 定义 CronJob，这个 pod 每天凌晨自动运行 (schedule: "0 0 * * *")，用户可以自定义运行时间
 2. 运行在 master0 节点上，通过 nodeName 实现
 3. 挂载了 master0 机器上的 /tmp/etcd_backup/ 作为备份
-4. Args 参数中的 `etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /backup/etcd-snapshot-$(date +%Y-%m-%d_%H:%M:%S_%Z).db` 即为备份命令，按照时间的格式命名 etcd 的备份数据
+4. Args 参数中的
+   `etcdctl --endpoints=https://127.0.0.1:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/healthcheck-client.crt --key=/etc/kubernetes/pki/etcd/healthcheck-client.key snapshot save /backup/etcd-snapshot-$(date +%Y-%m-%d_%H:%M:%S_%Z).db`
+   即为备份命令，按照时间的格式命名 etcd 的备份数据
 
 **Etcd 数据恢复**：
 
@@ -2056,92 +2142,95 @@ crontab -e
 **新建节点替换 master0**
 
 1. 准备一个待加入的节点 master3
-  -  自行关闭防火墙 selinux 等
-  -  自行安装 docker 或者 containerd（未测试）
-  -  自行安装 kubeadm/kubelet/kubectl
-  -  若待加入集群使用了非 k8s.gcr.io 的仓库，请自行修改 /etc/docker/daemon.json 或者 /etc/containerd/config.toml
+
+- 自行关闭防火墙 selinux 等
+- 自行安装 docker 或者 containerd（未测试）
+- 自行安装 kubeadm/kubelet/kubectl
+- 若待加入集群使用了非 k8s.gcr.io 的仓库，请自行修改 /etc/docker/daemon.json 或者 /etc/containerd/config.toml
+
 2. 生成 certificate-key(在master0节点执行)
 
-    该过程遇上 warning 可以忽略。主要目的是让 kubeadm 自己处理证书，不用我们 scp
+   该过程遇上 warning 可以忽略。主要目的是让 kubeadm 自己处理证书，不用我们 scp
 
-    ```console
-    $ kubeadm init phase upload-certs --upload-certs
-    # 或者
-    $ kubeadm init phase upload-certs --upload-certs --config /tmp/.k8s/kubeadm.yaml
+   ```console
+   $ kubeadm init phase upload-certs --upload-certs
+   # 或者
+   $ kubeadm init phase upload-certs --upload-certs --config /tmp/.k8s/kubeadm.yaml
 
-    b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
-    ```
+   b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
+   ```
 
 3. 查看加入集群命令(master0节点执行)
 
-    ```bash
-    kubeadm token create --print-join-command
-    kubeadm join 192.168.40.199:16443 --token e5wrs0.lqcem5us4a04tp5x --discovery-token-ca-cert-hash sha256:61c6754582a1ca7668770594acd1efa36a9c5c71a897517d8fb6f6c9db8ee314
-    ```
+   ```bash
+   kubeadm token create --print-join-command
+   kubeadm join 192.168.40.199:16443 --token e5wrs0.lqcem5us4a04tp5x --discovery-token-ca-cert-hash sha256:61c6754582a1ca7668770594acd1efa36a9c5c71a897517d8fb6f6c9db8ee314
+   ```
 
 4. 将 master3 节点加入 k8s 集群，充当控制节点(master3 节点上执行)
 
-    ```bash
-    kubeadm join apiserver.cluster.local:6443 --token 6g5enb.ub1pap31ty0zoym4     --discovery-token-ca-cert-hash sha256:a057ab2330c6dba1de3816a291ea3786a5a558d5737d94ef64c5c045bf1e5e1c --control-plane --certificate-key b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
-    ```
+   ```bash
+   kubeadm join apiserver.cluster.local:6443 --token 6g5enb.ub1pap31ty0zoym4     --discovery-token-ca-cert-hash sha256:a057ab2330c6dba1de3816a291ea3786a5a558d5737d94ef64c5c045bf1e5e1c --control-plane --certificate-key b019bb8de1cbe3de4327a7a238e60faf6f865bc815cdcdeb86f1f6f116bad3df
+   ```
 
 5. 查看 master3 是否加入成功
 
-    ```bash
-    mkdir -p $HOME/.kube
-    sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-    sudo chown $(id -u):$(id -g) $HOME/.kube/config
+   ```bash
+   mkdir -p $HOME/.kube
+   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-    kubectl get pod -A
-    kubectl get node
-    ```
+   kubectl get pod -A
+   kubectl get node
+   ```
 
 6. 将 master0 从 k8s 集群删除(任意 master 节点执行)
 
-    ```bash
-    kubectl delete nodes master0
+   ```bash
+   kubectl delete nodes master0
 
-    # 在 master0 上运行 reset
-    kubeadm reset
-    ```
+   # 在 master0 上运行 reset
+   kubeadm reset
+   ```
 
 7. 获取 master0 节点的 hash 值(任意 master 节点执行)
 
-    ```bash
-    # 集群本身安装了 etcdctl 工具，可省略这几步
-    tar -zxvf etcd-v3.3.4-linux-amd64.tar.gz
-    cd etcd-v3.3.4-linux-amd64
-    cp etcdctl /usr/local/sbin/
+   ```bash
+   # 集群本身安装了 etcdctl 工具，可省略这几步
+   tar -zxvf etcd-v3.3.4-linux-amd64.tar.gz
+   cd etcd-v3.3.4-linux-amd64
+   cp etcdctl /usr/local/sbin/
 
-    # 获取 master0 节点 hash 值
-    ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member list
-    ```
+   # 获取 master0 节点 hash 值
+   ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member list
+   ```
 
-    输出：
+   输出：
 
-    ```
-    1203cdd3ad75e761, started, master0, https://192.168.40.180:2380, https://192.168.40.180:2379
-    dda71d9d52b97028, started, master1, https://192.168.40.181:2380, https://192.168.40.181:2379
-    dkeijf23cjd3445k, started, master2, https://192.168.40.182:2380, https://192.168.40.182:2379
+   ```
+   1203cdd3ad75e761, started, master0, https://192.168.40.180:2380, https://192.168.40.180:2379
+   dda71d9d52b97028, started, master1, https://192.168.40.181:2380, https://192.168.40.181:2379
+   dkeijf23cjd3445k, started, master2, https://192.168.40.182:2380, https://192.168.40.182:2379
 
-    找到 master0 对应的 hash 值是：1203cdd3ad75e761
+   找到 master0 对应的 hash 值是：1203cdd3ad75e761
+   ```
 
 8. 根据 hash 删除 etcd 信息，执行如下命令:
 
-    ```bash
-    ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member remove 1203cdd3ad75e761
-    ```
+   ```bash
+   ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 --cacert /etc/kubernetes/pki/etcd/ca.crt --cert /etc/kubernetes/pki/etcd/server.crt --key /etc/kubernetes/pki/etcd/server.key member remove 1203cdd3ad75e761
+   ```
 
 9. 查看节点是否加入成功
 
-    ```console
-    $ kubectl get nodes
+   ```console
+   $ kubectl get nodes
 
-    NAME STATUS ROLES AGE VERSION
-    master3 Ready control-plane,master 50s v1.20.6
-    master1 Ready control-plane,master 35m v1.20.6
-    master2 Ready control-plane,master 35m v1.20.6
-    ```
+   NAME STATUS ROLES AGE VERSION
+   master3 Ready control-plane,master 50s v1.20.6
+   master1 Ready control-plane,master 35m v1.20.6
+   master2 Ready control-plane,master 35m v1.20.6
+   ```
 
 ##### 3.1.1.6 删除 K8S
 
@@ -2186,43 +2275,46 @@ sealos.hub:5000/tigera/operator             v1.25.3             648350e58702c   
 
 优点：
 
-1. 管理 K8S 集群生命周期，HA 集群，扩缩容，清空集群，自动恢复（*If any master is down, lvscare will remove the ipvs realserver, when master recover it will add it back*）
-1. 可以从 sealos hub 下载和使用 OCI-compatible 的 openebs, minio, ingress, pgsql, mysql, redis 等插件
-1. 证书直接签 99 年（这个是优点还是安全漏洞待考…… 而且为了这个还直接改了 kubeadm 源码），依赖 k8s API 证书的 kubefed 之类就不要每年更新证书了。
-    - 参考：<https://blog.51cto.com/heyong/5149534>，修改 `cmd/kubeadm/app/constants/constants.go` 里的 CertificateValidity
-    - 参考：<https://www.infinisign.com/news/one-year-certs>，kubeadm 强制只签一年，不让传参签 99 年还是有安全方面考虑的
-    - 参考：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/>，这里介绍了证书在 upgrade 时或者手动执行时可以 renew
+1. 管理 K8S 集群生命周期，HA 集群，扩缩容，清空集群，自动恢复（_If any master is down, lvscare will remove the ipvs
+   realserver, when master recover it will add it back_）
+2. 可以从 sealos hub 下载和使用 OCI-compatible 的 openebs, minio, ingress, pgsql, mysql, redis 等插件
+3. 证书直接签 99 年（这个是优点还是安全漏洞待考…… 而且为了这个还直接改了 kubeadm 源码），依赖 k8s API 证书的 kubefed 之类就不要每年更新证书了。
+   - 参考：<https://blog.51cto.com/heyong/5149534>，修改 `cmd/kubeadm/app/constants/constants.go` 里的
+     CertificateValidity
+   - 参考：<https://www.infinisign.com/news/one-year-certs>，kubeadm 强制只签一年，不让传参签 99 年还是有安全方面考虑的
+   - 参考：<https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-certs/>，这里介绍了证书在
+     upgrade 时或者手动执行时可以 renew
 
-    ```console
-    [root@lab-k8s001 ~]# kubeadm certs check-expiration
-    [check-expiration] Reading configuration from the cluster...
-    [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+   ```console
+   [root@lab-k8s001 ~]# kubeadm certs check-expiration
+   [check-expiration] Reading configuration from the cluster...
+   [check-expiration] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
 
-    CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
-    admin.conf                 May 15, 2122 13:08 UTC   99y             ca                      no
-    apiserver                  May 15, 2122 13:08 UTC   99y             ca                      no
-    apiserver-etcd-client      May 15, 2122 13:08 UTC   99y             etcd-ca                 no
-    apiserver-kubelet-client   May 15, 2122 13:08 UTC   99y             ca                      no
-    controller-manager.conf    May 15, 2122 13:08 UTC   99y             ca                      no
-    etcd-healthcheck-client    May 15, 2122 13:08 UTC   99y             etcd-ca                 no
-    etcd-peer                  May 15, 2122 13:08 UTC   99y             etcd-ca                 no
-    etcd-server                May 15, 2122 13:08 UTC   99y             etcd-ca                 no
-    front-proxy-client         May 15, 2122 13:08 UTC   99y             front-proxy-ca          no
-    scheduler.conf             May 15, 2122 13:08 UTC   99y             ca                      no
+   CERTIFICATE                EXPIRES                  RESIDUAL TIME   CERTIFICATE AUTHORITY   EXTERNALLY MANAGED
+   admin.conf                 May 15, 2122 13:08 UTC   99y             ca                      no
+   apiserver                  May 15, 2122 13:08 UTC   99y             ca                      no
+   apiserver-etcd-client      May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+   apiserver-kubelet-client   May 15, 2122 13:08 UTC   99y             ca                      no
+   controller-manager.conf    May 15, 2122 13:08 UTC   99y             ca                      no
+   etcd-healthcheck-client    May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+   etcd-peer                  May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+   etcd-server                May 15, 2122 13:08 UTC   99y             etcd-ca                 no
+   front-proxy-client         May 15, 2122 13:08 UTC   99y             front-proxy-ca          no
+   scheduler.conf             May 15, 2122 13:08 UTC   99y             ca                      no
 
-    CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
-    ca                      May 15, 2122 13:08 UTC   99y             no
-    etcd-ca                 May 15, 2122 13:08 UTC   99y             no
-    front-proxy-ca          May 15, 2122 13:08 UTC   99y             no
-    ```
+   CERTIFICATE AUTHORITY   EXPIRES                  RESIDUAL TIME   EXTERNALLY MANAGED
+   ca                      May 15, 2122 13:08 UTC   99y             no
+   etcd-ca                 May 15, 2122 13:08 UTC   99y             no
+   front-proxy-ca          May 15, 2122 13:08 UTC   99y             no
+   ```
 
 缺点：
 
 1. 不受支持的离线包要自己制作
-1. 没有 Web UI 界面
-1. 不支持集中管理多个 K8S 集群的生命周期
-1. 没考虑升级、备份、恢复自动化（4.0 估计还没重构到这）
-1. 修改了 kubeadm 的业务逻辑（ipvs 和 99 年），不 100% 兼容社区 kubeadm 了
+2. 没有 Web UI 界面
+3. 不支持集中管理多个 K8S 集群的生命周期
+4. 没考虑升级、备份、恢复自动化（4.0 估计还没重构到这）
+5. 修改了 kubeadm 的业务逻辑（ipvs 和 99 年），不 100% 兼容社区 kubeadm 了
 
 #### 3.1.3 KubeKey
 
@@ -2263,16 +2355,18 @@ docker ps
 缺点：
 
 1. 支持的版本比较久远（2022.06.08，CentOS 7.9 kubeadm 官方 1.24.X 都出来了，kk 只支持到 1.23.0）
-1. 最新支持 kubesphere 3.2.1 的 k8s 版本还是 1.21.5（1.22.x 实验性支持，1.23 未涉及）实测 1.23.3 没啥问题，但官方为宣称，总担心有坑……
-1. 1.21.5 安装时还是默认用 docker 作为容器运行时，不是 containerd。可以 describe node：`Container Runtime Version:  docker://20.10.8`
-1. 命令行工具 crictl / nerdctl 之类都没有装
+2. 最新支持 kubesphere 3.2.1 的 k8s 版本还是 1.21.5（1.22.x 实验性支持，1.23 未涉及）实测 1.23.3 没啥问题，但官方为宣称，总担心有坑……
+3. 1.21.5 安装时还是默认用 docker 作为容器运行时，不是 containerd。可以 describe
+   node：`Container Runtime Version:  docker://20.10.8`
+4. 命令行工具 crictl / nerdctl 之类都没有装
 
 槽点：
 
 1. 没啥高级功能…… 为啥不直接用 kubeadm，封装干嘛呢……
-1. 跑了一遍 kk 之后，收到短信：`【阿里云】尊敬的 XXXX：云盾云安全中心检测到您的服务器：XXXX 出现了紧急安全事件：恶意脚本代码执行，建议您立即登录云安全中心控制台-安全告警处理 http://a.aliyun.com/XXXX 进行处理。`
+2. 跑了一遍 kk
+   之后，收到短信：`【阿里云】尊敬的 XXXX：云盾云安全中心检测到您的服务器：XXXX 出现了紧急安全事件：恶意脚本代码执行，建议您立即登录云安全中心控制台-安全告警处理 http://a.aliyun.com/XXXX 进行处理。`
 
-    ![](/image/kubekey-aliyun-alert.png)
+   ![](/image/kubekey-aliyun-alert.png)
 
 #### 3.1.4 KubeClipper
 
@@ -2282,14 +2376,14 @@ docker ps
 
 QuickStart：<https://github.com/kubeclipper-labs/kubeclipper/blob/master/README_zh.md#quick-start>
 
-| | KubeClipper | Sealos | KubeKey | Kubeasz | KubeOperator | K0S |
-| - | - | - | - | - | - | - |
-| 图形化页面 | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| 轻依赖 - 不依赖 ansible 等 | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ |
-| 多区域、多集群管理 | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ |
-| 支持多版本 K8S、CRI | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 离线安装 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| 基于 kubeadm 封装 | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ |
+|                     | KubeClipper | Sealos | KubeKey | Kubeasz | KubeOperator | K0S |
+| ------------------- | ----------- | ------ | ------- | ------- | ------------ | --- |
+| 图形化页面               | ✅           | ❌      | ❌       | ❌       | ✅            | ❌   |
+| 轻依赖 - 不依赖 ansible 等 | ✅           | ✅      | ✅       | ❌       | ❌            | ✅   |
+| 多区域、多集群管理           | ✅           | ❌      | ❌       | ❌       | ✅            | ❌   |
+| 支持多版本 K8S、CRI       | ✅           | ✅      | ✅       | ✅       | ✅            | ✅   |
+| 离线安装                | ✅           | ✅      | ✅       | ✅       | ✅            | ✅   |
+| 基于 kubeadm 封装       | ✅           | ✅      | ✅       | ❌       | ❌            | ❌   |
 
 #### 3.1.5 K3S
 
@@ -2301,7 +2395,8 @@ K3S 参考文档
 - [Kubernetes 官方文档](https://kubernetes.io/zh/docs/home)
 - [k3s 搭建步骤](https://github.com/k3s-io/k3s#quick-start---install-script)
 
-Kubernetes 集群在管理大规模服务上有极佳的运维自动化优势（自愈 / 扩缩容 / 负载均衡 / 服务注册和服务发现 / 部署），但也需要耗费相对较多的资源，许多功能对特定对特定场景来说是冗余的，K3S 作为一个轻量级的 Kubernetes 发行版应运而生，它针对边缘计算、物联网等场景进行了高度优化。
+Kubernetes 集群在管理大规模服务上有极佳的运维自动化优势（自愈 / 扩缩容 / 负载均衡 / 服务注册和服务发现 /
+部署），但也需要耗费相对较多的资源，许多功能对特定对特定场景来说是冗余的，K3S 作为一个轻量级的 Kubernetes 发行版应运而生，它针对边缘计算、物联网等场景进行了高度优化。
 
 K3s 有以下增强功能：
 
@@ -2309,7 +2404,8 @@ K3s 有以下增强功能：
 - 使用基于 sqlite3 的轻量级存储后端作为默认存储机制。同时支持使用 etcd3、MySQL 和 PostgreSQL 作为存储机制。
 - 封装在简单的启动程序中，通过该启动程序处理很多复杂的 TLS 和选项。
 - 默认情况下是安全的，对轻量级环境有合理的默认值。
-- 添加了简单但功能强大的 batteries-included 功能，例如：本地存储提供程序，服务负载均衡器，Helm controller 和 Traefik Ingress controller。
+- 添加了简单但功能强大的 batteries-included 功能，例如：本地存储提供程序，服务负载均衡器，Helm controller 和 Traefik Ingress
+  controller。
 - 所有 Kubernetes control-plane 组件的操作都封装在单个二进制文件和进程中，使 K3s 具有自动化和管理包括证书分发在内的复杂集群操作的能力。
 - 最大程度减轻了外部依赖性，K3s 仅需要 kernel 和 cgroup 挂载。 K3s 软件包需要的依赖项包括：
   - containerd
@@ -2334,7 +2430,8 @@ K3S 适用于：
 
 K3s 单节点集群的架构如下图所示，该集群有一个**内嵌 SQLite** 数据库的单节点 **K3s server**。
 
-在这种配置中，每个 **agent** 节点都注册到**同一个** server 节点。K3s 用户可以通过调用 server 节点上的 K3s API 来操作 Kubernetes 资源。外部流量则通过 Traeffic 导入，且经过 loadBalance 进行负载均衡。
+在这种配置中，每个 **agent** 节点都注册到**同一个** server 节点。K3s 用户可以通过调用 server 节点上的 K3s API 来操作 Kubernetes
+资源。外部流量则通过 Traeffic 导入，且经过 loadBalance 进行负载均衡。
 
 部署准备：参阅 [K3S 官网配置改动](https://docs.rancher.cn/docs/k3s/installation/installation-requirements/_index)
 
@@ -2354,9 +2451,10 @@ echo '{"registry-mirrors": ["http://hub-mirror.c.163.com"]}'>/etc/docker/daemon.
 systemctl enable --now docker
 ```
 
-部署脚本安装（近期 k3s 和 autok3s 都在调整中，rancher-mirror.cnrancher.com 在归档，功能受影响，rancher-mirror.oss-cn-beijing.aliyuncs.com 尚未能全功代替）
+部署脚本安装（近期 k3s 和 autok3s 都在调整中，rancher-mirror.cnrancher.com
+在归档，功能受影响，rancher-mirror.oss-cn-beijing.aliyuncs.com 尚未能全功代替）
 
-``` bash
+```bash
 # curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--docker" sh -
 # 受限国内网络，大多数时候上述脚本无法安装，建议采用下述国内加速安装脚本
 curl -sfL https://rancher-mirror.oss-cn-beijing.aliyuncs.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn INSTALL_K3S_EXEC="--docker" sh -
@@ -2464,8 +2562,7 @@ $ /usr/local/bin/k3s-agent-uninstall.sh
 一个高可用 K3s 集群由以下几个部分组成：
 
 - **K3s Server 节点**：两个或更多的 server 节点将为 Kubernetes API 提供服务并运行其他 control-plane 服务
-- **外部数据库**：与单节点 k3s 设置中使用的嵌入式
-SQLite 数据存储相反，高可用 K3s 需要**挂载一个external database 外部数据库**作为数据存储的媒介。
+- **外部数据库**：与单节点 k3s 设置中使用的嵌入式 SQLite 数据存储相反，高可用 K3s 需要**挂载一个external database 外部数据库**作为数据存储的媒介。
 
 **固定 agent 节点的注册地址**
 
@@ -2480,8 +2577,9 @@ SQLite 数据存储相反，高可用 K3s 需要**挂载一个external database 
 | server | >2Core | >4G | >10G | >3 | centos7.x |
 | agent  | >2Core | >2G | >10G | >3 | centos7.x |
 
-部署外部数据库 etcd。K3S 支持多种外部数据库，这里我们选用 etcd 数据库，为方便搭建，我们这里搭建的 etcd 集群为非 TLS 访问方式
-更多详情内容参阅 [K3S 外部数据库配置](https://docs.rancher.cn/docs/k3s/installation/ha/_index) 和 [etcd 官方文档](https://etcd.io)
+部署外部数据库 etcd。K3S 支持多种外部数据库，这里我们选用 etcd 数据库，为方便搭建，我们这里搭建的 etcd 集群为非 TLS 访问方式 更多详情内容参阅
+[K3S 外部数据库配置](https://docs.rancher.cn/docs/k3s/installation/ha/_index) 和
+[etcd 官方文档](https://etcd.io)
 
 ```bash
 # 所有节点均部署 docker，与上述单节点部署过程一样，不再赘述
@@ -2520,7 +2618,8 @@ systemctl restart etcd
 
 ###### 3.1.5.3.1 server HA
 
-下述命令中的 INSTALL_K3S_MIRROR,K3S_DATASTORE_ENDPOINT, K3S_TOKEN... 等可以作为环境变量，如 export K3S_TOKEN="k3s_token"
+下述命令中的 INSTALL_K3S_MIRROR,K3S_DATASTORE_ENDPOINT, K3S_TOKEN... 等可以作为环境变量，如 export
+K3S_TOKEN="k3s_token"
 
 ```console
 $ curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn K3S_DATASTORE_ENDPOINT='http://{etcd1-ip}:2379,http://{etcd2-ip}:2379,http://{etcd3-ip}:2379' K3S_TOKEN="k3s_token" INSTALL_K3S_VERSION=v1.18.6+k3s1 INSTALL_K3S_EXEC="--docker" sh -s - server
@@ -2545,7 +2644,8 @@ caasnode-3   Ready    control-plane,master   82s     v1.21.4+k3s1
 
 在所有 agent 节点中执行 master-ip 可以是多个 master 间共用的 vip 或者第一个 master 的 ip。
 
-下述命令中的 INSTALL_K3S_MIRROR,K3S_DATASTORE_ENDPOINT, K3S_TOKEN... 等可以作为环境变量，如 export K3S_TOKEN="k3s_token"
+下述命令中的 INSTALL_K3S_MIRROR,K3S_DATASTORE_ENDPOINT, K3S_TOKEN... 等可以作为环境变量，如 export
+K3S_TOKEN="k3s_token"
 
 ```console
 $ curl -sfL http://rancher-mirror.cnrancher.com/k3s/k3s-install.sh | INSTALL_K3S_MIRROR=cn K3S_TOKEN="k3s_token" K3S_URL=https://{master-ip}:6443 INSTALL_K3S_VERSION=v1.18.6+k3s1 INSTALL_K3S_EXEC="--docker" sh -
@@ -2638,7 +2738,8 @@ autok3s -d serve --bind-address 0.0.0.0
 
 1. 默认会启动在 8080 端口
 2. 创建集群时，建议打开高级选项，用 oss 上的脚本部署（避免后续安装存在网络延迟），enable cluster etcd，选 explorer
-3. explorer 对每一个集群都是一个单独的进程，以 kubeconfig 为启动参数，为一个 k8s 集群提供启动界面服务（kube-explorer-ui），然后 autok3s-ui 集成各个 kube-explorer-ui（通过 proxy）。
+3. explorer 对每一个集群都是一个单独的进程，以 kubeconfig 为启动参数，为一个 k8s 集群提供启动界面服务（kube-explorer-ui），然后 autok3s-ui
+   集成各个 kube-explorer-ui（通过 proxy）。
 
 优点：
 
@@ -2656,9 +2757,10 @@ autok3s -d serve --bind-address 0.0.0.0
 
 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/install/>
 
-1. 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/system-requirements/#host-operating-system> 内核必须先升级到 4.3 以上
-1. 得弄好离线包…… load 好镜像再装……
-1. 有延迟…… 2022.06.08 CentOS 7.9 1.24.x 都出来了，这最新还在 1.23.6
+1. 参考：<https://docs.k0sproject.io/v1.23.6+k0s.2/system-requirements/#host-operating-system> 内核必须先升级到
+   4.3 以上
+2. 得弄好离线包…… load 好镜像再装……
+3. 有延迟…… 2022.06.08 CentOS 7.9 1.24.x 都出来了，这最新还在 1.23.6
 
 ### 3.2 版本升级
 
@@ -2747,7 +2849,8 @@ sudo systemctl restart kubelet
 kubectl uncordon <node-to-drain>
 ```
 
-再升级 Worker 节点，参考 <https://v1-23.docs.kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#upgrade-worker-nodes>
+再升级 Worker 节点，参考
+<https://v1-23.docs.kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/#upgrade-worker-nodes>
 
 ### 3.3 迁移和纳管
 
@@ -2804,7 +2907,9 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 
 #### 3.4.1 KubeSphere
 
-先装好 K8S，准备检查：<https://kubesphere.io/docs/installing-on-kubernetes/introduction/prerequisites/>。注意：**要有 default 的 storageclass**，可以用 NFS 配置一个。
+先装好
+K8S，准备检查：<https://kubesphere.io/docs/installing-on-kubernetes/introduction/prerequisites/>。注意：**要有
+default 的 storageclass**，可以用 NFS 配置一个。
 
 然后安装 KubeSphere：参考 <https://kubesphere.io/docs/quick-start/minimal-kubesphere-on-k8s/>。
 
@@ -2819,13 +2924,13 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 ### 3.7 最佳实践
 
 1. K8S 的操作要记得参考：<https://kubernetes.io>
-1. 部署 K8S 节点时，要记得 root / kubelet / etcd / 备份 / cri 用不同的存储分区，etcd 要注意用 ssd
-1. K8S 架构中，一般会增加 infra 节点来避免 worker node 直接对外暴露
-1. 生产环境中：推荐 kubeadm，K8S + Kubeadm + Calico + KubeSphere
-1. 边缘环境：推荐 K3S + AutoK3S + Rancher
-1. KubeKey / Kubeasz / K0S 各有优势，但需要学习和深入理解（Debug）不同的工具和技术栈
-1. Kubeadm 有良好稳定可靠的升级方案、集群的备份恢复方案、以及 Master 0 节点的备份恢复方案
-1. KubeSphere 能良好地纳管（统一管理、认证健全、监控计量、跨集群调度）K8S；而 Rancher 可以对 K3S 较好地统一管理。
+2. 部署 K8S 节点时，要记得 root / kubelet / etcd / 备份 / cri 用不同的存储分区，etcd 要注意用 ssd
+3. K8S 架构中，一般会增加 infra 节点来避免 worker node 直接对外暴露
+4. 生产环境中：推荐 kubeadm，K8S + Kubeadm + Calico + KubeSphere
+5. 边缘环境：推荐 K3S + AutoK3S + Rancher
+6. KubeKey / Kubeasz / K0S 各有优势，但需要学习和深入理解（Debug）不同的工具和技术栈
+7. Kubeadm 有良好稳定可靠的升级方案、集群的备份恢复方案、以及 Master 0 节点的备份恢复方案
+8. KubeSphere 能良好地纳管（统一管理、认证健全、监控计量、跨集群调度）K8S；而 Rancher 可以对 K3S 较好地统一管理。
 
 ## 4. 存储管理
 
@@ -2842,275 +2947,278 @@ sudo docker run -d --privileged --restart=unless-stopped --net=host -v /etc/kube
 #### 4.2.1 搭建 NFS Server
 
 1. 准备好 NFS server 机器（另开一台 CentOS 7.9，单独配一块数据盘），机器规格按需指定。最好挂载一块单独的磁盘。
-1. 保证需要使用 NFS 存储的客户端机器与 NFS server 机器的网络互通性
-1. 部署步骤
-    1. 下载相关包，并启动相关服务
+2. 保证需要使用 NFS 存储的客户端机器与 NFS server 机器的网络互通性
+3. 部署步骤
+   1. 下载相关包，并启动相关服务
 
-        ```bash
-        apt-get install nfs-common -y || yum install nfs-utils -y
-        ```
+      ```bash
+      apt-get install nfs-common -y || yum install nfs-utils -y
+      ```
 
-    1. 创建 NFS 数据路径
+   2. 创建 NFS 数据路径
 
-        ```bash
-        mkdir -p /nfs/data
-        chmod -R 777 /nfs/data
-        ```
+      ```bash
+      mkdir -p /nfs/data
+      chmod -R 777 /nfs/data
+      ```
 
-    1. 如果有额外挂单独的数据盘给 NFS 用，需要格式化这块磁盘并挂载，比如 vdb。如果没有额外挂盘请忽略这一步
+   3. 如果有额外挂单独的数据盘给 NFS 用，需要格式化这块磁盘并挂载，比如 vdb。如果没有额外挂盘请忽略这一步
 
-        ```bash
-        mkfs.xfs /dev/vdb
-        mount /dev/vdb /nfs/data
-        echo "/dev/vdb /nfs/data xfs defaults 0 0" >> /etc/fstab
-        ```
+      ```bash
+      mkfs.xfs /dev/vdb
+      mount /dev/vdb /nfs/data
+      echo "/dev/vdb /nfs/data xfs defaults 0 0" >> /etc/fstab
+      ```
 
-    1. 编辑 NFS 配置文件
+   4. 编辑 NFS 配置文件
 
-        ```bash
-        # echo "/nfs/data *(rw,no_root_squash,sync)" > /etc/exports
-        echo "/nfs/data *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)" > /etc/exports
-        # 首次登入Internal error occurred: account is not active 的问题，https://kubesphere.com.cn/forum/d/2058-kk-internal-error-occurred-account-is-not-active
-        exportfs -r
-        ```
+      ```bash
+      # echo "/nfs/data *(rw,no_root_squash,sync)" > /etc/exports
+      echo "/nfs/data *(rw,sync,no_subtree_check,no_root_squash,no_all_squash,insecure)" > /etc/exports
+      # 首次登入Internal error occurred: account is not active 的问题，https://kubesphere.com.cn/forum/d/2058-kk-internal-error-occurred-account-is-not-active
+      exportfs -r
+      ```
 
-    1. 启动 rpcbind、nfs 服务
+   5. 启动 rpcbind、nfs 服务
 
-        ```bash
-        systemctl restart rpcbind && systemctl enable rpcbind
-        systemctl restart nfs && systemctl enable nfs
-        ```
+      ```bash
+      systemctl restart rpcbind && systemctl enable rpcbind
+      systemctl restart nfs && systemctl enable nfs
+      ```
 
-    1. 查看 RPC 服务的注册状况
+   6. 查看 RPC 服务的注册状况
 
-        ```bash
-        rpcinfo -p localhost
-        program vers proto   port  service
-            ...
-            100003    3   tcp   2049  nfs
-            100003    4   tcp   2049  nfs
-            100227    3   tcp   2049  nfs_acl
-            100003    3   udp   2049  nfs
-            100003    4   udp   2049  nfs
-            100227    3   udp   2049  nfs_acl
-            ...
-        ```
+      ```bash
+      rpcinfo -p localhost
+      program vers proto   port  service
+          ...
+          100003    3   tcp   2049  nfs
+          100003    4   tcp   2049  nfs
+          100227    3   tcp   2049  nfs_acl
+          100003    3   udp   2049  nfs
+          100003    4   udp   2049  nfs
+          100227    3   udp   2049  nfs_acl
+          ...
+      ```
 
 #### 4.2.2 使用动态 PersistentVolume
 
 1. 创建 RBAC.yaml 文件，内容如下。
 
-    ```yaml
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: nfs-client-provisioner
-      # replace with namespace where provisioner is deployed
-      namespace: default
-    ---
-    kind: ClusterRole
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: nfs-client-provisioner-runner
-    rules:
-      - apiGroups: [""]
-        resources: ["persistentvolumes"]
-        verbs: ["get", "list", "watch", "create", "delete"]
-      - apiGroups: [""]
-        resources: ["persistentvolumeclaims"]
-        verbs: ["get", "list", "watch", "update"]
-      - apiGroups: ["storage.k8s.io"]
-        resources: ["storageclasses"]
-        verbs: ["get", "list", "watch"]
-      - apiGroups: [""]
-        resources: ["events"]
-        verbs: ["create", "update", "patch"]
-    ---
-    kind: ClusterRoleBinding
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: run-nfs-client-provisioner
-    subjects:
-      - kind: ServiceAccount
-        name: nfs-client-provisioner
-        # replace with namespace where provisioner is deployed
-        namespace: default
-    roleRef:
-      kind: ClusterRole
-      name: nfs-client-provisioner-runner
-      apiGroup: rbac.authorization.k8s.io
-    ---
-    kind: Role
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: leader-locking-nfs-client-provisioner
-      # replace with namespace where provisioner is deployed
-      namespace: default
-    rules:
-      - apiGroups: [""]
-        resources: ["endpoints"]
-        verbs: ["get", "list", "watch", "create", "update",     "patch"]
-    ---
-    kind: RoleBinding
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: leader-locking-nfs-client-provisioner
-      # replace with namespace where provisioner is deployed
-      namespace: default
-    subjects:
-      - kind: ServiceAccount
-        name: nfs-client-provisioner
-        # replace with namespace where provisioner is deployed
-        namespace: default
-    roleRef:
-      kind: Role
-      name: leader-locking-nfs-client-provisioner
-      apiGroup: rbac.authorization.k8s.io
-    ```
+   ```yaml
+   apiVersion: v1
+   kind: ServiceAccount
+   metadata:
+     name: nfs-client-provisioner
+     # replace with namespace where provisioner is deployed
+     namespace: default
+   ---
+   kind: ClusterRole
+   apiVersion: rbac.authorization.k8s.io/v1
+   metadata:
+     name: nfs-client-provisioner-runner
+   rules:
+     - apiGroups: [""]
+       resources: ["persistentvolumes"]
+       verbs: ["get", "list", "watch", "create", "delete"]
+     - apiGroups: [""]
+       resources: ["persistentvolumeclaims"]
+       verbs: ["get", "list", "watch", "update"]
+     - apiGroups: ["storage.k8s.io"]
+       resources: ["storageclasses"]
+       verbs: ["get", "list", "watch"]
+     - apiGroups: [""]
+       resources: ["events"]
+       verbs: ["create", "update", "patch"]
+   ---
+   kind: ClusterRoleBinding
+   apiVersion: rbac.authorization.k8s.io/v1
+   metadata:
+     name: run-nfs-client-provisioner
+   subjects:
+     - kind: ServiceAccount
+       name: nfs-client-provisioner
+       # replace with namespace where provisioner is deployed
+       namespace: default
+   roleRef:
+     kind: ClusterRole
+     name: nfs-client-provisioner-runner
+     apiGroup: rbac.authorization.k8s.io
+   ---
+   kind: Role
+   apiVersion: rbac.authorization.k8s.io/v1
+   metadata:
+     name: leader-locking-nfs-client-provisioner
+     # replace with namespace where provisioner is deployed
+     namespace: default
+   rules:
+     - apiGroups: [""]
+       resources: ["endpoints"]
+       verbs: ["get", "list", "watch", "create", "update",     "patch"]
+   ---
+   kind: RoleBinding
+   apiVersion: rbac.authorization.k8s.io/v1
+   metadata:
+     name: leader-locking-nfs-client-provisioner
+     # replace with namespace where provisioner is deployed
+     namespace: default
+   subjects:
+     - kind: ServiceAccount
+       name: nfs-client-provisioner
+       # replace with namespace where provisioner is deployed
+       namespace: default
+   roleRef:
+     kind: Role
+     name: leader-locking-nfs-client-provisioner
+     apiGroup: rbac.authorization.k8s.io
+   ```
 
-1. 执行命令创建 RBAC
+2. 执行命令创建 RBAC
 
-    ```bash
-    kubectl create -f RBAC.yaml
-    ```
+   ```bash
+   kubectl create -f RBAC.yaml
+   ```
 
-1. 创建 deployment.yaml 文件，内容如下:
+3. 创建 deployment.yaml 文件，内容如下:
 
-    ```yaml
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: nfs-client-provisioner
-      labels:
-        app: nfs-client-provisioner
-      namespace: default
-    spec:
-      replicas: 1
-      selector:
-        matchLabels:
-          app: nfs-client-provisioner
-      strategy:
-        type: Recreate
-      selector:
-        matchLabels:
-          app: nfs-client-provisioner
-      template:
-        metadata:
-          labels:
-            app: nfs-client-provisioner
-        spec:
-          serviceAccountName: nfs-client-provisioner
-          containers:
-            - name: nfs-client-provisioner
-              image: 99cloud/nfs-subdir-external-provisioner:v4.0.0
-              volumeMounts:
-                - name: nfs-client-root
-                  mountPath: /persistentvolumes
-              env:
-                - name: PROVISIONER_NAME
-                  value: fuseim.pri/ifs
-                - name: NFS_SERVER
-                  value: localhost
-                - name: NFS_PATH
-                  value: /nfs/data
-          volumes:
-            - name: nfs-client-root
-              nfs:
-                server: localhost
-                path: /nfs/data
-    ```
+   ```yaml
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: nfs-client-provisioner
+     labels:
+       app: nfs-client-provisioner
+     namespace: default
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: nfs-client-provisioner
+     strategy:
+       type: Recreate
+     selector:
+       matchLabels:
+         app: nfs-client-provisioner
+     template:
+       metadata:
+         labels:
+           app: nfs-client-provisioner
+       spec:
+         serviceAccountName: nfs-client-provisioner
+         containers:
+           - name: nfs-client-provisioner
+             image: 99cloud/nfs-subdir-external-provisioner:v4.0.0
+             volumeMounts:
+               - name: nfs-client-root
+                 mountPath: /persistentvolumes
+             env:
+               - name: PROVISIONER_NAME
+                 value: fuseim.pri/ifs
+               - name: NFS_SERVER
+                 value: localhost
+               - name: NFS_PATH
+                 value: /nfs/data
+         volumes:
+           - name: nfs-client-root
+             nfs:
+               server: localhost
+               path: /nfs/data
+   ```
 
-    > 其中 localhost 请替换成 NFS Server 的地址
+   > 其中 localhost 请替换成 NFS Server 的地址
 
-    如果 driver 起不来，多半是 client 端没有安装 nfs-common(ubuntu) 或者 nfs-utils(centos)
+   如果 driver 起不来，多半是 client 端没有安装 nfs-common(ubuntu) 或者 nfs-utils(centos)
 
-1. 部署deploy
+4. 部署deploy
 
-    ```bash
-    kubectl create -f deployment.yaml
-    ```
+   ```bash
+   kubectl create -f deployment.yaml
+   ```
 
-1. 创建 storageclass.yaml 文件
+5. 创建 storageclass.yaml 文件
 
-    ```yaml
-    apiVersion: storage.k8s.io/v1
-    kind: StorageClass
-    metadata:
-      name: nfs
-    provisioner: fuseim.pri/ifs
-    parameters:
-      archiveOnDelete: "false"
-    reclaimPolicy: Delete
-    ```
+   ```yaml
+   apiVersion: storage.k8s.io/v1
+   kind: StorageClass
+   metadata:
+     name: nfs
+   provisioner: fuseim.pri/ifs
+   parameters:
+     archiveOnDelete: "false"
+   reclaimPolicy: Delete
+   ```
 
-    > provisioner 要对应 驱动所传入的环境变量 PROVISIONER_NAME 的值。
+   > provisioner 要对应 驱动所传入的环境变量 PROVISIONER_NAME 的值。
 
-1. 创建 storage class
+6. 创建 storage class
 
-    ```bash
-    kubectl apply -f storageclass.yaml
-    ```
+   ```bash
+   kubectl apply -f storageclass.yaml
+   ```
 
-1. 如果要把 nfs 设置成默认 StorageClass：(option)
+7. 如果要把 nfs 设置成默认 StorageClass：(option)
 
-    ```
-    kubectl patch storageclass nfs -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
-    ```
+   ```
+   kubectl patch storageclass nfs -p '{"metadata": {"annotations": {"storageclass.kubernetes.io/is-default-class":"true"}}}'
+   ```
 
 #### 4.2.3 测试
 
 1. 创建 pvc.yaml 文件
 
-    ```yaml
-    apiVersion: v1
-    kind: PersistentVolumeClaim
-    metadata:
-      name: test-pvc
-      annotations:
-        volume.beta.kubernetes.io/storage-class: "nfs"
-    spec:
-      accessModes:
-        - ReadWriteMany
-      resources:
-        requests:
-          storage: 1Gi
-    ```
+   ```yaml
+   apiVersion: v1
+   kind: PersistentVolumeClaim
+   metadata:
+     name: test-pvc
+     annotations:
+       volume.beta.kubernetes.io/storage-class: "nfs"
+   spec:
+     accessModes:
+       - ReadWriteMany
+     resources:
+       requests:
+         storage: 1Gi
+   ```
 
-1. 创建 pvc
+2. 创建 pvc
 
-    ```bash
-    kubectl apply -f pvc.yaml
-    ```
+   ```bash
+   kubectl apply -f pvc.yaml
+   ```
 
-    此时可以看一下 pvc 状态，应该是 Bound，如果是 pending，看一下 nfs driver pod 的 log。K8S 1.20 以后，会有这个报错：`unexpected error getting claim reference: selfLink was empty, can't make reference`，有两个办法，参考：<https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/issues/25>，在 api-server 的 static pod 里添加启动参数：`--feature-gates=RemoveSelfLink=false`，或者更新 NFS 驱动镜像：`gcr.io/k8s-staging-sig-storage/nfs-subdir-external-provisioner:v4.0.0`
+   此时可以看一下 pvc 状态，应该是 Bound，如果是 pending，看一下 nfs driver pod 的 log。K8S 1.20
+   以后，会有这个报错：`unexpected error getting claim reference: selfLink was empty, can't make reference`，有两个办法，参考：<https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/issues/25>，在
+   api-server 的 static pod 里添加启动参数：`--feature-gates=RemoveSelfLink=false`，或者更新 NFS
+   驱动镜像：`gcr.io/k8s-staging-sig-storage/nfs-subdir-external-provisioner:v4.0.0`
 
-2. 测试
+3. 测试
 
-    ```yaml
-    kind: Pod
-    apiVersion: v1
-    metadata:
-      name: test-pod
-    spec:
-      containers:
-      - name: test-pod
-        image: 99cloud/busybox:1.24
-        command:
-          - "/bin/sh"
-        args:
-          - "-c"
-          - "touch /mnt/SUCCESS && exit 0 || exit 1"
-        volumeMounts:
-          - name: nfs-pvc
-            mountPath: "/mnt"
-      restartPolicy: "Never"
-      volumes:
-        - name: nfs-pvc
-          persistentVolumeClaim:
-            claimName: test-pvc
-    ```
+   ```yaml
+   kind: Pod
+   apiVersion: v1
+   metadata:
+     name: test-pod
+   spec:
+     containers:
+     - name: test-pod
+       image: 99cloud/busybox:1.24
+       command:
+         - "/bin/sh"
+       args:
+         - "-c"
+         - "touch /mnt/SUCCESS && exit 0 || exit 1"
+       volumeMounts:
+         - name: nfs-pvc
+           mountPath: "/mnt"
+     restartPolicy: "Never"
+     volumes:
+       - name: nfs-pvc
+         persistentVolumeClaim:
+           claimName: test-pvc
+   ```
 
-    > 其中 `99cloud/busybox:1.24` 是 `gcr.io/google_containers/busybox:1.24`，可以换成任意的镜像。
+   > 其中 `99cloud/busybox:1.24` 是 `gcr.io/google_containers/busybox:1.24`，可以换成任意的镜像。
 
 ### 4.3 对接 Ceph RBD
 
@@ -3317,12 +3425,12 @@ K8S 侧对接
 
 参考：<https://github.com/ceph/ceph-csi>
 
-| Ceph CSI Version | Container Orchestrator Name | Version Tested |
-| - | - | - |
-| v3.6.1 | Kubernetes | v1.21, v1.22, v1.23 |
-| v3.6.0 | Kubernetes | v1.21, v1.22, v1.23 |
-| v3.5.1 | Kubernetes | v1.21, v1.22, v1.23 |
-| v3.5.0 | Kubernetes | v1.21, v1.22, v1.23 |
+| Ceph CSI Version | Container Orchestrator Name | Version Tested      |
+| ---------------- | --------------------------- | ------------------- |
+| v3.6.1           | Kubernetes                  | v1.21, v1.22, v1.23 |
+| v3.6.0           | Kubernetes                  | v1.21, v1.22, v1.23 |
+| v3.5.1           | Kubernetes                  | v1.21, v1.22, v1.23 |
+| v3.5.0           | Kubernetes                  | v1.21, v1.22, v1.23 |
 
 下载 `ceph-csi-3.6.1.tar.gz`，解压
 
@@ -3487,8 +3595,8 @@ EOF
 kubectl apply -f storageclass.yaml
 ```
 
-这里的 clusterID 对应之前步骤中的 fsid。
-imageFeatures 用来确定创建的 image 特征，如果不指定，就会使用 RBD 内核中的特征列表，但 Linux 不一定支持所有特征，所以这里需要限制一下。
+这里的 clusterID 对应之前步骤中的 fsid。 imageFeatures 用来确定创建的 image 特征，如果不指定，就会使用 RBD 内核中的特征列表，但 Linux
+不一定支持所有特征，所以这里需要限制一下。
 
 进入 `ceph-csi` 项目的 `example/rbd` 目录，然后直接创建 PVC
 
@@ -3553,19 +3661,22 @@ rbd0 251:0    0    1G  0 disk /var/lib/www/html
 
 PVC 是不可以跨 namespace 复制的。参考：<https://kubernetes.io/docs/concepts/storage/volume-pvc-datasource/>
 
-*You can only clone a PVC when it exists in the same namespace as the destination PVC (source and destination must be in the same namespace).*
+_You can only clone a PVC when it exists in the same namespace as the destination PVC (source and
+destination must be in the same namespace)._
 
-可以借用 snapshot 来完成跨 namespace 复制 PVC，参考：<https://v1-20.docs.kubernetes.io/docs/concepts/storage/volume-snapshots/>
+可以借用 snapshot 来完成跨 namespace 复制
+PVC，参考：<https://v1-20.docs.kubernetes.io/docs/concepts/storage/volume-snapshots/>
 
 VolumeSnapshotContent 是 cluster 级别
 
 1. create Snapshot（会自动生成 SnapshotContent 和 volumeHandle）
 2. create new SnapshotContent（根据 volumeHandle）
 
-    注意，创建时需要带两条注解，参考：<https://github.com/kubernetes-csi/external-snapshotter/issues/251>，否则删除新创建的 pvc 时，会 hang 住
+   注意，创建时需要带两条注解，参考：<https://github.com/kubernetes-csi/external-snapshotter/issues/251>，否则删除新创建的 pvc
+   时，会 hang 住
 
-    - `snapshot.storage.kubernetes.io/deletion-secret-namespace: default`
-    - `snapshot.storage.kubernetes.io/deletion-secret-name: csi-rbd-secret`
+   - `snapshot.storage.kubernetes.io/deletion-secret-namespace: default`
+   - `snapshot.storage.kubernetes.io/deletion-secret-name: csi-rbd-secret`
 
 3. create Snapshot in other namespace（根据新的 SnapshotContent）
 4. create pvc by snapshot（根据新的 snapshot）
@@ -3617,11 +3728,11 @@ local-path-pvc   Bound    pvc-013cdb6b-fe6e-4fa8-9e5b-8a5e4957a91b   128Mi      
 ### 4.6 最佳实践
 
 1. K8S 上的存储一般用商用 NAS（协议用 NFS）或者 CephRBD，相对成熟可靠。尽量不要用 CephFS（生产环境中存在丢数据风险）。
-1. NFS 对接时，要考虑版本，v3 或 v4，Netapps 对接错版本会存在访问权限的问题
-1. CephRBD 需要选用 N 以上版本，才支持 CSI 的快照等高级特性
-1. PVC 复制可以借用 Snapshot，方便且快
-1. Local 存在丢数据风险，需要在应用层做数据可靠性保重
-1. DynamicLocal 在 K3S 环境生产级可用
+2. NFS 对接时，要考虑版本，v3 或 v4，Netapps 对接错版本会存在访问权限的问题
+3. CephRBD 需要选用 N 以上版本，才支持 CSI 的快照等高级特性
+4. PVC 复制可以借用 Snapshot，方便且快
+5. Local 存在丢数据风险，需要在应用层做数据可靠性保重
+6. DynamicLocal 在 K3S 环境生产级可用
 
 ## 5. 网络管理
 
@@ -3631,7 +3742,8 @@ local-path-pvc   Bound    pvc-013cdb6b-fe6e-4fa8-9e5b-8a5e4957a91b   128Mi      
 
 [返回目录](#课程目录)
 
-Container Network Interface (CNI) 最早是由 CoreOS 发起的容器网络规范，是 Kubernetes 网络插件的基础。其基本思想为：Container Runtime 在创建容器时，先创建好 network namespace，然后调用 CNI 插件为这个 netns 配置网络，其后再启动容器内的进程。现成为 CNCF 主推的网络模型。
+Container Network Interface (CNI) 最早是由 CoreOS 发起的容器网络规范，是 Kubernetes 网络插件的基础。其基本思想为：Container
+Runtime 在创建容器时，先创建好 network namespace，然后调用 CNI 插件为这个 netns 配置网络，其后再启动容器内的进程。现成为 CNCF 主推的网络模型。
 
 CNI 插件包括两部分：CNI Plugin 和 IPAM Plugin
 
@@ -3689,10 +3801,10 @@ echo '{"cniVersion": "0.3.1","type":"IGNORED", "name": "a","ipam": {"type": "hos
 ### 5.6 最佳实践
 
 1. 推荐 Calico，需要追求性能可以用 BGP 模式
-1. [如果是 IPIP/vxlan 模式，需要考虑 MTU](http://blog.wuwenxiang.net/k8s-app-debug)
-1. 只有网元虚拟化，或者 ECS 场景，才推荐用 Multus 和 KubeOVN
-1. DPDK 取决于 CNI 支持，比如 ovs-dpdk
-1. 物理网卡加速取决于网卡硬件和驱动支持
+2. [如果是 IPIP/vxlan 模式，需要考虑 MTU](http://blog.wuwenxiang.net/k8s-app-debug)
+3. 只有网元虚拟化，或者 ECS 场景，才推荐用 Multus 和 KubeOVN
+4. DPDK 取决于 CNI 支持，比如 ovs-dpdk
+5. 物理网卡加速取决于网卡硬件和驱动支持
 
 ## 6. 安全相关
 
@@ -3701,7 +3813,6 @@ echo '{"cniVersion": "0.3.1","type":"IGNORED", "name": "a","ipam": {"type": "hos
 ### 6.1 安全基线
 
 [返回目录](#课程目录)
-
 
 #### 6.1.1 Network Policy
 
@@ -3754,50 +3865,51 @@ spec:
 
 #### 6.1.2 PodSecurityPolicy
 
-参考：<https://kubernetes.io/docs/concepts/security/pod-security-policy/>，1.25 以后转 <https://kubernetes.io/docs/concepts/security/pod-security-admission/> (1.23 是 beta)
+参考：<https://kubernetes.io/docs/concepts/security/pod-security-policy/>，1.25 以后转
+<https://kubernetes.io/docs/concepts/security/pod-security-admission/> (1.23 是 beta)
 
 psp 的用法，包括 5 步骤
 
 1. 创建 psp
 
-    ```yaml
-    apiVersion: policy/v1beta1
-    kind: PodSecurityPolicy
-    metadata:
-    name: restrict-policy
-    spec:
-    privileged: false
-    seLinux:
-        rule: RunAsAny
-    supplementalGroups:
-        rule: RunAsAny
-    runAsUser:
-        rule: RunAsAny
-    fsGroup:
-        rule: RunAsAny
-    volumes:
-    - '*'
-    ```
+   ```yaml
+   apiVersion: policy/v1beta1
+   kind: PodSecurityPolicy
+   metadata:
+   name: restrict-policy
+   spec:
+   privileged: false
+   seLinux:
+       rule: RunAsAny
+   supplementalGroups:
+       rule: RunAsAny
+   runAsUser:
+       rule: RunAsAny
+   fsGroup:
+       rule: RunAsAny
+   volumes:
+   - '*'
+   ```
 
 2. 创建 clusterrole，使用 psp
 
-    `kubectl create clusterrole restrict-access-role --verb=use --resource=psp --resource-name=restrict-policy`
+   `kubectl create clusterrole restrict-access-role --verb=use --resource=psp --resource-name=restrict-policy`
 
 3. 创建 serviceaccount
 
-    `kubectl create sa psp-denial-sa -n staging`
+   `kubectl create sa psp-denial-sa -n staging`
 
 4. 绑定 clusterrole 到 serviceaccount
 
-    `kubectl create clusterrolebinding dany-access-bind --clusterrole=restrict-access-role --serviceaccount=staging:psp-denial-sa`
+   `kubectl create clusterrolebinding dany-access-bind --clusterrole=restrict-access-role --serviceaccount=staging:psp-denial-sa`
 
 5. 启用 PSP
 
-    ```yaml
-    vi /etc/kubernetes/manifests/kube-apiserver.yaml
-    # 确保有以下内容：
-    - --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
-    ```
+   ```yaml
+   vi /etc/kubernetes/manifests/kube-apiserver.yaml
+   # 确保有以下内容：
+   - --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
+   ```
 
 ### 6.2 权限限制
 
@@ -3830,8 +3942,8 @@ spec:
 
 参考：<https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/#use-the-default-service-account-to-access-the-api-server>
 
-serviceaccount 有个选项 automountServiceAccountToken, 这个选项决定是否自动挂载 secret 到 pod。
-有这个选项，我们可以控制 pod 创建并绑定 serviceaccount 时，不自动挂载对应的 secret，这样 pod 就没有权限访问 apiserver，提高了业务 pod 的安全性。
+serviceaccount 有个选项 automountServiceAccountToken, 这个选项决定是否自动挂载 secret 到 pod。 有这个选项，我们可以控制 pod 创建并绑定
+serviceaccount 时，不自动挂载对应的 secret，这样 pod 就没有权限访问 apiserver，提高了业务 pod 的安全性。
 
 可以在 serviceaccount 和 pod 的 spec 里设置，pod 的设置优先于 serviceaccount 里的设置。
 
@@ -3908,20 +4020,20 @@ kube-bench run --targets=node | grep /var/lib/kubelet/config.yaml -B2
 
 - 使用 Node,RBAC 授权模式和 NodeRestriction 准入控制器
 
-    ```yaml
-    vi /etc/kubernetes/manifests/kube-apiserver.yaml
-    # 确保以下内容
-    - --authorization-mode=Node,RBAC
-    - --enable-admission-plugins=NodeRestriction
-    - --client-ca-file=/etc/kubernetes/pki/ca.crt
-    - --enable-bootstrap-token-auth=true
-    ```
+      ```yaml
+      vi /etc/kubernetes/manifests/kube-apiserver.yaml
+      # 确保以下内容
+      - --authorization-mode=Node,RBAC
+      - --enable-admission-plugins=NodeRestriction
+      - --client-ca-file=/etc/kubernetes/pki/ca.crt
+      - --enable-bootstrap-token-auth=true
+      ```
 
 - system:anonymous 的 ClusterRolebinding 角色绑定，匿名用户有集群管理员权限，需要取消
 
-    ```bash
-    kubectl delete clusterrolebinding system:anonymous
-    ```
+      ```bash
+      kubectl delete clusterrolebinding system:anonymous
+      ```
 
 ```bash
 # 修复 kube-apiserver 安全问题
@@ -3958,11 +4070,11 @@ systemctl restart kubelet
 
 - 启用了特权的 pod，主要是检查 pod 是否含 privileged: true
 
-    `kubectl get po xxx -n production -o yaml| grep -i "privileged: true"`
+  `kubectl get po xxx -n production -o yaml| grep -i "privileged: true"`
 
 - 检查有状态 pod
 
-    `kubectl get pods XXXX -n production -o jsonpath={.spec.volumes} | jq`
+  `kubectl get pods XXXX -n production -o jsonpath={.spec.volumes} | jq`
 
 #### 6.3.3 使用 sysdig 检查容器里里的异常进程
 
@@ -3990,7 +4102,7 @@ sysdig -M 30 -p "*%evt.time,%user.uid,%proc.name" container.id=xxxx>opt/DFA/inci
 dockerfile 里常见的不安全指令包括：
 
 1. 使用 root 用户
-1. 添加特定能力的 securityContext 安全上下文
+2. 添加特定能力的 securityContext 安全上下文
 
 ```dockerfile
 USER root
@@ -4021,90 +4133,90 @@ trivy imagename | grep (HIGH|CRITICAL)
 
 1. 编写日志审计策略文件
 
-    ```yaml
-    apiVersion: audit.k8s.io/v1
-    kind: Policy
-    omitStages:
-    - "RequestReceived"
-    rules:
-    - level: RequestResponse
-        resources:
-        - group: ""
-        resources: ["namespaces"]
+   ```yaml
+   apiVersion: audit.k8s.io/v1
+   kind: Policy
+   omitStages:
+   - "RequestReceived"
+   rules:
+   - level: RequestResponse
+       resources:
+       - group: ""
+       resources: ["namespaces"]
 
-    - level: Request
-        resources:
-        - group: ""
-        resources: ["persistentvolumes"]
-        namespaces: ["front-apps"]
+   - level: Request
+       resources:
+       - group: ""
+       resources: ["persistentvolumes"]
+       namespaces: ["front-apps"]
 
-    - level: Metadata
-        resources:
-        - group: ""
-        resources: ["secrets", "configmaps"]
+   - level: Metadata
+       resources:
+       - group: ""
+       resources: ["secrets", "configmaps"]
 
-    - level: Metadata
-        omitStages:
-        - "RequestReceived"
-    ```
+   - level: Metadata
+       omitStages:
+       - "RequestReceived"
+   ```
 
-1. 修改 `kube-apiserver.yaml` 配置文件，启用日志审计策略，日志策略配置文件位置、日志文件存储位置、循环周期。
+2. 修改 `kube-apiserver.yaml` 配置文件，启用日志审计策略，日志策略配置文件位置、日志文件存储位置、循环周期。
 
-    `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
+   `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
 
-    ```yaml
-    # 设置日志审计策略文件在 pod 里的 mount 位置
-    - --audit-policy-file=/etc/kubernetes/logpolicy/sample-policy.yaml
+   ```yaml
+   # 设置日志审计策略文件在 pod 里的 mount 位置
+   - --audit-policy-file=/etc/kubernetes/logpolicy/sample-policy.yaml
 
-    # 设置日志文件存储位置
-    - --audit-log-path=/var/log/kubernetes/audit-logs.txt
+   # 设置日志文件存储位置
+   - --audit-log-path=/var/log/kubernetes/audit-logs.txt
 
-    # 设置日志文件循环
-    - --audit-log-maxage=10
-    - --audit-log-maxbackup=2
+   # 设置日志文件循环
+   - --audit-log-maxage=10
+   - --audit-log-maxbackup=2
 
-    # mount 日志策略和日志文件的
-    volumeMounts:
-    - mountPath: /etc/kubernetes/logpolicy/sample-policy.yaml
-        name: audit
-        readOnly: true
-    - mountPath: /var/log/kubernetes/audit-logs.txt
-        name: audit-log
-        readOnly: false
-    volumes:
-    - name: audit
-        hostPath:
-        path: /etc/kubernetes/logpolicy/sample-policy.yaml
-        type: File
-    - name: audit-log
-        hostPath:
-        path: /var/log/kubernetes/audit-logs.txt
-        type: FileOrCreate
-    ```
+   # mount 日志策略和日志文件的
+   volumeMounts:
+   - mountPath: /etc/kubernetes/logpolicy/sample-policy.yaml
+       name: audit
+       readOnly: true
+   - mountPath: /var/log/kubernetes/audit-logs.txt
+       name: audit-log
+       readOnly: false
+   volumes:
+   - name: audit
+       hostPath:
+       path: /etc/kubernetes/logpolicy/sample-policy.yaml
+       type: File
+   - name: audit-log
+       hostPath:
+       path: /var/log/kubernetes/audit-logs.txt
+       type: FileOrCreate
+   ```
 
-1. 重启 API Server 来检查 audit.log
+3. 重启 API Server 来检查 audit.log
 
-    ```bash
-    cd /etc/kubernetes/manifests/
-    mv kube-apiserver.yaml ..
-    watch crictl ps # wait for apiserver gone
-    truncate -s 0 /etc/kubernetes/audit/logs/audit.log
-    mv ../kube-apiserver.yaml .
+   ```bash
+   cd /etc/kubernetes/manifests/
+   mv kube-apiserver.yaml ..
+   watch crictl ps # wait for apiserver gone
+   truncate -s 0 /etc/kubernetes/audit/logs/audit.log
+   mv ../kube-apiserver.yaml .
 
-    cat audit.log | tail | jq
+   cat audit.log | tail | jq
 
-    # shows Secret entries
-    cat audit.log | grep '"resource":"secrets"' | wc -l
+   # shows Secret entries
+   cat audit.log | grep '"resource":"secrets"' | wc -l
 
-    # confirms Secret entries are only of level Metadata
-    cat audit.log | grep '"resource":"secrets"' | grep -v '"level":"Metadata"' | wc -l
+   # confirms Secret entries are only of level Metadata
+   cat audit.log | grep '"resource":"secrets"' | grep -v '"level":"Metadata"' | wc -l
 
-    # shows RequestResponse level entries
-    cat audit.log | grep -v '"level":"RequestResponse"' | wc -l
+   # shows RequestResponse level entries
+   cat audit.log | grep -v '"level":"RequestResponse"' | wc -l
 
-    # shows RequestResponse level entries are only for system:nodes
-    cat audit.log | grep '"level":"RequestResponse"' | grep -v "system:nodes" | wc -l
-    ```
+   # shows RequestResponse level entries are only for system:nodes
+   cat audit.log | grep '"level":"RequestResponse"' | grep -v "system:nodes" | wc -l
+   ```
 
 ### 6.6 镜像准入检查
 
@@ -4118,65 +4230,65 @@ ImagePolicyWebhook 准入控制器的使用，分 4 个步骤
 
 1. 修改控制器配置文件，将未找到有效后端时的默认拒绝改为默认不拒绝
 
-    `vi /etc/kubernetes/epconfig/admission_configuration.json`
+   `vi /etc/kubernetes/epconfig/admission_configuration.json`
 
-    ```json
-    {
+   ```json
+   {
 
-    "imagePolicy": {
-        "kubeConfigFile": "/etc/kubernetes/epconfig/kubeconfig.yaml",
-        "allowTTL": 50,
-        "denyTTL": 50,
-        "retryBackoff": 500,
-        "defaultAllow": false
-    }
-    }
-    ```
+   "imagePolicy": {
+       "kubeConfigFile": "/etc/kubernetes/epconfig/kubeconfig.yaml",
+       "allowTTL": 50,
+       "denyTTL": 50,
+       "retryBackoff": 500,
+       "defaultAllow": false
+   }
+   }
+   ```
 
 2. 修改控制器访问 webhook server 的 kubeconfig
 
-    `vi /etc/kubernetes/epconfig/kubeconfig.yaml`
+   `vi /etc/kubernetes/epconfig/kubeconfig.yaml`
 
-    修改如下内容
+   修改如下内容
 
-    ```yaml
-    apiVersion: v1
-    kind: Config
-    clusters:
-    - cluster:
-        certificate-authority: /etc/kubernetes/epconfig/webhook.pem
-        server: https://acme.local:8082/image_policy  # web hook server 的地址
-    name: bouncer_webhook
-    # 以下省略
-    ```
+   ```yaml
+   apiVersion: v1
+   kind: Config
+   clusters:
+   - cluster:
+       certificate-authority: /etc/kubernetes/epconfig/webhook.pem
+       server: https://acme.local:8082/image_policy  # web hook server 的地址
+   name: bouncer_webhook
+   # 以下省略
+   ```
 
 3. 启用 ImagePolicyWebhook
 
-    `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
+   `vi /etc/kubernetes/manifests/kube-apiserver.yaml`
 
-    ```yaml
-    # 启用 ImagePolicyWebhook
-    - --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
-    # 指定准入控制器配置文件
-    - --admission-control-config-file=/etc/kubernetes/epconfig/admission_configuration.json
-    # mount
-        volumeMounts:
-        - mountPath: /etc/kubernetes/epconfig
-        name: epconfig
-    # 映射 volumes
-    volumes:
-        - name: epconfig
-        hostPath:
-        path: /etc/kubernetes/epconfig
-    ```
+   ```yaml
+   # 启用 ImagePolicyWebhook
+   - --enable-admission-plugins=NodeRestriction,ImagePolicyWebhook
+   # 指定准入控制器配置文件
+   - --admission-control-config-file=/etc/kubernetes/epconfig/admission_configuration.json
+   # mount
+       volumeMounts:
+       - mountPath: /etc/kubernetes/epconfig
+       name: epconfig
+   # 映射 volumes
+   volumes:
+       - name: epconfig
+       hostPath:
+       path: /etc/kubernetes/epconfig
+   ```
 
 4. 测试是否生效
 
-    ```bash
-    systemctl daemon-reload
-    systemctl restart kubelet
-    kubectl apply -f /cks/img/web1.yaml
-    ```
+   ```bash
+   systemctl daemon-reload
+   systemctl restart kubelet
+   kubectl apply -f /cks/img/web1.yaml
+   ```
 
 ### 6.7 最佳实践
 

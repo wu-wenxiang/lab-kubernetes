@@ -166,10 +166,6 @@ Docker 容器
 
 ![](/image/docker-arch.png)
 
-**容器技术栈**
-
-![](/image/k8s-cri-tools.png)
-
 ##### 1.2.1.1 Docker 和 Containerd
 
 Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标准的容器运行时，它强调简单性、健壮性和可移植性。
@@ -185,6 +181,10 @@ Containerd 是从 Docker 中分离出来的一个项目，是一个工业级标�
 ![](/image/k8s-containerd-tools.png)
 
 实验：[Containerd 相关工具：nerdctl](kubernetes-best-practices.md#2223-nerdctl)
+
+**容器技术栈**
+
+![](/image/k8s-cri-tools.png)
 
 ##### 1.2.1.2 K8S
 
@@ -234,7 +234,7 @@ EKS。比如：[阿里云容器服务 ACK](https://cs.console.aliyun.com/#/k8s/c
 
 托管的 CI/CD 包括：github workflow，阿里云 devops 云效
 
-自建的 CI/CD 包括：jenkins，drone，建木，tekton
+自建的 CI/CD 包括：jenkins，drone，建木，tekton, algoCD（gitOps）
 
 Jenkins 是最使用最广的自动化任务管理框架。它有以下缺点：
 
@@ -407,6 +407,22 @@ web socket 长连接
 
 参考 OpenV2X Roadmocker，[Github](https://github.com/open-v2x/roadmocker) 或
 [Gitee](https://gitee.com/open-v2x/roadmocker)
+
+### 1.6 视频流
+
+视频流同样是长链接，也需要考虑云原生：无状态 + 可扩展
+
+参考：[hippocampus](https://gitee.com/open-v2x/hippocampus)，[Online Demo](http://47.100.126.13:2288/traffic/map?type=1)
+
+### 1.7 基于 K8S API 的云原生
+
+参考 kubebuilder：[Github](https://github.com/kubernetes-sigs/kubebuilder) 或
+[Guide](https://cloudnative.to/kubebuilder/quick-start.html)
+
+`export GOPROXY=https://goproxy.cn`
+
+类似这样的生成代码脚手架（golang）还有：[blade](https://github.com/x893675/blade)，前面讲到的
+[FastAPI Demo](#132-restful-api) 也用到了脚手架，是 Python 的。
 
 ## 2. 微服务
 
