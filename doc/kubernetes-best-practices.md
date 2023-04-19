@@ -1875,7 +1875,7 @@ K8S 的操作要记得参考：<https://kubernetes.io/>
    kubectl get nodes
 
    # 16. [可选]：移除 taint
-   kubectl taint nodes $(hostname) node-
+   kubectl taint nodes $(hostname) node-role.kubernetes.io/master-
    ```
 
 ##### 3.1.1.2 增加 CRI-O Worker 节点

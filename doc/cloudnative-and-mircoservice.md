@@ -416,13 +416,97 @@ web socket 长连接
 
 ### 1.7 基于 K8S API 的云原生
 
+#### 1.7.1 控制器
+
+Kubernetes 的核心就是控制理论，Kubernetes 控制器中实现的控制回路是一种闭环反馈控制系统。
+
+该类型的控制系统基于反馈回路将目标系统的当前状态与预定义的期望状态相比较，二者之间的差异作为误差信号产生一个控制输出作为控制器的输入，以减少或消除目标系统当前状态与期望状态的误差。这种控制循环在
+Kubernetes 上也称为**调谐循环**。
+
+![](/image/kubernetes-co-loop.webp)
+
+对 Kubernetes 来说，无论控制器的具体实现有多么简单或多么复杂，它基本都是通过定期重复执行如下3个步骤来完成控制任务。
+
+1. 从 API Server 读取资源对象的期望状态和当前状态。
+2. 比较二者的差异，而后运行控制器中的必要代码操作现实中的资源对象，将资源对象的真实状态修正为Spec中定义的期望状态，例如创建或删除 Pod 对象，以及发起一个云服务 API 请求等。
+3. 变动操作执行成功后，将结果状态存储在 API Server 上的目标资源对象的 status 字段中。
+
+![](/image/kubernetes-controller-loop.webp)
+
+**水平触发**：任务繁重的 Kubernetes 集群上同时运行着数量巨大的控制循环，每个循环都有一组特定的任务要处理，为了避免 API Server
+被请求淹没，需设定控制回路以较低的频率运行，比如每 5 分钟一次。
+
+**边缘触发**：同时，为了能及时触发由客户端提交的期望状态的更改，控制器向 API Server 注册监视受控资源对象，这些资源对象期望状态的任何变动都会由 Informer
+组件通知给控制器立即执行而无须等到下一轮的控制循环。控制器使用工作队列将需要运行的控制循环进行排队，从而确保在受控对象众多或资源对象变动频繁的场景中尽量少地错过控制任务。
+
+![](/image/kubernetes-controller-trigger.png)
+
+出于简化管理的目的，Kubernetes 将数十种内置的控制器程序整合成了名为 kube-controller-manager
+的单个应用程序，并运行为独立的单体守护进程，它是控制平面的重要组件，也是整个 Kubernetes 集群的控制中心。
+
+#### 1.7.2 kubebuilder
+
 参考 kubebuilder：[Github](https://github.com/kubernetes-sigs/kubebuilder) 或
 [Guide](https://cloudnative.to/kubebuilder/quick-start.html)
 
-`export GOPROXY=https://goproxy.cn`
+```bash
+# 域外机器 2C/4G/60G Ubuntu 20.04，或 export GOPROXY=https://goproxy.cn
+# 配置 SSH
+
+# 安装 KubeClipper
+# https://github.com/kubeclipper/kubeclipper
+curl -sfL https://oss.kubeclipper.io/get-kubeclipper.sh | KC_REGION=cn bash -
+kcctl deploy
+
+# 登录网页，创建集群，docker & iptables
+# 此时可以观察之前用例中 service endpoint 是怎么通过 iptables 实现的：https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#34-%E4%BB%80%E4%B9%88%E6%98%AF-services
+
+# docker login
+
+# 安装 kustomize
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+mv kustomize /usr/bin/
+kustomize version
+
+# 安装 golang
+wget https://go.dev/dl/go1.20.3.linux-amd64.tar.gz
+rm -rf /usr/local/go && tar -C /usr/local -xzf go1.20.3.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+vi /etc/environment 
+go version
+
+# 安装 kubebuilder
+curl -L -o kubebuilder https://go.kubebuilder.io/dl/latest/$(go env GOOS)/$(go env GOARCH)
+chmod +x kubebuilder && mv kubebuilder /usr/local/bin/
+
+# 创建 operator
+mkdir -p ~/projects/guestbook
+cd ~/projects/guestbook
+kubebuilder init --domain my.domain --repo my.domain/guestbook
+kubebuilder create api --group webapp --version v1 --kind Guestbook
+make manifests
+
+# 本地运行
+make install
+make run # 可能会端口被占用
+# netstat -putln | grep 8080
+
+# CRD 部署到 cluster
+kubectl apply -f config/samples/
+make docker-build docker-push IMG=99cloud/test-operator
+make deploy IMG=99cloud/test-operator
+
+# 检查 CRD
+kc get crd
+kubectl get crd | grep book
+kubectl get guestbooks.webapp.my.domain 
+kubectl get guestbooks.webapp.my.domain guestbook-sample -o yaml
+```
 
 类似这样的生成代码脚手架（golang）还有：[blade](https://github.com/x893675/blade)，前面讲到的
 [FastAPI Demo](#132-restful-api) 也用到了脚手架，是 Python 的。
+
+更多参考：[programming-kubernetes](https://github.com/programming-kubernetes)
 
 ## 2. 微服务
 
