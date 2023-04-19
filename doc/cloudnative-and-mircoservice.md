@@ -22,10 +22,13 @@
 |       | 下午   |                      | [1.3 微服务和 API 设计](#13-微服务和-api-设计)                 |
 |       |      |                      | [1.4 有状态服务](#14-有状态服务)                             |
 |       |      |                      | [1.5 WebSocket](#15-websocket)                     |
-| 第 2 天 | 上午   | [2. 微服务](#2-微服务)     | [2.1 微服务应该有多微](#21-微服务应该有多微)                       |
-|       |      |                      | [2.2 服务注册和服务发现](#22-服务注册和服务发现)                     |
-|       | 下午   |                      | [2.3 云安全](#23-云安全)                                 |
-|       |      |                      | [2.4 事件](#24-事件溯源和-cqrs)                           |
+|       |      |                      | [1.6 视频流](#16-视频流)                                 |
+| 第 2 天 | 上午   |                      | [1.7 基于 K8S API 的云原生](#17-基于-k8s-api-的云原生)         |
+|       |      | [2. 微服务](#2-微服务)     | [2.1 微服务应该有多微](#21-微服务应该有多微)                       |
+|       | 下午   |                      | [2.2 服务注册和服务发现](#22-服务注册和服务发现)                     |
+|       |      |                      | [2.3 微前端](#23-微前端)                                 |
+|       |      |                      | [2.4 云安全](#24-云安全)                                 |
+|       |      |                      | [2.5 事件](#25-事件溯源和-cqrs)                           |
 | 第 3 天 | 上午   | [3. istio](#3-istio) | [3.1 微服务框架](#31-微服务框架)                             |
 |       |      |                      | [3.2 环境搭建](#32-环境搭建)                               |
 |       |      |                      | [3.3 流量监控和治理](#33-流量监控和治理)                         |
@@ -434,7 +437,7 @@ Kubernetes 上也称为**调谐循环**。
 ![](/image/kubernetes-controller-loop.webp)
 
 **水平触发**：任务繁重的 Kubernetes 集群上同时运行着数量巨大的控制循环，每个循环都有一组特定的任务要处理，为了避免 API Server
-被请求淹没，需设定控制回路以较低的频率运行，比如每 5 分钟一次。
+被请求淹没，需设定控制回路以较低的频率运行，分钟级别，比如每 5 分钟一次。
 
 **边缘触发**：同时，为了能及时触发由客户端提交的期望状态的更改，控制器向 API Server 注册监视受控资源对象，这些资源对象期望状态的任何变动都会由 Informer
 组件通知给控制器立即执行而无须等到下一轮的控制循环。控制器使用工作队列将需要运行的控制循环进行排队，从而确保在受控对象众多或资源对象变动频繁的场景中尽量少地错过控制任务。
@@ -443,6 +446,16 @@ Kubernetes 上也称为**调谐循环**。
 
 出于简化管理的目的，Kubernetes 将数十种内置的控制器程序整合成了名为 kube-controller-manager
 的单个应用程序，并运行为独立的单体守护进程，它是控制平面的重要组件，也是整个 Kubernetes 集群的控制中心。
+
+参考代码：[replica_set.go](https://github.com/kubernetes/kubernetes/blob/master/pkg/controller/replicaset/replica_set.go#L553)
+
+可以看到：
+
+1. 控制器会比较指定的副本数量与当前正在运行的副本数量
+2. diff < 0，副本数不够，创建一些
+3. diff > 0，副本数太多，删除一些
+4. getPodsToDelete 中，选择了影响面较小的 pod 进行删除
+5. 扩展一下，资源不一定是 Kubernetes 的一部分，比如 s3 bucket
 
 #### 1.7.2 kubebuilder
 
@@ -457,9 +470,6 @@ Kubernetes 上也称为**调谐循环**。
 # https://github.com/kubeclipper/kubeclipper
 curl -sfL https://oss.kubeclipper.io/get-kubeclipper.sh | KC_REGION=cn bash -
 kcctl deploy
-
-# 登录网页，创建集群，docker & iptables
-# 此时可以观察之前用例中 service endpoint 是怎么通过 iptables 实现的：https://gitee.com/dev-99cloud/training-kubernetes/blob/master/doc/class-01-Kubernetes-Administration.md#34-%E4%BB%80%E4%B9%88%E6%98%AF-services
 
 # docker login
 
@@ -594,17 +604,19 @@ K8S：
 5. 通过 [Job](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/job/) 和
    [CronJob](https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/cron-jobs/) 实现一次性后台任务
 
-#### 2.2.4 微前端
+### 2.3 微前端
+
+[返回目录](#课程目录)
 
 qiankun：<https://qiankun.umijs.org/zh>
 
 Demo：<https://github.com/moweiwei/react-app-qiankun/>
 
-### 2.3 云安全
+### 2.4 云安全
 
 [返回目录](#课程目录)
 
-#### 2.3.1 认证
+#### 2.4.1 认证
 
 认证方式：
 
@@ -631,7 +643,7 @@ Keystone Token
 或
 [Gitee](https://gitee.com/dev-99cloud/lab-openstack/blob/master/doc/class-01-OpenStack-Administration.md#32-keystone-%E7%9A%84%E5%9F%BA%E6%9C%AC%E6%A6%82%E5%BF%B5%E6%9C%89%E5%93%AA%E4%BA%9B)
 
-### 2.4 事件溯源和 CQRS
+### 2.5 事件溯源和 CQRS
 
 [返回目录](#课程目录)
 
@@ -786,7 +798,7 @@ Kubeproxy vs Service Mesh SideCar Proxy
 
 #### 3.1.6 Istio
 
-功能：
+参考：<https://istio.io/v1.11/zh/docs/concepts/what-is-istio/>，Istio 功能：
 
 - 流量管理
   - 请求路由和流量转移
@@ -796,10 +808,10 @@ Kubeproxy vs Service Mesh SideCar Proxy
 - 可观测性
 - 安全认证：Citadel 组件做密钥和证书管理
 
-流量管理 CRD：
+参考：[流量管理 CRD](https://istio.io/v1.11/zh/docs/concepts/traffic-management/)
 
 - Istio Gateway
-- Virtual Service：将 K8S 服务连接到 Istio Gateway，并且可以定义一组流量规则，一边在主机寻址时应用
+- Virtual Service：将 K8S 服务连接到 Istio Gateway，并且可以定义一组流量规则，以便在主机寻址时应用
 - DestinationRule：定义流量如何路由（LB 配置、连接池 Size、外部检测配置等）
 - EnvoyFilter：代理服务过滤器，一般使用中用不到
 - ServiceEntry：在 Istio 内部的服务注册表中加入额外条目，让服务网格中的服务能够访问和路由到额外注入的条目
@@ -839,7 +851,8 @@ kcctl deploy
 1.11 版本可以参考：<https://istio.io/v1.11/zh/docs/setup/getting-started/>
 
 ```bash
-curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
+# curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
+curl -L https://kubeclipper.oss-ap-southeast-1.aliyuncs.com/tools/downloadIstio | ISTIO_VERSION=1.11.2 TARGET_ARCH=x86_64 sh -
 
 cd istio-1.11.2
 echo "export PATH=$PWD/bin:\$PATH" >> ~/.bashrc
@@ -888,7 +901,8 @@ bookinfo 应用是 istio 的官方推荐学习用例。
 bookinfo 可以在无服务网格环境直接部署
 
 ```bash
-wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
+# wget https://raw.githubusercontent.com/istio/istio/release-1.11/samples/bookinfo/platform/kube/bookinfo.yaml
+wget https://kubeclipper.oss-ap-southeast-1.aliyuncs.com/tools/bookinfo.yaml
 
 kubectl delete ns bookinfo
 kubectl create ns bookinfo
@@ -1075,7 +1089,8 @@ kubectl rollout status deployment/kiali -n istio-system
 # 如果在安装插件时出错，再运行一次命令。 有一些和时间相关的问题，再运行就能解决。
 ```
 
-如果没有配置 istio-ingress-gateway，那么 `kubectl edit svc kiali -n istio-system`，改成 nodeport，也可也访问 kiali 页面
+如果没有配置 kiali 到 istio-ingress-gateway（目前没有配置），那么 `kubectl edit svc kiali -n istio-system`，改成
+nodeport，也可也访问 kiali 页面
 
 接下来可以参考：<https://istio.io/v1.11/zh/docs/setup/getting-started/#%E5%90%8E%E7%BB%AD%E6%AD%A5%E9%AA%A4>
 完成后续实验
