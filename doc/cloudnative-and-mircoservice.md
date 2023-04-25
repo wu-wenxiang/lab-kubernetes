@@ -337,6 +337,287 @@ Restful Demo:
 - FastAPI：[Github](https://github.com/wu-wenxiang/fastapi-demo) 或
   [Gitee](https://gitee.com/wu-wen-xiang/fastapi-demo)
 
+[FastAPI Demo](#132-restful-api) 用到了脚手架，是 Python
+的，类似这样的生成代码脚手架（golang）还有：[blade](https://github.com/x893675/blade)，后面还会降到
+[kubebuilder](#172-kubebuilder) 脚手架。
+
+##### 1.3.2.1 blade demo
+
+Install golang: <https://go.dev/doc/install>
+
+```console
+$ go version
+go version go1.20.3 darwin/amd64
+```
+
+blade：<https://github.com/x893675/blade>
+
+```bash
+# 安装 blade 工具
+curl -sfL https://oss.hanamichi.wiki/install.sh | bash
+mv blade /usr/local/bin/
+
+# 初始化项目，设置作者，仓库名，项目名
+blade init --owner "wu-wenxiang" --repo github.com/wu-wenxiang/blade-test --project-name blade-test
+```
+
+```console
+$ tree
+.
+├── Dockerfile
+├── Makefile
+├── PROJECT
+├── README.md
+├── bin
+│   └── swag
+├── config.yaml
+├── docs
+│   ├── docs.go
+│   ├── swagger.json
+│   └── swagger.yaml
+├── go.mod
+├── go.sum
+├── hack
+│   └── boilerplate.go.txt
+├── main.go
+└── pkg
+    ├── config
+    │   └── config.go
+    ├── errdetails
+    │   └── error.go
+    ├── healthz
+    │   └── healthz.go
+    ├── logger
+    │   ├── encode_type.go
+    │   ├── logger.go
+    │   └── options.go
+    ├── server
+    │   ├── filters
+    │   │   ├── log.go
+    │   │   └── skip.go
+    │   ├── param
+    │   │   └── common.go
+    │   ├── server.go
+    │   └── validate
+    │       └── validate.go
+    ├── signal
+    │   ├── signal.go
+    │   ├── signal_posix.go
+    │   └── signal_windows.go
+    ├── utils
+    │   └── sets
+    │       ├── sets.go
+    │       └── string.go
+    └── version
+        └── version.go
+
+17 directories, 30 files
+```
+
+```bash
+# 添加 API, API 路由为 /auth/v1/token
+blade create api --group auth --version v1 --kind Token
+```
+
+```diff
+$ git diff pkg/server/server.go
+diff --git a/pkg/server/server.go b/pkg/server/server.go
+index 8f12e6c..241c979 100644
+--- a/pkg/server/server.go
++++ b/pkg/server/server.go
+@@ -32,6 +32,7 @@ import (
+        "github.com/wu-wenxiang/blade-test/pkg/healthz"
+        "github.com/wu-wenxiang/blade-test/pkg/logger"
+        "github.com/wu-wenxiang/blade-test/pkg/server/filters"
++       authv1 "github.com/wu-wenxiang/blade-test/pkg/server/handler/auth/v1"
+        "github.com/wu-wenxiang/blade-test/pkg/server/validate"
+        //+blade:scaffold:imports
+ )
+@@ -99,6 +100,7 @@ func (s *Service) buildHandlerChain(ctx context.Context) error {
+        // TODO(user): use can add custom health check here
+        healthz.InstallHealthCheck(s.e)
+ 
++       authv1.RegisterRouter(s.e)
+        //+blade:scaffold:routers
+ 
+        if s.config.Debug {
+```
+
+```bash
+$ git st
+On branch master
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+	new file:   pkg/server/handler/auth/docs.go
+	new file:   pkg/server/handler/auth/v1/handler.go
+	new file:   pkg/server/handler/auth/v1/registry.go
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   PROJECT
+	modified:   docs/docs.go
+	modified:   docs/swagger.json
+	modified:   docs/swagger.yaml
+	modified:   pkg/server/server.go
+```
+
+```bash
+# 添加另一组 API /user
+blade create api --group user --version v1 --kind User
+# 在同一 GROUP 下添加另一个资源对象
+blade create api --group user --version v1 --kind Group
+```
+
+```bash
+$ git st
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   PROJECT
+	modified:   docs/docs.go
+	modified:   docs/swagger.json
+	modified:   docs/swagger.yaml
+	modified:   pkg/server/handler/user/v1/handler.go
+	modified:   pkg/server/handler/user/v1/registry.go
+```
+
+```diff
+$ git diff pkg/server/handler/user/v1/registry.go
+diff --git a/pkg/server/handler/user/v1/registry.go b/pkg/server/handler/user/v1/registry.go
+index 45dee0f..bc25e32 100644
+--- a/pkg/server/handler/user/v1/registry.go
++++ b/pkg/server/handler/user/v1/registry.go
+@@ -32,6 +32,11 @@ func RegisterRouter(e *echo.Echo) {
+        g.GET("/user/:id", h.DescribeUser)
+        g.PUT("/user/:id", h.UpdateUser)
+        g.DELETE("/user/:id", h.DeleteUser)
++       g.POST("/group", h.CreateGroup)
++       g.GET("/group", h.ListGroup)
++       g.GET("/group/:id", h.DescribeGroup)
++       g.PUT("/group/:id", h.UpdateGroup)
++       g.DELETE("/group/:id", h.DeleteGroup)
+        //+blade:scaffold:registry
+        // TODO(user): add user custom router here
+ }
+
+$ git diff pkg/server/handler/user/v1/handler.go
+diff --git a/pkg/server/handler/user/v1/handler.go b/pkg/server/handler/user/v1/handler.go
+index 3baad31..b7216d6 100644
+--- a/pkg/server/handler/user/v1/handler.go
++++ b/pkg/server/handler/user/v1/handler.go
+@@ -109,4 +109,84 @@ func (h *handle) DeleteUser(c echo.Context) error {
+        return c.String(http.StatusOK, c.Path())
+ }
+ 
++// CreateGroup Create Group
++//
++//     @Summary      Create Group
++//     @Description  Create Group
++//     @Tags         user
++//     @Accept       json
++//     @Produce      json
++//     @Success      200  {object}  param.PageableResponse{} "desc"
++//     @Failure      500  {object}  errdetails.BizError
++//     @Router       /user/v1/group [post]
++func (h *handle) CreateGroup(c echo.Context) error {
++       // TODO(user): custom logic here
++       return c.String(http.StatusOK, c.Path())
++}
++
+...
+```
+
+如果 --orm，会带上 go-entity
+
+```bash
+blade create api --group user --version v1 --kind Group --orm
+```
+
+```console
+$ git st
+On branch master
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   PROJECT
+	modified:   docs/docs.go
+	modified:   docs/swagger.json
+	modified:   docs/swagger.yaml
+	modified:   go.mod
+	modified:   go.sum
+	modified:   pkg/server/handler/user/v1/handler.go
+	modified:   pkg/server/handler/user/v1/registry.go
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	pkg/ent/
+	pkg/models/
+	pkg/mtime/
+```
+
+然后可以直接运行
+
+```console
+$ make help
+
+Usage:
+  make <target>
+
+General
+  help             Display this help.
+
+Build Dependencies
+  swagger          Download swag locally if necessary. If wrong version is installed, it will be overwritten.
+
+Development
+  generate         Generate code containing Swagger, Ent etc.
+  fmt              Run go fmt against code.
+  vet              Run go vet against code.
+
+Build
+  build            Build binary.
+  run              Run a server from your host.
+  build-image      Build docker image with the blade-test.
+
+
+$ make run
+test -s /Users/wuwenxiang/local/test/bin/swag && /Users/wuwenxiang/local/test/bin/swag --version | grep -q v1.8.9 || \
+	GOBIN=/Users/wuwenxiang/local/test/bin go install github.com/swaggo/swag/cmd/swag@v1.8.9
+/Users/wuwenxiang/local/test/bin/swag init --parseDependency
+2023/04/25 16:13:10 Generate swagger docs....
+2023/04/25 16:13:10 Generate general API Info, search dir:./
+2023/04/25 16:13:13 Generating param.PageableResponse
+2023/04/25 16:13:13 Generating errdetails.BizError
+2023/04/25 16:13:13 create docs.go at  docs/docs.go
+2023/04/25 16:13:13 create swagger.json at  docs/swagger.json
+2023/04/25 16:13:13 create swagger.yaml at  docs/swagger.yaml
+go generate ./pkg/...
+go fmt ./...
+go vet ./...
+go run ./main.go
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:94	please visit 0.0.0.0:8080/swagger/index.html to get swagger docs
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/user/v1/group"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "PUT", "path": "/auth/v1/token/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "DELETE", "path": "/auth/v1/token/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/auth/v1/token"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/auth/v1/token/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/user/v1/user/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "PUT", "path": "/user/v1/user/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "POST", "path": "/user/v1/group"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/swagger/*"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/healthz"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/user/v1/group/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "DELETE", "path": "/user/v1/group/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "POST", "path": "/user/v1/user"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "DELETE", "path": "/user/v1/user/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "PUT", "path": "/user/v1/group/:id"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "POST", "path": "/auth/v1/token"}
+2023-04-25T16:13:20+08:00	DEBUG	server/server.go:110	API Router	{"method": "GET", "path": "/user/v1/user"}
+⇨ http server started on [::]:8080
+```
+
 #### 1.3.3 API 测试
 
 参考自动化测试：[Github](https://github.com/wu-wenxiang/training-python-public/blob/master/doc/autotest.md)
@@ -512,9 +793,6 @@ kubectl get crd | grep book
 kubectl get guestbooks.webapp.my.domain 
 kubectl get guestbooks.webapp.my.domain guestbook-sample -o yaml
 ```
-
-类似这样的生成代码脚手架（golang）还有：[blade](https://github.com/x893675/blade)，前面讲到的
-[FastAPI Demo](#132-restful-api) 也用到了脚手架，是 Python 的。
 
 更多参考：[programming-kubernetes](https://github.com/programming-kubernetes)
 
