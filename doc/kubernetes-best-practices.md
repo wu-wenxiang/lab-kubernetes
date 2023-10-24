@@ -4293,3 +4293,193 @@ ImagePolicyWebhook 准入控制器的使用，分 4 个步骤
 ### 6.7 最佳实践
 
 综上～
+
+## 7. GPU 相关
+
+[返回目录](#课程目录)
+
+### 7.1 GPU 驱动安装
+
+### 7.2 GPU Operator
+
+### 7.3 在 Pod 中使用 GPU
+
+#### 7.3.1 如何令 Pod 启动时，缺省不使用 GPU？
+
+##### 7.3.1.1 问题现象
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-test
+spec:
+  containers:
+  - name: cuda
+    command: ["sleep", "infinity"]
+    image: nvidia/cuda:12.2.0-base-ubuntu20.04
+    resources:
+      limits:
+        cpu: 0.5
+        memory: 500Mi
+```
+
+nvidia device plugin 默认是通过环境变量(NVIDIA_VISIBLE_DEVICES)来判断是否要将 gpu 暴露给容器的，而 nvidia 的大部分镜像都是基于 cuda
+的，cuda 镜像默认会将这个变量的 value 设置为 all，参考
+<https://hub.docker.com/layers/nvidia/cuda/12.2.0-base-ubuntu20.04/images/sha256-5a9257b8c6ac3f6c53ce559903558dce5ec1fa7a91ed8020dfb56ab7af1a8733?context=explore>，也可以从容器中验证：
+
+```console
+root@node1:~# kubectl  exec -it gpu-test -- env
+...
+NVARCH=x86_64
+NVIDIA_REQUIRE_CUDA=cuda>=12.2 brand=tesla,driver>=450,driver<451 brand=tesla,driver>=470,driver<471 brand=unknown,driver>=470,driver<471 brand=nvidia,driver>=470,driver<471 brand=nvidiartx,driver>=470,driver<471 brand=geforce,driver>=470,driver<471 brand=geforcertx,driver>=470,driver<471 brand=quadro,driver>=470,driver<471 brand=quadrortx,driver>=470,driver<471 brand=titan,driver>=470,driver<471 brand=titanrtx,driver>=470,driver<471 brand=tesla,driver>=525,driver<526 brand=unknown,driver>=525,driver<526 brand=nvidia,driver>=525,driver<526 brand=nvidiartx,driver>=525,driver<526 brand=geforce,driver>=525,driver<526 brand=geforcertx,driver>=525,driver<526 brand=quadro,driver>=525,driver<526 brand=quadrortx,driver>=525,driver<526 brand=titan,driver>=525,driver<526 brand=titanrtx,driver>=525,driver<526
+NV_CUDA_CUDART_VERSION=12.2.53-1
+NV_CUDA_COMPAT_PACKAGE=cuda-compat-12-2
+CUDA_VERSION=12.2.0
+...
+NVIDIA_VISIBLE_DEVICES=all
+...
+NVIDIA_DRIVER_CAPABILITIES=compute,utility
+```
+
+```console
+root@node1:~# kubectl exec -it gpu-test -- nvidia-smi
+Tue Oct 10 04:22:36 2023
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.104.12             Driver Version: 535.104.12   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  Tesla T4                       On  | 00000000:09:00.0 Off |                  Off |
+| N/A   28C    P8              15W /  70W |      2MiB / 16384MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
+|  No running processes found                                                           |
++---------------------------------------------------------------------------------------+
+
+root@node1:~# kubectl exec -it gpu-test -- df -h
+Filesystem      Size  Used Avail Use% Mounted on
+...
+udev            2.0G     0  2.0G   0% /run/nvidia-container-devices/GPU-5fa68d66-4cb3-891a-bf8e-45519ce2b3ee
+...
+```
+
+所以就导致了，如果容器没有申请 gpu 则会使用默认的环境变量，从而将所有的 gpu 暴露给容器(这部分工作应该是由 hook 完成的)；如果容器申请了 gpu 则在创建容器时 device
+plugin 会去覆盖这个环境变量，变成所申请的 gpu 序号，申请 gpu 的容器环境变量如下所示：
+
+```console
+root@ecs-gpu:~# kubectl  exec -it gpu-test -- env
+...
+NVIDIA_VISIBLE_DEVICES=GPU-5fa68d66-4cb3-891a-bf8e-45519ce2b3ee
+...
+```
+
+#### 7.3.1.2 解决思路-1：将 gpu 发现方式改为 volume-mount
+
+社区给出了一个临时的[解决方案](https://docs.google.com/document/d/1uXVF-NWZQXgP1MLb87_kMkQvidpnkNWicdpO2l9g-fw/edit)，将
+gpu 发现方式改为 volume-mount，不过也在文档中提到了，未来的最终解决方案会是 CDI。下面以 gpu-operator 部署的集群为例来演示一下流程，仅部署 nvidia device
+plugin 的集群也可以通过修改 plugin 的启动参数 --device-list-strategy=<envvar | volume-mounts> 来进行修改。
+
+先修改 gpu-operator 的 cr cluster-policy
+
+```yaml
+# kubectl edit clusterpolicy cluster-policy
+  devicePlugin:
+    env:
+    - name: DEVICE_LIST_STRATEGY
+      value: volume-mounts
+```
+
+再修改 toolkit 配置，配置文件的位置分为两种情况：
+
+1. 如果 toolkit 是使用 gpu-operator 安装的，则配置文件的位置在
+   /usr/local/nvidia/toolkit/.config/nvidia-container-runtime/config.toml
+2. 如果 toolkit 为手动安装的，则配置文件位置在/ etc/nvidia-container-runtime/config.toml
+
+修改配置文件，改 `accept-nvidia-visible-devices-*` 相关变量：
+
+```ini
+disable-require = false
+#swarm-resource = "DOCKER_RESOURCE_GPU"
+# 
+accept-nvidia-visible-devices-envvar-when-unprivileged = false
+accept-nvidia-visible-devices-as-volume-mounts = true
+
+[nvidia-container-cli]
+#root = "/run/nvidia/driver"
+#path = "/usr/bin/nvidia-container-cli"
+...
+```
+
+此时，如果不申请 GPU，Pod 中就不会主动挂载：
+
+```console
+root@node1:~# kubectl  exec -it gpu-test -- nvidia-smi
+error: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "fc8e28159bca207f9023881f20df1fdad46edc3c49c69576e616b12084de239c": OCI runtime exec failed: exec failed: unable to start container process: exec: "nvidia-smi": executable file not found in $PATH: unknown
+```
+
+#### 7.3.1.3 解决思路-2：使用 limitrange
+
+从另一个维度来思考，不限制的话，Pod 能看到所有的 CPU / 内存，那么看到所有的 GPU 也合理。
+
+需要限制的话，就显示限制。如果要默认限制，那就用 LimitRange
+
+```yaml
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: gpu-resource-constraint
+  namespace: default
+spec:
+  limits:
+  - default:
+      nvidia.com/gpu: "0"
+    defaultRequest:
+      nvidia.com/gpu: "0"
+    type: Container
+```
+
+创建 pod
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-test
+spec:
+  containers:
+  - name: cuda
+    command: ["sleep", "infinity"]
+    image: nvidia/cuda:12.2.0-base-ubuntu20.04
+```
+
+创建出的 pod 会自动添加 limit
+
+```yaml
+# kubectl get po gpu-test -0 yaml i grep -i request -A 10 -B 10
+spec:
+  containers:
+  - command:
+    - sleep
+    - infinity
+    image: nvidia/cuda:12.2.0-base-ubuntu20.04
+    imagePullPolicy: IfNotPresent
+    name: cuda
+    resources:
+      limits:
+        nvidia.com/gpu: "0"
+      requests:
+        nvidia.com/gpu: "0"
+```
+
+### 7.4 切分 GPU
+
+### 7.5 多机多卡 GPU 方案
