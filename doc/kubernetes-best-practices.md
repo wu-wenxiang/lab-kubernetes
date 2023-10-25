@@ -4488,8 +4488,7 @@ spec:
 
 切分 GPU 以充分利用算力，这并不符合 Nvidia 希望多卖显卡的圈钱逻辑，所以 Nvidia 并不热衷于推 GPU 切分方案。
 
-在虚拟化平台上，Nvidia 有 vGPU 的解决方案，但也需要额外卖 License（通过一个 vGPU license server
-服务来授权）。真妥妥的雁过拔毛、为富不仁。这种“不仁”也必须是当然的了，Nvidia GPU 那么贵，而且“正经客户”还不能买游戏卡做训练，逼良为那啥。
+在虚拟化平台上，Nvidia 有 vGPU 的解决方案，但也需要额外卖 License（通过一个 vGPU license server 服务来授权）。真妥妥的雁过拔毛、为富不仁。这种“不仁”也必须是当然的了，Nvidia GPU 那么贵，而且“正经客户”还不能买游戏卡做训练，逼良为那啥。
 
 通过容器来切分 GPU 的用户故事大致如下：
 
@@ -4510,34 +4509,22 @@ spec:
 
 被共享的 GPU 算力资源包括哪些？
 
-- 通常从两个相对独立的维度来描述：GPU 显存和 GPU 算力（对应于内存和 CPU）。一个任务，其对 GPU 显存的占用和其对 GPU 算力的使用并不一定呈现线性关系。显然是存在占用 GPU
-  显存很多但算力很少的应用，亦或是只占用少量显存但频繁计算的应用。
-- 在深度学习（DL）领域，我们一般可以认为真实显存的占用和 GPU 算力的使用是正相关的。为什么要说“真实显存占用”呢？因为存在 TensorFlow
-  这样比较“自以为是”的应用，觉得自己管理显存更在行，于是在程序运行之初便申请全部显存后自己管理。显然其占用的（全部）显存并不全部被用作训练或推理。我们可以改变这种行为。
+- 通常从两个相对独立的维度来描述：GPU 显存和 GPU 算力（对应于内存和 CPU）。一个任务，其对 GPU 显存的占用和其对 GPU 算力的使用并不一定呈现线性关系。显然是存在占用 GPU 显存很多但算力很少的应用，亦或是只占用少量显存但频繁计算的应用。
+- 在深度学习（DL）领域，我们一般可以认为真实显存的占用和 GPU 算力的使用是正相关的。为什么要说“真实显存占用”呢？因为存在 TensorFlow 这样比较“自以为是”的应用，觉得自己管理显存更在行，于是在程序运行之初便申请全部显存后自己管理。显然其占用的（全部）显存并不全部被用作训练或推理。我们可以改变这种行为。
 
 GPU 使用场景大致分为 3 类：推理，训练，其它
 
-1. **推理服务** 适合用 GPU 共享：推理时，GPU 显存和算力使用都较小。首先是 GPU
-   显存的占用远小于训练（训练时，大量激活函数由于其非光滑的特性，必须保留中间变量以便日后求导，而这些变量在推理服务中即可舍去）。其次推理也没有反向传播的需求，对于计算量的需求大幅下降。加之一般推理请求的特性就是
-   request-after-request，往往不像训练时那样组成 batch，导致单次推理操作对 GPU 算力的使用也很低。
+1. **推理服务** 适合用 GPU 共享：推理时，GPU 显存和算力使用都较小。首先是 GPU 显存的占用远小于训练（训练时，大量激活函数由于其非光滑的特性，必须保留中间变量以便日后求导，而这些变量在推理服务中即可舍去）。其次推理也没有反向传播的需求，对于计算量的需求大幅下降。加之一般推理请求的特性就是 request-after-request，往往不像训练时那样组成 batch，导致单次推理操作对 GPU 算力的使用也很低。
 2. **训练服务** 不适合 GPU 共享，多机多卡分布式训练还差不多。batch 类，训练完进程就退出了，不需要服务进程一直在线。
 3. 其他 GPU 应用，如果依然遵循显存与算力正相关的规律的话，可以依照“小显存，小算力”和“大显存，大算力”来划分。Nvidia MPS 提供的案例为 N-Body 模拟。
 
-虽然推理服务适合 GPU 切片，但不是唯一的，还有其它解决思路，比如：Nvidia Triton Inference Server，实现同一个 context 下利用多 stream
-的方式实现多个模型同时实现前向推理功能的。结合更灵活且智能的 model scheduling，有可能效果更好（需要验证）。
+虽然推理服务适合 GPU 切片，但不是唯一的，还有其它解决思路，比如：Nvidia Triton Inference Server，实现同一个 context 下利用多 stream 的方式实现多个模型同时实现前向推理功能的。结合更灵活且智能的 model scheduling，有可能效果更好（需要验证）。
 
 ##### 7.4.2.2 Slurm 切分方案
 
-默认的调度器无法处理 GRES，一般来说需要安装对应的 GRES Plugin。如果在部署 Slurm 之前就已经在集群上装好了 NVML（一般随着驱动就会安装），Slurm 会利用
-select/cons_tres plugin 自动进行检测并将（Nvidia）GPU 资源登记。 而在调度 GPU 任务时，Slurm 依旧使用 `CUDA_VISIBLE_DEVICES` 来对多
-GPU 的节点进行以卡为单位的 GPU 资源隔离。每个任务在节点上被拉起时，Slurm 都会在 Epilog 和 Prolog 来配置 `CUDA_VISIBLE_DEVICES` 使得任务可以使用的
-GPU 受到限制。这些配置在 Slurm 的 master 节点上完成。
+默认的调度器无法处理 GRES，一般来说需要安装对应的 GRES Plugin。如果在部署 Slurm 之前就已经在集群上装好了 NVML（一般随着驱动就会安装），Slurm 会利用 select/cons_tres plugin 自动进行检测并将（Nvidia）GPU 资源登记。 而在调度 GPU 任务时，Slurm 依旧使用 `CUDA_VISIBLE_DEVICES` 来对多 GPU 的节点进行以卡为单位的 GPU 资源隔离。每个任务在节点上被拉起时，Slurm 都会在 Epilog 和 Prolog 来配置 `CUDA_VISIBLE_DEVICES` 使得任务可以使用的 GPU 受到限制。这些配置在 Slurm 的 master 节点上完成。
 
-Slurm 通过 GRES（Generic Resources，非常见资源） 支持 Nvidia CUDA Multi-Process Service
-[MPS](https://docs.nvidia.com/deploy/pdf/CUDA_Multi_Process_Service_Overview.pdf)。MPS 允许多个小任务同时运行在一块
-GPU 上，相比较 GPU context 切换，损耗（overhead）较低 。MPS 通过设置 `CUDA_MPS_ACTIVE_THREAD_PERCENTAGE` 来限制每个任务的算力，取值在
-(0,100] 之间（即百分比）。Slurm 对 GPU 共享的调度已经做到相当原生。而如果有进一步的需求，也可以通过
-[Slurm Plugin API](https://slurm.schedmd.com/gres_plugins.html) 自己来实现一个。
+Slurm 通过 GRES（Generic Resources，非常见资源） 支持 Nvidia CUDA Multi-Process Service [MPS](https://docs.nvidia.com/deploy/pdf/CUDA_Multi_Process_Service_Overview.pdf)。MPS 允许多个小任务同时运行在一块 GPU 上，相比较 GPU context 切换，损耗（overhead）较低 。MPS 通过设置 `CUDA_MPS_ACTIVE_THREAD_PERCENTAGE` 来限制每个任务的算力，取值在 (0,100] 之间（即百分比）。Slurm 对 GPU 共享的调度已经做到相当原生。而如果有进一步的需求，也可以通过 [Slurm Plugin API](https://slurm.schedmd.com/gres_plugins.html) 自己来实现一个。
 
 ##### 7.4.2.3 K8S 切分方案
 
@@ -4548,33 +4535,68 @@ K8S 通过 Device Plugin 来实现 GPU 的非共享调度。想要做到共享�
 
 与 Slurm + MPS 按照算力分割略有不同的是，K8S 切分方案（比如阿里）的方案以显存为分割尺度，并且默认地认为 GPU 算力的需求和显存的需求是成正比的。这有一定合理性。
 
-以阿里方案为例：
+#### 7.4.3 切分方案：Nvidia MIG
 
-1. 拉起 container 过程由 kubelet 完成，节点上的 device-plugin 只提供节点上加速器（即 GPU）的状态。阿里提供了新的 device-plugin。它以共享 GPU
-   当作 Extended Resource 注册，并且统计节点上所有 GPU 显存的总和。当 kubelet 调用 device-plugin 的 allocate API
-   时，device-plugin 会先通过 k8s API 获取所有被调度到该节点但尚未被处理的 GPU Sharing Pod，而后选择老的 Pod（等待时间最久），为其在环境变量中配置从
-   annotation 获取的 Device ID 给 `CUDA_VISIBLE_DEVICES` 以便实现 GPU 与 GPU 之间的隔离，最后标记为 assigned。
+Nvidia 原则两种 GPU 共享的方案：
 
-而在调度器一层，阿里的方案使用的工具是 Extended Scheduler。当前用以共享的 GPU 已经被注册为一种新的资源 Extended Resource，而一旦 Pod
-被调度到。现在需要做的就是让 k8s 的调度器可以正确处理相关的 Pod。由于默认调度器仅能判断一个节点上的 GPU 显存是否足够容纳当前的 Pod，因此 GPU Share Scheduler
-Extender 会帮助其在做一次过滤，将那些单个 GPU 不足以容纳下显存申请的节点过滤掉。在选择好节点之后，binding 的过程也交由 Scheduler Extender
-完成。当中主要的工作是在选择好的节点中，以避免资源浪费的形式选择合适的 GPU、将选择好的 GPU ID 写入 Pod 的 annotation、将 Pod 与 Node 绑定。
+1. GRID 方案可以做到完全资源（算力和显存）隔离，但是必须依托虚拟机，无法在容器上直接挂在分割后的 sub-GPU。
+2. MPS 方案可以对接容器（Volta 之后的卡），对算力也能做限制，且无需担心 context switch 带来的 overhead，因为 MPS daemon 将各位 clients 发来的 context 通过 daemon 自身的 context 透传到 GPU。但是受限于硬件，对于显存、IO 带宽，MPS 方案无法做到限制，往往需要额外的组件来处理显存相关的操作。除此之外，之前提到的 MPS context 的错误无法被隔离。这样一来，一个 client 发生了错误，或者说 daemon context 发生了错误，会影响到其他的 client CUDA 程序的运行。
 
-#### 7.4.3 切分方案
+Ampere 带来的 A100 所具备的 [Multi-Instance GPU (MIG)](https://devblogs.nvidia.com/nvidia-ampere-architecture-in-depth/)：
 
-#### 7.4.3 切分方案-1：Nvidia MIG
+1. MIG 从硬件的层面不仅对 SM（Stream-Multiprocessor，流处理器）进行了分割，还对整个内存系统进行了分割，包括了 Bus、DRAM、L2、Memory Controller 等。这样一来，不同 GPU instance 上的用户程序可以享受不受打扰的显存、带宽等资源。
+2. 与此同时，blog 中也提到，新的 QoS 使得单个 instance 上的错误并不会影响到其他 instance 上的 CUDA 程序。这对生产实践助益颇多。
+3. 当前 MIG 的分割方案还是比较固定的，**一张卡最多可以分成 7 份**。当然除了分成 7 份，还有其他力度的分割方案。鉴于 A100 的庞大算力，即便分成 7 份做一般模型（不是很庞大的模型）的推理服务其实并不划算，可能更多的使用场景还是多用户同时调试模型或直接做**小模型的训练**。
 
-#### 7.4.3 切分方案-2：第四范式方案
+总体来看，利用 Ampere 这代架构在硬件上的隔离，无论是公有容器云还是私有容器云都可以很快地部署带 GPU 共享的 Kubernetes 集群，并且做到完整的算力、显存隔离而不需要额外的一些组件。
 
-参考：<https://github.com/4paradigm/k8s-vgpu-scheduler>
-
-#### 7.4.4 切分方案-3：阿里方案
+#### 7.4.4 切分方案：阿里方案
 
 参考：<https://github.com/AliyunContainerService/GPUshare-scheduler-extender>
 
-#### 7.4.5 切分方案-4：腾讯方案
+实现原理：
+
+1. 拉起 container 过程由 kubelet 完成，节点上的 device-plugin 只提供节点上加速器（即 GPU）的状态。阿里提供了新的 device-plugin。它以共享 GPU 当作 Extended Resource 注册，并且统计节点上所有 GPU 显存的总和。当 kubelet 调用 device-plugin 的 allocate API 时，device-plugin 会先通过 k8s API 获取所有被调度到该节点但尚未被处理的 GPU Sharing Pod，而后选择老的 Pod（等待时间最久），为其在环境变量中配置从 annotation 获取的 Device ID 给 `CUDA_VISIBLE_DEVICES` 以便实现 GPU 与 GPU 之间的隔离，最后标记为 assigned。
+2. 而在调度器一层，阿里的方案使用的工具是 Extended Scheduler。当前用以共享的 GPU 已经被注册为一种新的资源 Extended Resource，而一旦 Pod 被调度到。现在需要做的就是让 k8s 的调度器可以正确处理相关的 Pod。由于默认调度器仅能判断一个节点上的 GPU 显存是否足够容纳当前的 Pod，因此 GPU Share Scheduler Extender 会帮助其在做一次过滤，将那些单个 GPU 不足以容纳下显存申请的节点过滤掉。在选择好节点之后，binding 的过程也交由 Scheduler Extender 完成。当中主要的工作是在选择好的节点中，以避免资源浪费的形式选择合适的 GPU、将选择好的 GPU ID 写入 Pod 的 annotation、将 Pod 与 Node 绑定。
+
+#### 7.4.5 切分方案：腾讯方案
 
 参考：<https://github.com/tkestack/gpu-manager>
+
+TKEStack 的 GaiaGPU。VirtAI 也有一个类似的功能的社区版。一起讨论。
+
+##### 7.4.5.1 显存限制：API 劫持
+
+CUDA 任务使用显存的基本逻辑（以申请一块 NxN 的矩阵为例）：
+
+1. 可以预先计算一下 NxN 的 float32 矩阵需要多少空间：uint32 bytes = N * N * sizeof(float);
+2. 查询整块 GPU 的显存总量或当前剩余的 GPU 显存总量
+3. （如果剩下的显存量够多）利用 CUDA Runtime API 或者 CUDA Driver API 向 GPU 申请 bytes 那么多的显存
+4. 确认申请显存的操作成功
+
+当多个任务同时在一块 GPU 上进行显存申请的时候，我们希望做到和上述步骤不同的地方是：**2. 查询显存总量/剩余显存总量时，返回的不希望是整块 GPU 的显存相关信息，而是限制之后的相关信息**。举个例子，一块 GPU 一共有 12Gi 显存，我们分配给任务 A 5Gi 显存，给任务 B 3Gi 显存。当任务 A 中的进程调用 cuDeviceTotalMem 时，应该返回 5Gi。假设任务 A 中的进程已经使用了 1.5 Gi 的显存，那么当调用 cuMemGetInfo 时，应该返回 3.5 Gi。
+
+而如果有的用户程序不经过步骤 2，直接执行步骤 3 呢？显然，我们需要根据上述逻辑对 **如果剩下的显存量够多** 作出判断。
+
+那么要修改 CUDA 函数的实现，一般可以走 `LD_PRELOAD` 或 `LD_LIBRARY_PATH` 两种方式。前者的模式适用范围有限，无法进一步劫持由 Runtime API 对 Driver API 的调用。因此 TKEStack 采取修改 libcuda 并通过 `LD_LIBRARY_PATH` 加载。具体的代码可以参看：[vcuda-controller](https://github.com/tkestack/vcuda-controller)。
+
+##### 7.4.5.2 算力限制：负反馈调节
+
+每次发起 CUDA kernel 的时候，都检查一下当前任务对 GPU 的使用率，并对本次 CUDA kernel 会增加的 GPU 使用率作出估计。如果预计本次 CUDA kernel 会使得 GPU 使用率超标，则延缓 kernel 的运行，直到当前的 GPU 使用率下降至允许本次 CUDA kernel 的运行之后。然后这样做，无法避免多个任务的 context 切换带来的 overhead。
+
+劫持的工程实现是做在 vcuda-controller 上的。
+
+#### 7.4.6 切分方案：VirtAI 的社区版方案
+
+VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代码。通过分析安装包内的信息大致作出推测：
+
+1. 采取了劫持 CUDA API 的方式，但 VirtAI 不仅劫持了 Driver API，还同时劫持了 Runtime API
+2. VirtAI 的将所有的 API 用 rpc 进行了包装，使之可以运行在调用 API 的进程之外，这样也就解释了为什么 GPU 节点上会有 orind 这个 daemon 进程存在
+3. VirtAI 号称实现了类似 MPS 的多 CUDA 进程无 context 切换，这是怎么操作的尚还不知晓
+
+#### 7.4.7 切分方案：第四范式方案
+
+参考：<https://github.com/4paradigm/k8s-vgpu-scheduler>
 
 ### 7.5 多机多卡 GPU 方案
 
