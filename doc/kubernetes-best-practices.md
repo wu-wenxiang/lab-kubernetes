@@ -4482,4 +4482,102 @@ spec:
 
 ### 7.4 切分 GPU
 
+#### 7.4.1 What & Why
+
+除了大模型，通常我们不需要完整的一块显卡算力来做推理。这时我们就需要切分 GPU 算力给到多个 Pod 同时使用。
+
+切分 GPU 以充分利用算力，这并不符合 Nvidia 希望多卖显卡的圈钱逻辑，所以 Nvidia 并不热衷于推 GPU 切分方案。
+
+在虚拟化平台上，Nvidia 有 vGPU 的解决方案，但也需要额外卖 License（通过一个 vGPU license server
+服务来授权）。真妥妥的雁过拔毛、为富不仁。这种“不仁”也必须是当然的了，Nvidia GPU 那么贵，而且“正经客户”还不能买游戏卡做训练，逼良为那啥。
+
+通过容器来切分 GPU 的用户故事大致如下：
+
+1. 多个容器能同时共享使用单张 GPU 的算力
+2. 共享单张 GPU 资源的多个容器之间能进行 GPU 算力资源隔离，互相不影响
+3. 分配不同 GPU 资源的容器都可以在自己分配资源限制内完成不超过其限制的大模型任务
+
+#### 7.4.2 GPU 切分的原理
+
+##### 7.4.2.1 GPU 切分的基本理念
+
+参考：<https://github.com/zw0610/zw0610.github.io/blob/master/notes-cn/gpu-sharing-1.md>
+
+为什么需要切分 GPU？
+
+1. 类似于线程分时复用 CPU Core，GPU 共享也是靠任务分时复用来完成。任务的 GPU context 相当于线程的栈上下文。GPU context 切换和 CPU 线程切换一样，有损耗。
+2. 有人说能不能你程序就用完 GPU 好了，干嘛要剩呢？跑完任务就释放出来。这就是扯淡了。推理请求首先是按需的，其次和模型有关。这和让线程吃光 CPU 一样荒谬。
+
+被共享的 GPU 算力资源包括哪些？
+
+- 通常从两个相对独立的维度来描述：GPU 显存和 GPU 算力（对应于内存和 CPU）。一个任务，其对 GPU 显存的占用和其对 GPU 算力的使用并不一定呈现线性关系。显然是存在占用 GPU
+  显存很多但算力很少的应用，亦或是只占用少量显存但频繁计算的应用。
+- 在深度学习（DL）领域，我们一般可以认为真实显存的占用和 GPU 算力的使用是正相关的。为什么要说“真实显存占用”呢？因为存在 TensorFlow
+  这样比较“自以为是”的应用，觉得自己管理显存更在行，于是在程序运行之初便申请全部显存后自己管理。显然其占用的（全部）显存并不全部被用作训练或推理。我们可以改变这种行为。
+
+GPU 使用场景大致分为 3 类：推理，训练，其它
+
+1. **推理服务** 适合用 GPU 共享：推理时，GPU 显存和算力使用都较小。首先是 GPU
+   显存的占用远小于训练（训练时，大量激活函数由于其非光滑的特性，必须保留中间变量以便日后求导，而这些变量在推理服务中即可舍去）。其次推理也没有反向传播的需求，对于计算量的需求大幅下降。加之一般推理请求的特性就是
+   request-after-request，往往不像训练时那样组成 batch，导致单次推理操作对 GPU 算力的使用也很低。
+2. **训练服务** 不适合 GPU 共享，多机多卡分布式训练还差不多。batch 类，训练完进程就退出了，不需要服务进程一直在线。
+3. 其他 GPU 应用，如果依然遵循显存与算力正相关的规律的话，可以依照“小显存，小算力”和“大显存，大算力”来划分。Nvidia MPS 提供的案例为 N-Body 模拟。
+
+虽然推理服务适合 GPU 切片，但不是唯一的，还有其它解决思路，比如：Nvidia Triton Inference Server，实现同一个 context 下利用多 stream
+的方式实现多个模型同时实现前向推理功能的。结合更灵活且智能的 model scheduling，有可能效果更好（需要验证）。
+
+##### 7.4.2.2 Slurm 切分方案
+
+默认的调度器无法处理 GRES，一般来说需要安装对应的 GRES Plugin。如果在部署 Slurm 之前就已经在集群上装好了 NVML（一般随着驱动就会安装），Slurm 会利用
+select/cons_tres plugin 自动进行检测并将（Nvidia）GPU 资源登记。 而在调度 GPU 任务时，Slurm 依旧使用 `CUDA_VISIBLE_DEVICES` 来对多
+GPU 的节点进行以卡为单位的 GPU 资源隔离。每个任务在节点上被拉起时，Slurm 都会在 Epilog 和 Prolog 来配置 `CUDA_VISIBLE_DEVICES` 使得任务可以使用的
+GPU 受到限制。这些配置在 Slurm 的 master 节点上完成。
+
+Slurm 通过 GRES（Generic Resources，非常见资源） 支持 Nvidia CUDA Multi-Process Service
+[MPS](https://docs.nvidia.com/deploy/pdf/CUDA_Multi_Process_Service_Overview.pdf)。MPS 允许多个小任务同时运行在一块
+GPU 上，相比较 GPU context 切换，损耗（overhead）较低 。MPS 通过设置 `CUDA_MPS_ACTIVE_THREAD_PERCENTAGE` 来限制每个任务的算力，取值在
+(0,100] 之间（即百分比）。Slurm 对 GPU 共享的调度已经做到相当原生。而如果有进一步的需求，也可以通过
+[Slurm Plugin API](https://slurm.schedmd.com/gres_plugins.html) 自己来实现一个。
+
+##### 7.4.2.3 K8S 切分方案
+
+K8S 通过 Device Plugin 来实现 GPU 的非共享调度。想要做到共享切片，必须：
+
+1. Node 上必须可以将一块 GPU 多次绑定到不同的容器
+2. Scheduler 必须处理非 nvidia.com/gpu 这一类的资源
+
+与 Slurm + MPS 按照算力分割略有不同的是，K8S 切分方案（比如阿里）的方案以显存为分割尺度，并且默认地认为 GPU 算力的需求和显存的需求是成正比的。这有一定合理性。
+
+以阿里方案为例：
+
+1. 拉起 container 过程由 kubelet 完成，节点上的 device-plugin 只提供节点上加速器（即 GPU）的状态。阿里提供了新的 device-plugin。它以共享 GPU
+   当作 Extended Resource 注册，并且统计节点上所有 GPU 显存的总和。当 kubelet 调用 device-plugin 的 allocate API
+   时，device-plugin 会先通过 k8s API 获取所有被调度到该节点但尚未被处理的 GPU Sharing Pod，而后选择老的 Pod（等待时间最久），为其在环境变量中配置从
+   annotation 获取的 Device ID 给 `CUDA_VISIBLE_DEVICES` 以便实现 GPU 与 GPU 之间的隔离，最后标记为 assigned。
+
+而在调度器一层，阿里的方案使用的工具是 Extended Scheduler。当前用以共享的 GPU 已经被注册为一种新的资源 Extended Resource，而一旦 Pod
+被调度到。现在需要做的就是让 k8s 的调度器可以正确处理相关的 Pod。由于默认调度器仅能判断一个节点上的 GPU 显存是否足够容纳当前的 Pod，因此 GPU Share Scheduler
+Extender 会帮助其在做一次过滤，将那些单个 GPU 不足以容纳下显存申请的节点过滤掉。在选择好节点之后，binding 的过程也交由 Scheduler Extender
+完成。当中主要的工作是在选择好的节点中，以避免资源浪费的形式选择合适的 GPU、将选择好的 GPU ID 写入 Pod 的 annotation、将 Pod 与 Node 绑定。
+
+#### 7.4.3 切分方案
+
+#### 7.4.3 切分方案-1：Nvidia MIG
+
+#### 7.4.3 切分方案-2：第四范式方案
+
+参考：<https://github.com/4paradigm/k8s-vgpu-scheduler>
+
+#### 7.4.4 切分方案-3：阿里方案
+
+参考：<https://github.com/AliyunContainerService/GPUshare-scheduler-extender>
+
+#### 7.4.5 切分方案-4：腾讯方案
+
+参考：<https://github.com/tkestack/gpu-manager>
+
 ### 7.5 多机多卡 GPU 方案
+
+#### 7.5.1 Ray
+
+#### 7.5.2 Kuberay
