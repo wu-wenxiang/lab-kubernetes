@@ -4628,6 +4628,8 @@ VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代�
 
 #### 7.4.7 切分方案：第四范式方案
 
+##### 7.4.7.1 原理
+
 第四范式开源的 vgpu 上层实现，底层核心逻辑是 libvgpu.so 提供的，没有开源，可以实现对物理 gpu 的切分，实现了显存隔离。
 
 - <https://github.com/4paradigm/k8s-vgpu-scheduler>：OpenAIOS vGPU scheduler for Kubernetes is
@@ -4636,6 +4638,73 @@ VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代�
   官方插件（NVIDIA/k8s-device-plugin），在保留官方功能的基础上，[实现了对物理GPU进行切分，并对显存和计算单元进行限制，从而模拟出多张小的 vGPU 卡。在 k8s
   集群中，基于这些切分后的 vGPU 进行调度，使不同的容器可以安全的共享同一张物理 GPU，提高 GPU
   的利用率。此外，插件还可以对显存做虚拟化处理（使用到的显存可以超过物理上的显存），运行一些超大显存需求的任务，或提高共享的任务数](https://github.com/4paradigm/k8s-device-plugin/blob/master/README_cn.md#关于)。
+
+##### 7.4.7.2 实验
+
+参考：<https://github.com/4paradigm/k8s-vgpu-scheduler#quick-start>，环境中装好 OS，GPU 驱动， K8S with nvidia
+containerd。
+
+```bash
+kubectl label nodes {nodeid} gpu=on
+
+helm repo add vgpu-charts https://4paradigm.github.io/k8s-vgpu-scheduler
+helm install vgpu vgpu-charts/vgpu --set scheduler.kubeScheduler.imageTag=v1.23.17 -n kube-system
+
+kubectl apply -f test-gpu-2.yaml
+```
+
+```yaml
+# cat test-gpu-2.yaml 
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-pod-2
+spec:
+  containers:
+    - name: ubuntu-container
+      image: ubuntu:18.04
+      command: ["bash", "-c", "sleep 86400"]
+      resources:
+        limits:
+          nvidia.com/gpu: 2 # requesting 2 vGPUs
+          nvidia.com/gpumem: 3000 # Each vGPU contains 3000m device memory （Optional,Integer）
+          nvidia.com/gpucores: 30 # Each vGPU uses 30% of the entire GPU （Optional,Integer)
+```
+
+进 pod 看：
+
+```console
+root@cloud-NF5468M6:~# kubectl exec -it gpu-pod-2 -- bash
+
+root@gpu-pod-2:/# nvidia-smi 
+[4pdvGPU Msg(17:139640230053696:libvgpu.c:870)]: Initializing.....
+Thu Oct 26 10:19:58 2023       
++---------------------------------------------------------------------------------------+
+| NVIDIA-SMI 535.113.01             Driver Version: 535.113.01   CUDA Version: 12.2     |
+|-----------------------------------------+----------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id        Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |         Memory-Usage | GPU-Util  Compute M. |
+|                                         |                      |               MIG M. |
+|=========================================+======================+======================|
+|   0  NVIDIA A40                     Off | 00000000:9D:00.0 Off |                    0 |
+|  0%   39C    P0              87W / 300W |      0MiB /  3000MiB |      0%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+|   1  NVIDIA A40                     Off | 00000000:A0:00.0 Off |                    0 |
+|  0%   77C    P0             299W / 300W |      0MiB /  3000MiB |     96%      Default |
+|                                         |                      |                  N/A |
++-----------------------------------------+----------------------+----------------------+
+                                                                                         
++---------------------------------------------------------------------------------------+
+| Processes:                                                                            |
+|  GPU   GI   CI        PID   Type   Process name                            GPU Memory |
+|        ID   ID                                                             Usage      |
+|=======================================================================================|
++---------------------------------------------------------------------------------------+
+[4pdvGPU Msg(17:139640230053696:multiprocess_memory_limit.c:475)]: Calling exit handler 17
+```
+
+符合预期。
 
 ### 7.5 多机多卡 GPU 方案
 
