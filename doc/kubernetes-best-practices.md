@@ -4298,15 +4298,33 @@ ImagePolicyWebhook 准入控制器的使用，分 4 个步骤
 
 [返回目录](#课程目录)
 
-### 7.1 GPU 驱动安装
+### 7.1 适合于计算的 GPU
 
-### 7.2 GPU Operator
+#### 7.1.1 Nvidia
 
-### 7.3 在 Pod 中使用 GPU
+#### 7.1.2 AMD
 
-#### 7.3.1 如何令 Pod 启动时，缺省不使用 GPU？
+#### 7.1.3 Huawei 昇腾 Ascend
 
-##### 7.3.1.1 问题现象
+#### 7.1.4 曙光海光
+
+#### 7.1.5 阿里平头哥
+
+#### 7.1.6 摩尔线程和 IMG ip core
+
+翰博 帝先 景嘉微
+
+#### 7.1.7 天数
+
+### 7.2 GPU 驱动安装
+
+### 7.3 GPU Operator
+
+### 7.4 在 Pod 中使用 GPU
+
+#### 7.4.1 如何令 Pod 启动时，缺省不使用 GPU？
+
+##### 7.4.1.1 问题现象
 
 ```yaml
 apiVersion: v1
@@ -4382,7 +4400,7 @@ NVIDIA_VISIBLE_DEVICES=GPU-5fa68d66-4cb3-891a-bf8e-45519ce2b3ee
 ...
 ```
 
-#### 7.3.1.2 解决思路-1：将 gpu 发现方式改为 volume-mount
+#### 7.4.1.2 解决思路-1：将 gpu 发现方式改为 volume-mount
 
 社区给出了一个临时的[解决方案](https://docs.google.com/document/d/1uXVF-NWZQXgP1MLb87_kMkQvidpnkNWicdpO2l9g-fw/edit)，将
 gpu 发现方式改为 volume-mount，不过也在文档中提到了，未来的最终解决方案会是 CDI。下面以 gpu-operator 部署的集群为例来演示一下流程，仅部署 nvidia device
@@ -4426,7 +4444,7 @@ root@node1:~# kubectl  exec -it gpu-test -- nvidia-smi
 error: Internal error occurred: error executing command in container: failed to exec in container: failed to start exec "fc8e28159bca207f9023881f20df1fdad46edc3c49c69576e616b12084de239c": OCI runtime exec failed: exec failed: unable to start container process: exec: "nvidia-smi": executable file not found in $PATH: unknown
 ```
 
-#### 7.3.1.3 解决思路-2：使用 limitrange
+#### 7.4.1.3 解决思路-2：使用 limitrange
 
 从另一个维度来思考，不限制的话，Pod 能看到所有的 CPU / 内存，那么看到所有的 GPU 也合理。
 
@@ -4480,9 +4498,9 @@ spec:
         nvidia.com/gpu: "0"
 ```
 
-### 7.4 切分 GPU
+### 7.5 切分 GPU
 
-#### 7.4.1 What & Why
+#### 7.5.1 What & Why
 
 除了大模型，通常我们不需要完整的一块显卡算力来做推理。这时我们就需要切分 GPU 算力给到多个 Pod 同时使用。
 
@@ -4497,9 +4515,9 @@ spec:
 2. 共享单张 GPU 资源的多个容器之间能进行 GPU 算力资源隔离，互相不影响
 3. 分配不同 GPU 资源的容器都可以在自己分配资源限制内完成不超过其限制的大模型任务
 
-#### 7.4.2 GPU 切分的原理
+#### 7.5.2 GPU 切分的原理
 
-##### 7.4.2.1 GPU 切分的基本理念
+##### 7.5.2.1 GPU 切分的基本理念
 
 参考：<https://github.com/zw0610/zw0610.github.io/blob/master/notes-cn/gpu-sharing-1.md>
 
@@ -4526,7 +4544,7 @@ GPU 使用场景大致分为 3 类：推理，训练，其它
 虽然推理服务适合 GPU 切片，但不是唯一的，还有其它解决思路，比如：Nvidia Triton Inference Server，实现同一个 context 下利用多 stream
 的方式实现多个模型同时实现前向推理功能的。结合更灵活且智能的 model scheduling，有可能效果更好（需要验证）。
 
-##### 7.4.2.2 Slurm 切分方案
+##### 7.5.2.2 Slurm 切分方案
 
 默认的调度器无法处理 GRES，一般来说需要安装对应的 GRES Plugin。如果在部署 Slurm 之前就已经在集群上装好了 NVML（一般随着驱动就会安装），Slurm 会利用
 select/cons_tres plugin 自动进行检测并将（Nvidia）GPU 资源登记。 而在调度 GPU 任务时，Slurm 依旧使用 `CUDA_VISIBLE_DEVICES` 来对多
@@ -4539,7 +4557,7 @@ GPU 上，相比较 GPU context 切换，损耗（overhead）较低 。MPS 通�
 (0,100] 之间（即百分比）。Slurm 对 GPU 共享的调度已经做到相当原生。而如果有进一步的需求，也可以通过
 [Slurm Plugin API](https://slurm.schedmd.com/gres_plugins.html) 自己来实现一个。
 
-##### 7.4.2.3 K8S 切分方案
+##### 7.5.2.3 K8S 切分方案
 
 K8S 通过 Device Plugin 来实现 GPU 的非共享调度。想要做到共享切片，必须：
 
@@ -4548,7 +4566,7 @@ K8S 通过 Device Plugin 来实现 GPU 的非共享调度。想要做到共享�
 
 与 Slurm + MPS 按照算力分割略有不同的是，K8S 切分方案（比如阿里）的方案以显存为分割尺度，并且默认地认为 GPU 算力的需求和显存的需求是成正比的。这有一定合理性。
 
-#### 7.4.3 切分方案：Nvidia MIG
+#### 7.5.3 切分方案：Nvidia MIG
 
 Nvidia 原则两种 GPU 共享的方案：
 
@@ -4569,7 +4587,7 @@ Ampere 带来的 A100 所具备的
 
 总体来看，利用 Ampere 这代架构在硬件上的隔离，无论是公有容器云还是私有容器云都可以很快地部署带 GPU 共享的 Kubernetes 集群，并且做到完整的算力、显存隔离而不需要额外的一些组件。
 
-#### 7.4.4 切分方案：阿里方案
+#### 7.5.4 切分方案：阿里方案
 
 参考：<https://github.com/AliyunContainerService/GPUshare-scheduler-extender>
 
@@ -4587,11 +4605,11 @@ Ampere 带来的 A100 所具备的
    GPU、将选择好的 GPU ID 写入 Pod 的 annotation、将 Pod 与 Node 绑定。**这是 cgpu 的部分开源项目，能对 gpu
    进行显存划分，多容器调度，但是没有实现显存隔离**。
 
-#### 7.4.5 切分方案：腾讯方案
+#### 7.5.5 切分方案：腾讯方案
 
 TKEStack 的 GaiaGPU：<https://github.com/tkestack/gpu-manager>，**cuda 12 之后就不支持了**。
 
-##### 7.4.5.1 显存限制：API 劫持
+##### 7.5.5.1 显存限制：API 劫持
 
 CUDA 任务使用显存的基本逻辑（以申请一块 NxN 的矩阵为例）：
 
@@ -4610,7 +4628,7 @@ cuDeviceTotalMem 时，应该返回 5Gi。假设任务 A 中的进程已经使�
 Driver API 的调用。因此 TKEStack 采取修改 libcuda 并通过 `LD_LIBRARY_PATH`
 加载。具体的代码可以参看：[vcuda-controller](https://github.com/tkestack/vcuda-controller)。
 
-##### 7.4.5.2 算力限制：负反馈调节
+##### 7.5.5.2 算力限制：负反馈调节
 
 每次发起 CUDA kernel 的时候，都检查一下当前任务对 GPU 的使用率，并对本次 CUDA kernel 会增加的 GPU 使用率作出估计。如果预计本次 CUDA kernel 会使得
 GPU 使用率超标，则延缓 kernel 的运行，直到当前的 GPU 使用率下降至允许本次 CUDA kernel 的运行之后。然后这样做，无法避免多个任务的 context 切换带来的
@@ -4618,7 +4636,7 @@ overhead。
 
 劫持的工程实现是做在 vcuda-controller 上的。
 
-#### 7.4.6 切分方案：VirtAI 的社区版方案
+#### 7.5.6 切分方案：VirtAI 的社区版方案
 
 VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代码。通过分析安装包内的信息大致作出推测：
 
@@ -4626,9 +4644,9 @@ VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代�
 2. VirtAI 的将所有的 API 用 rpc 进行了包装，使之可以运行在调用 API 的进程之外，这样也就解释了为什么 GPU 节点上会有 orind 这个 daemon 进程存在
 3. VirtAI 号称实现了类似 MPS 的多 CUDA 进程无 context 切换，这是怎么操作的尚还不知晓
 
-#### 7.4.7 切分方案：第四范式方案
+#### 7.5.7 切分方案：第四范式方案
 
-##### 7.4.7.1 原理
+##### 7.5.7.1 原理
 
 第四范式开源的 vgpu 上层实现，底层核心逻辑是 libvgpu.so 提供的，没有开源，可以实现对物理 gpu 的切分，实现了显存隔离。
 
@@ -4639,7 +4657,7 @@ VirtAI 社区版其实只是供社区使用的一个安装包，不含任何代�
   集群中，基于这些切分后的 vGPU 进行调度，使不同的容器可以安全的共享同一张物理 GPU，提高 GPU
   的利用率。此外，插件还可以对显存做虚拟化处理（使用到的显存可以超过物理上的显存），运行一些超大显存需求的任务，或提高共享的任务数](https://github.com/4paradigm/k8s-device-plugin/blob/master/README_cn.md#关于)。
 
-##### 7.4.7.2 实验
+##### 7.5.7.2 实验
 
 参考：<https://github.com/4paradigm/k8s-vgpu-scheduler#quick-start>，环境中装好 OS，GPU 驱动， K8S with nvidia
 containerd。
@@ -4706,8 +4724,8 @@ Thu Oct 26 10:19:58 2023
 
 符合预期。
 
-### 7.5 多机多卡 GPU 方案
+### 7.6 多机多卡 GPU 方案
 
-#### 7.5.1 Ray
+#### 7.6.1 Ray
 
-#### 7.5.2 Kuberay
+#### 7.6.2 Kuberay

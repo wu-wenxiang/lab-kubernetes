@@ -7,3 +7,4 @@
 
 - [Kubernetes-最佳实践](doc/kubernetes-best-practices.md)
 - [云原生和微服务](doc/cloudnative-and-mircoservice.md)
+- [边缘云和边缘智算](doc/mec-edge-and-ai.md)
